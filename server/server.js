@@ -19,7 +19,7 @@ const emailRoutes = require("./routes/emailRoutes");
 const checkAndSendReminders = require('./services/scheduler');
 const studResultsRoutes = require('./routes/studResultsRoutes');
 const teacherDashRoutes = require('./routes/teacherDashRoutes');
-const completedTestRoutes = require('./routes/completedTestRoutes'); 
+const completedTestRoutes = require('./routes/completetestRoutes'); 
 
 require('dotenv').config();
 const app = express();
