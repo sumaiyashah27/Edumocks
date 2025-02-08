@@ -701,7 +701,7 @@ const Test = () => {
     const formData = new FormData();
     formData.append('studentEmail', studentEmail);
     formData.append('pdf', pdfBlob); // Assuming you have the PDF as a blob
-
+    console.log('Student Email:', studentEmail);
     // Send the email with the PDF attachment
     axios.post('/api/studResults/sendQuizResults', formData)
       .then((response) => {

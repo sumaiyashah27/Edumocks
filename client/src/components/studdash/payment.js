@@ -324,7 +324,7 @@ const Payment = () => {
         <h2 style={{ textAlign: "center", color: "#333", fontSize: "32px", fontWeight: "600", marginBottom: "30px", letterSpacing: "-0.5px" }}>Course Payment</h2>
         {/* student Details */}
         <div style={{ marginBottom: "30px", fontSize: "16px", color: "#555", padding: "10px 0", borderBottom: "1px solid #ddd" }}>
-          <p><strong>student ID:</strong> {studentId}</p>
+          {/* <p><strong>student ID:</strong> {studentId}</p> */}
           {studentData ? (
             <>
               <p><strong>Name:</strong> {studentData.firstname} {studentData.lastname}</p>

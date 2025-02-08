@@ -260,9 +260,6 @@ const Course = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Add New Course</h5>
-              <button type="button" className="close" onClick={closeAddCourseModal}>
-                <span>&times;</span>
-              </button>
             </div>
             <div className="modal-body">
               <input 
@@ -289,9 +286,7 @@ const Course = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Add Subject to {modalCourseName}</h5>
-              <button type="button" className="close" onClick={closeAddSubjectModal}>
-                <span>&times;</span>
-              </button>
+              
             </div>
             <div className="modal-body">
               <select

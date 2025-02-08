@@ -7,7 +7,9 @@ require('dotenv').config();
 
 // POST route for sending quiz results via email with PDF attachment
 router.post('/sendQuizResults', upload.single('pdf'), (req, res) => {
-  const { userEmail} = req.body; // User's email, first name, and subject name
+  const { studentEmail} = req.body; // User's email, first name, and subject name
+  console.log('Student Email:', studentEmail);
+
   const pdf = req.file.buffer; // PDF file sent in the request
 
   // Setup the nodemailer transporter using Gmail (or another service)
@@ -22,7 +24,7 @@ router.post('/sendQuizResults', upload.single('pdf'), (req, res) => {
   // Email options
   const mailOptions = {
     from: process.env.GMAIL_USER,  // Your Gmail address
-    to: userEmail,  // Recipient's email
+    to: studentEmail,  // Recipient's email
     subject: 'Test Completed! 🎉 Your Results and Solutions', // Subject of the email
     html: `
       <p>Hello,</p>
