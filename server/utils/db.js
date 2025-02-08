@@ -10,7 +10,13 @@ console.log('MongoDB URI:', process.env.MONGO_URI);  // Log the URI to check if 
 // Function to connect to MongoDB
 const connectDB = async () => {
     try {
-      await mongoose.connect(mongoURI); // No additional options are needed
+      //await mongoose.connect(mongoURI); // No additional options are needed
+      await mongoose.connect(mongoURI, {
+        useNewUrlParser: true,          // Use the new URL parser
+        useUnifiedTopology: true,      // Use the new connection management engine
+        serverSelectionTimeoutMS: 30000, // Timeout for connecting to MongoDB (30 seconds)
+        socketTimeoutMS: 60000,         // Timeout for socket connections (1 minute)
+      });
       console.log('MongoDB connected successfully');
     } catch (error) {
       console.error('Error connecting to MongoDB:', error.message);
