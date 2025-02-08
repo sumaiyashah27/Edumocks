@@ -28,7 +28,7 @@ app.use(express.urlencoded({ limit: '1150mb', extended: true }));
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ["https://edumocks.com", "https://www.edumocks.com", "http://localhost:3000"],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 })); // Allow cross-origin requests
