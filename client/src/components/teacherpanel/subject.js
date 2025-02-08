@@ -235,7 +235,6 @@ const handleAddQuesetToSubject = (subjectId) => {
             {expandedSubject === subject._id && (
               <div style={{ marginTop: '10px' }}>
                 <div style={{ display: 'flex', gap: '50px', marginBottom: '30px' }}>
-                  <h2>Add Questions from Queset</h2>
                   {/* Dropdown to select Queset */}
                   <select value={selectedQueset} onChange={(e) => setSelectedQueset(e.target.value)}>
                     <option value="">Select a Queset</option>

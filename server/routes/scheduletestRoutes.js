@@ -467,7 +467,8 @@ router.get('/subject/:id', async (req, res) => {
 });
 
 // Fetch only completed tests with populated student, course, and subject details
-router.get("/completed", async (req, res) => {
+router.get("/completedTests", async (req, res) => {
+  console.log("Request query:", req.query);
   try {
     const completedTests = await ScheduleTest.find({ testStatus: "Completed" })
       .populate({ path: "studentId", select: "firstname lastname" })
@@ -485,4 +486,19 @@ router.get("/completed", async (req, res) => {
   }
 });
 
+// Route to fetch all completed tests
+router.get('/getCompletedTests', async (req, res) => {
+  try {
+    const completedTests = await CompletedTest.find()
+      .populate('studentId', 'firstname lastname') // Populate student details
+      .populate('selectedCourse', 'name') // Populate course name
+      .populate('selectedSubject', 'name') // Populate subject name
+      .exec();
+
+    res.status(200).json(completedTests); // Return completed tests as response
+  } catch (error) {
+    console.error('Error fetching completed tests:', error);
+    res.status(500).json({ message: 'Failed to fetch completed tests' });
+  }
+});
 module.exports = router;

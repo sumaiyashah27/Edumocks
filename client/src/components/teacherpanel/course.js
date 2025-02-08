@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faSearch, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+import { Button } from 'react-bootstrap';
 
 const Course = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
-  // eslint-disable-next-line
   const [courseDetails, setCourseDetails] = useState(null);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,7 @@ const Course = () => {
   const [newCourseName, setNewCourseName] = useState('');
   const [expandedCourse, setExpandedCourse] = useState(null);
   const [expandedSubject, setExpandedSubject] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchCourses();
@@ -162,37 +164,88 @@ const Course = () => {
   const toggleCourseExpand = (courseId) => setExpandedCourse(expandedCourse === courseId ? null : courseId);
   const toggleSubjectExpand = (subjectId) => setExpandedSubject(expandedSubject === subjectId ? null : subjectId);
 
+  const filteredCourses = courses.filter(course => course.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+    <div className="container" style={{ paddingTop: '20px' }}>
       <ToastContainer />
-      <h2 style={{ fontWeight: 'bold', color: '#333',textAlign:'center' }}>Course Management</h2>
+      <h2 className="text-center font-weight-bold" style={{ color: '#100B5C', transition: 'color 0.3s ease' }}>Course Management</h2>
+
+      <div className="row justify-content-center mb-4">
+        <div className="col-12 col-md-8">
+          <div className="input-group">
+            <span className="input-group-text" style={{ backgroundColor: '#fff', border: '1px solid #ddd' }}>
+              <FontAwesomeIcon icon={faSearch} style={{ color: '#100B5C', transition: 'color 0.3s ease' }} />
+            </span>
+            <input 
+              type="text" 
+              className="form-control" 
+              placeholder="Search for a course..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              style={{ borderRadius: '5px', transition: 'border-color 0.3s ease' }} 
+            />
+          </div>
+        </div>
+      </div>
+
       {loading && <p>Loading...</p>}
-      <button style={{ padding: '10px 15px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', marginBottom: '20px', transition: 'background-color 0.3s ease' }} onClick={openAddCourseModal}>
-        <FontAwesomeIcon icon={faPlus} style={{fontSize: '18px',marginRight: '8px'}}/>Add Course
-      </button>
+
+      <Button
+        onClick={openAddCourseModal} 
+        className="d-flex align-items-center justify-content-center mx-auto mb-3"
+        style={{ backgroundColor: '#C80D18', color: '#fff', border: 'none', borderRadius: '5px', padding: '10px 15px', fontSize: '16px', transition: 'background-color 0.3s ease, transform 0.2s ease' }}
+        onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+      >
+        <FontAwesomeIcon icon={faPlus} style={{ fontSize: '18px', marginRight: '8px' }} /> Add New Course
+      </Button>
+
+      {/* One Column, One Row for Courses */}
       <div>
-        {courses.map((course) => (
-          <div key={course._id} style={{ marginBottom: '15px', padding: '10px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
-              <h3>{course.name}</h3>
+        {filteredCourses.map((course) => (
+          <div key={course._id} className="card mb-3" style={{ padding: '15px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <h5 style={{ color: '#100B5C' }}>{course.name}</h5>
               <div>
-                {/* <FontAwesomeIcon icon={faTrash} style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px'}} onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id); }} /> */}
                 {course.name !== 'CFA LEVEL - 1' && (
-                  <FontAwesomeIcon icon={faTrash} style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px' }}
+                  <FontAwesomeIcon
+                    icon={faTrash}
+                    style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px' }}
                     onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id); }}
                   />
                 )}
-                <FontAwesomeIcon icon={faPlus} style={{ color: '#4CAF50', cursor: 'pointer', fontSize: '20px',marginLeft: '10px',marginRight: '10px'}} onClick={(e) => { e.stopPropagation(); openAddSubjectModal(course._id, course.name); }}/>
+                <FontAwesomeIcon
+                  icon={expandedCourse === course._id ? faMinus : faPlus}
+                  style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
+                  onClick={() => toggleCourseExpand(course._id)}
+                />
               </div>
             </div>
             {expandedCourse === course._id && (
-              <div style={{ paddingLeft: '20px', marginTop: '10px' }}>
+              <div className="d-flex flex-column">
+                <Button
+                  variant="outline-primary"
+                  onClick={() => openAddSubjectModal(course._id, course.name)}
+                  style={{ 
+                    width: '12%', // Smaller width for a smaller button
+                    backgroundColor: '#100B5C', // Button color
+                    color: '#fff', 
+                    borderColor: '#100B5C',
+                    marginTop: '10px',
+                    fontSize: '14px', // Smaller font size
+                    textAlign: 'left', // To ensure the text is aligned nicely at the start
+                  }}
+                ><FontAwesomeIcon icon={faPlus}/> Add Subject
+                </Button>
                 {course.subjects.map((subject) => (
-                  <div key={subject._id} style={{ padding: '8px', backgroundColor: '#e9ecef', borderRadius: '5px', marginBottom: '10px', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => toggleSubjectExpand(subject._id)}>
-                      <h4>{subject.name}</h4>
-                      <FontAwesomeIcon icon={faTrash} style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '15px'}}  onClick={(e) => { e.stopPropagation(); handleDeleteSubject(course._id, subject._id); }}/>
-                    </div>
+                  <div key={subject._id} className="d-flex justify-content-between">
+                    <span>{subject.name}</span>
+                    <FontAwesomeIcon
+                      icon={faTrash}
+                      style={{ color: '#e74c3c', cursor: 'pointer' }}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteSubject(course._id, subject._id); }}
+                    />
                   </div>
                 ))}
               </div>
@@ -200,35 +253,69 @@ const Course = () => {
           </div>
         ))}
       </div>
-      {isAddCourseModalOpen && (
-        <div style={{ position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-            <h3>Add New Course</h3>
-            <input type="text" placeholder="Enter Course Name" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ddd', marginBottom: '15px' }} />
-            <div>
-              <button style={{ padding: '10px 15px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={handleAddCourse}>Add Course</button>
-              <button style={{ padding: '10px 15px', backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={closeAddCourseModal}>Cancel</button>
+
+      {/* Add Course Modal */}
+      <div className={`modal ${isAddCourseModalOpen ? 'show' : ''}`} style={{ display: isAddCourseModalOpen ? 'block' : 'none' }}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add New Course</h5>
+              <button type="button" className="close" onClick={closeAddCourseModal}>
+                <span>&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <input 
+                type="text" 
+                value={newCourseName} 
+                onChange={(e) => setNewCourseName(e.target.value)} 
+                className="form-control" 
+                placeholder="Enter course name" 
+              />
+            </div>
+            <div className="modal-footer">
+              <Button onClick={handleAddCourse} style={{ backgroundColor: '#100B5C', color: '#fff' }}>
+                Add Course
+              </Button>
+              <Button variant="secondary" onClick={closeAddCourseModal}>Close</Button>
             </div>
           </div>
         </div>
-      )}
-      {isAddSubjectModalOpen && (
-        <div style={{ position: 'fixed', top: '0', left: '0', width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ backgroundColor: '#fff', padding: '25px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', maxWidth: '400px', width: '100%', textAlign: 'center' }}>
-            <h3>Select Subject for "{modalCourseName}"</h3>
-            <select onChange={(e) => setSelectedSubject(e.target.value)} value={selectedSubject} style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', width: '100%', marginBottom: '15px' }}>
-              <option value="">Select Subject</option>
-              {subjectOptions.map((subject) => (
-                <option key={subject._id} value={subject._id}>{subject.name}</option>
-              ))}
-            </select>
-            <div>
-              <button style={{ padding: '10px 15px', backgroundColor: '#4CAF50', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', marginRight: '10px' }} onClick={handleAddSubjectToCourse}><FontAwesomeIcon icon={faPlus} style={{fontSize: '18px',marginRight: '8px'}}/>Add Subject</button>
-              <button style={{ padding: '10px 15px', backgroundColor: '#f44336', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={closeAddSubjectModal}>Cancel</button>
+      </div>
+
+      {/* Add Subject Modal */}
+      <div className={`modal ${isAddSubjectModalOpen ? 'show' : ''}`} style={{ display: isAddSubjectModalOpen ? 'block' : 'none' }}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add Subject to {modalCourseName}</h5>
+              <button type="button" className="close" onClick={closeAddSubjectModal}>
+                <span>&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="form-control"
+              >
+                <option value="">Select Subject</option>
+                {subjectOptions.map((subject) => (
+                  <option key={subject._id} value={subject._id}>
+                    {subject.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-footer">
+              <Button onClick={handleAddSubjectToCourse} style={{ backgroundColor: '#100B5C', color: '#fff' }}>
+                Add Subject
+              </Button>
+              <Button variant="secondary" onClick={closeAddSubjectModal}>Close</Button>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

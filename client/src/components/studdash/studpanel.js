@@ -101,7 +101,7 @@ const StudPanel = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', color: 'white' }}>
           <div className="row topbar">
             <h2 style={{ fontSize: '1.7rem', fontWeight: 'bold', color: '#FFF' }}>
-              Welcome, {isLoading ? 'Loading...' : student.firstname} {student.lastname} ({student._id})
+              Welcome, {isLoading ? 'Loading...' : student.firstname}
             </h2>
           </div>
           <button

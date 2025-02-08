@@ -10,7 +10,7 @@ const DelayTest = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/delayTest");
+        const { data } = await axios.get("/api/delayTest");
         setTests(data);
         setLoading(false);
       } catch (error) {

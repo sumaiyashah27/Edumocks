@@ -419,243 +419,243 @@ const Queset = () => {
           </div>
 
           {expandedQueset === queset._id && (
-            <div style={{ maxHeight: 'auto', overflowY: 'auto', marginTop: '10px', padding: '10px', border: 'none' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {/* Add Question Button */}
-                <button  onClick={(e) => {  e.stopPropagation();   handleAddQuestion(queset._id);  setCurrentQuesetId(queset._id); }} 
-                  style={{ backgroundColor: '#100B5C', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} /> Add Question
-                </button>
+  <div style={{ maxHeight: 'auto', overflowY: 'auto', marginTop: '10px', padding: '10px', border: 'none' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Add Question Button */}
+      <button 
+        onClick={(e) => { 
+          e.stopPropagation();   
+          handleAddQuestion(queset._id);  
+          setCurrentQuesetId(queset._id); 
+        }} 
+        style={{ backgroundColor: '#100B5C', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+      >
+        <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} /> Add Question
+      </button>
 
-                {/* Upload Questions Button */}
-                <button  onClick={() => handleUploadModalToggle(queset._id)} 
-                  style={{ backgroundColor: '#4CAF50', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
-                > <FontAwesomeIcon icon={faUpload} style={{ marginRight: '8px' }} /> Upload Questions
-                </button>
+      {/* Upload Questions Button */}
+      <button 
+        onClick={() => handleUploadModalToggle(queset._id)} 
+        style={{ backgroundColor: '#4CAF50', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
+      >
+        <FontAwesomeIcon icon={faUpload} style={{ marginRight: '8px' }} /> Upload Questions
+      </button>
 
-                {/* Download Questions Button */}
-                <button  onClick={() => { handleDownloadCSV(queset._id); }} 
-                  style={{ backgroundColor: '#2196F3', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
-                > <FontAwesomeIcon icon={faDownload} style={{ marginRight: '8px' }} /> Download Questions
-                </button>
-              </div>
+      {/* Download Questions Button */}
+      <button 
+        onClick={() => { handleDownloadCSV(queset._id); }} 
+        style={{ backgroundColor: '#2196F3', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer' }}
+      >
+        <FontAwesomeIcon icon={faDownload} style={{ marginRight: '8px' }} /> Download Questions
+      </button>
+    </div>
 
-              {queset.questions && queset.questions.length > 0 ? (
-                queset.questions.map((question, index) => (
-                  <div  key={question._id || index}  style={{ background: '#fff', padding: '10px', marginTop: '10px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} >
-                    <h4>Question {index + 1}</h4>
-                    {/* Add Edit and Delete Icons */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <FontAwesomeIcon icon={faEdit} style={{ cursor: 'pointer', marginRight: '8px' }} onClick={() => handleEditQuestion(question, queset._id )} />
-                        <FontAwesomeIcon icon={faTrash} style={{ cursor: 'pointer', color: 'red' }} onClick={() => handleDeleteQuestion(question._id, queset._id)} />
-                      </div>
-                    </div>
+    {queset.questions && queset.questions.length > 0 ? (
+      queset.questions.map((question, index) => (
+        <div 
+          key={question._id || index} 
+          style={{ background: '#fff', padding: '10px', marginTop: '10px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+        >
+          <h4>Question {index + 1}</h4>
+          
+          {/* Edit and Delete Icons */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ marginLeft: 'auto' }}> {/* This aligns the buttons to the right */}
+              <FontAwesomeIcon 
+                icon={faEdit} 
+                style={{ cursor: 'pointer', marginRight: '8px' }} 
+                onClick={() => handleEditQuestion(question, queset._id)} 
+              />
+              <FontAwesomeIcon 
+                icon={faTrash} 
+                style={{ cursor: 'pointer', color: 'red' }} 
+                onClick={() => handleDeleteQuestion(question._id, queset._id)} 
+              />
+            </div>
+          </div>
 
-                    {/* Question Text 1 */}
-                    {question.questionText1 && (<p>{question.questionText1}</p>)}
-                    {/* Question Image 1 */}
-                    {question.questionImage1 && (
-                      <div>
-                        <img src={question.questionImage1} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                      </div>  
-                    )}
+          {/* Question Text 1 */}
+          {question.questionText1 && <p>{question.questionText1}</p>}
 
-                        {/* Question Table 1 */}
-                        {question.questionTable1 && Array.isArray(question.questionTable1.data) && question.questionTable1.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.questionTable1.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {/* Question Text 2 */}
-                        {question.questionText2 && (
-                          <p> {question.questionText2}</p>
-                        )}
+          {/* Question Image 1 */}
+          {question.questionImage1 && (
+            <div>
+              <img 
+                src={question.questionImage1} 
+                style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} 
+              />
+            </div>  
+          )}
 
-                        {/* Question Image 2 */}
-                        {question.questionImage2 && (
-                          <div>
-                            <img src={question.questionImage2} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                          </div>
-                        )}
-
-                        {/* Question Table 2 */}
-                        {question.questionTable2 && Array.isArray(question.questionTable2.data) && question.questionTable2.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.questionTable2.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {/* Question Text 3 */}
-                        {question.questionText3 && (
-                          <p> {question.questionText3}</p>
-                        )}
-
-                        {/* Question Image 3 */}
-                        {question.questionImage3 && (
-                          <div>
-                            <img src={question.questionImage3} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                          </div>
-                        )}
-
-                        {/* Question Table 3 */}
-                        {question.questionTable3 && Array.isArray(question.questionTable3.data) && question.questionTable3.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.questionTable3.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {/* Options */}
-                        <p><strong>Options:</strong></p>
-                        <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
-                          {question.options.a && <li>A. {question.options.a}</li>}
-                          {question.options.b && <li>B. {question.options.b}</li>}
-                          {question.options.c && <li>C. {question.options.c}</li>}
-                          {question.options.d && <li>D. {question.options.d}</li>}
-                        </ul>
-
-                        {/* Correct Answer */}
-                        {question.correctAns && (
-                          <p><strong>Correct Answer:</strong> {question.correctAns}</p>
-                        )}
-
-                        {/* Answer Description */}
-                        <p><strong>Answer Description:</strong></p>
-
-                        {/* Answer Description Text 1 */}
-                        {question.answerDescriptionText1 && (
-                          <p>{question.answerDescriptionText1}</p>
-                        )}
-
-                        {/* Answer Description Image 1 */}
-                        {question.answerDescriptionImage1 && (
-                          <div>
-                            <img src={question.answerDescriptionImage1} style={{ maxWidth: "75%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                          </div>
-                        )}
-
-                        {/* Answer Description Table 1 */}
-                        {question.answerDescriptionTable1 && Array.isArray(question.answerDescriptionTable1.data) && question.answerDescriptionTable1.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.answerDescriptionTable1.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-
-                        {/* Answer Description Text 2 */}
-                        {question.answerDescriptionText2 && (
-                          <p>{question.answerDescriptionText2}</p>
-                        )}
-
-                        {/* Answer Description Image 2 */}
-                        {question.answerDescriptionImage2 && (
-                          <div>
-                            <img src={question.answerDescriptionImage2} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                          </div>
-                        )}
-
-                        {/* Answer Description Table 2 */}
-                        {question.answerDescriptionTable2 && Array.isArray(question.answerDescriptionTable2.data) && question.answerDescriptionTable1.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.answerDescriptionTable2.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-
-                        {/* Answer Description Text 3 */}
-                        {question.answerDescriptionText3 && (
-                          <p>{question.answerDescriptionText3}</p>
-                        )}
-
-                        {/* Answer Description Image 3 */}
-                        {question.answerDescriptionImage3 && (
-                          <div>
-                            <img src={question.answerDescriptionImage3} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                          </div>
-                        )}
-
-                        {/* Answer Description Table 3 */}
-                        {question.answerDescriptionTable3 && Array.isArray(question.answerDescriptionTable3.data) && question.answerDescriptionTable3.data.length > 0 && (
-                          <div>
-                            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
-                              <tbody>
-                                {question.answerDescriptionTable3.data.map((row, rowIndex) => (
-                                  <tr key={rowIndex}>
-                                    {row.map((cell, colIndex) => (
-                                      <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
-                                        {cell}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                  </div>
-                ))
-              ) : (
-                <p style={{ marginTop: '10px', fontStyle: 'italic', color: '#666' }}>No questions added yet.</p>
-              )}
+          {/* Question Table 1 */}
+          {question.questionTable1 && Array.isArray(question.questionTable1.data) && question.questionTable1.data.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+                <tbody>
+                  {question.questionTable1.data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
+          
+          {/* Question Text 2 */}
+          {question.questionText2 && <p>{question.questionText2}</p>}
+
+          {/* Question Image 2 */}
+          {question.questionImage2 && (
+            <div>
+              <img 
+                src={question.questionImage2} 
+                style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} 
+              />
+            </div>
+          )}
+
+          {/* Question Table 2 */}
+          {question.questionTable2 && Array.isArray(question.questionTable2.data) && question.questionTable2.data.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+                <tbody>
+                  {question.questionTable2.data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Question Text 3 */}
+          {question.questionText3 && <p>{question.questionText3}</p>}
+
+          {/* Question Image 3 */}
+          {question.questionImage3 && (
+            <div>
+              <img 
+                src={question.questionImage3} 
+                style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} 
+              />
+            </div>
+          )}
+
+          {/* Question Table 3 */}
+          {question.questionTable3 && Array.isArray(question.questionTable3.data) && question.questionTable3.data.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+                <tbody>
+                  {question.questionTable3.data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Options */}
+          <p><strong>Options:</strong></p>
+          <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
+            {question.options.a && <li>A. {question.options.a}</li>}
+            {question.options.b && <li>B. {question.options.b}</li>}
+            {question.options.c && <li>C. {question.options.c}</li>}
+            {question.options.d && <li>D. {question.options.d}</li>}
+          </ul>
+
+          {/* Correct Answer */}
+          {question.correctAns && <p><strong>Correct Answer:</strong> {question.correctAns}</p>}
+
+          {/* Answer Description */}
+          <p><strong>Answer Description:</strong></p>
+
+          {/* Answer Description Text 1 */}
+          {question.answerDescriptionText1 && <p>{question.answerDescriptionText1}</p>}
+
+          {/* Answer Description Image 1 */}
+          {question.answerDescriptionImage1 && (
+            <div>
+              <img 
+                src={question.answerDescriptionImage1} 
+                style={{ maxWidth: "75%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} 
+              />
+            </div>
+          )}
+
+          {/* Answer Description Table 1 */}
+          {question.answerDescriptionTable1 && Array.isArray(question.answerDescriptionTable1.data) && question.answerDescriptionTable1.data.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+                <tbody>
+                  {question.answerDescriptionTable1.data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Answer Description Text 2 */}
+          {question.answerDescriptionText2 && <p>{question.answerDescriptionText2}</p>}
+
+          {/* Answer Description Image 2 */}
+          {question.answerDescriptionImage2 && (
+            <div>
+              <img 
+                src={question.answerDescriptionImage2} 
+                style={{ maxWidth: "75%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} 
+              />
+            </div>
+          )}
+
+          {/* Answer Description Table 2 */}
+          {question.answerDescriptionTable2 && Array.isArray(question.answerDescriptionTable2.data) && question.answerDescriptionTable2.data.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+                <tbody>
+                  {question.answerDescriptionTable2.data.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, colIndex) => (
+                        <td key={colIndex} style={{ padding: "8px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ))
+    ) : (
+      <p style={{ marginTop: '10px', fontStyle: 'italic', color: '#666' }}>No questions added yet.</p>
+    )}
+  </div>
+)}
+
         </div>
       ))}
       {/* Upload CSV Modal */}

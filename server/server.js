@@ -18,6 +18,8 @@ const delayTestRoutes = require('./routes/delayTestRoutes');
 const emailRoutes = require("./routes/emailRoutes");
 const checkAndSendReminders = require('./services/scheduler');
 const studResultsRoutes = require('./routes/studResultsRoutes');
+const teacherDashRoutes = require('./routes/teacherDashRoutes');
+const completedTestRoutes = require('./routes/completedTestRoutes'); 
 
 require('dotenv').config();
 const app = express();
@@ -62,6 +64,9 @@ app.use("/api/scheduleTest", scheduleTestRoutes);
 app.use("/api/delayTest",delayTestRoutes);
 app.use("/api/email", emailRoutes);
 app.use('/api/studResults', studResultsRoutes);
+app.use('/api/teachdash', teacherDashRoutes); 
+app.use('/api/completed', completedTestRoutes);
+
 
 // Serve the React client (in production)
 if (process.env.NODE_ENV === 'production') {

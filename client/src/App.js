@@ -37,7 +37,7 @@ const App = () => {
         <Route path="/studLogin" element={<StudLogin />} />
         <Route path="/teachLogin" element={<TeachLogin />} />
         <Route path="/studSignup" element={<StudSignup />} />
-        <Route path="/teachSignup" element={<TeachSignup />} />
+        {/* <Route path="/teachSignup" element={<TeachSignup />} /> */}
         <Route path="/studForget" element={<Studforgot />} /> {/* Updated route */}
         <Route path="/teachForget" element={<Teachforgot />} /> {/* Updated route */}
         <Route path="/privacy-policy" element={<Edumocks pageContent={<PrivacyPolicy />} />} />

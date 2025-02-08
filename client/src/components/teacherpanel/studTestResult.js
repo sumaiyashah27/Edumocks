@@ -10,8 +10,9 @@ const StudentTestResult = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const { data } = await axios.get("/api/scheduleTest/completed");
-        setResults(data);
+        // Fetch the completed tests from the backend
+        const { data } = await axios.get("/api/completed/getCompletedTests"); // Change to the appropriate route
+        setResults(data); // Assuming the data is in the form of an array of completed tests
         setLoading(false);
       } catch (error) {
         setError("Failed to load completed test results.");

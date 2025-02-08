@@ -674,6 +674,27 @@ const Test = () => {
       console.error('Error updating test:', error.response?.data || error.message);
     });
     
+    // Save the test results in the CompletedTest collection
+    // axios.post('/api/completed/saveCompletedTest', {
+    //   studentId,
+    //   selectedCourse,
+    //   selectedSubject,
+    //   questionSet,  // Assuming you have a `questionSet` variable
+    //   testDate: new Date(), // Set current date for testDate
+    //   testTime: new Date().toLocaleTimeString(), // Current time for testTime
+    //   score: calculatedScore,
+    //   studentAnswers: Object.keys(selectedOptions).map((questionId) => ({
+    //     questionId: questionId, 
+    //     selectedAnswer: selectedOptions[questionId], 
+    //     isCorrect: selectedOptions[questionId] === correctAnswers[questionId],
+    //   })),
+    // })
+    //   .then((response) => {
+    //     console.log('Completed collection Test saved successfully:', response.data);
+    //   })
+    //   .catch((error) => {
+    //     console.error('Completed collection Error saving test:', error.response?.data || error.message);
+    //   });
 
     // Generate PDF for the results
     const pdfBlob = generatePDF();
@@ -718,12 +739,12 @@ const Test = () => {
     <div className="quiz-container" style={{ margin: '0 auto', maxWidth: '900px', padding: '20px' }}>
       {/* <h1 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '20px' }} >Quiz Test</h1> */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '10px', marginBottom: '50px' }}>
-          <p>studentId ID: {studentId}</p>
+          {/* <p>studentId ID: {studentId}</p>
           <p>student Name: {studentName}</p>
           <p>student Email: {studentEmail}</p>
           <p>Course: {courseName || 'Loading...'}</p>
           <p>Subject: {subjectName || 'Loading...'}</p>
-          <p>QuestionSet: {questionSet}</p>
+          <p>QuestionSet: {questionSet}</p> */}
           {!isEnterRoomClicked && (
             <div style={{ padding: '20px', width: '80%', margin: '20px auto', }}>
               <h2 style={{ color: '#333', textAlign: 'center', fontSize: '20px', marginBottom: '20px' }}>Welcome to the CFA Exam Practice Test</h2>

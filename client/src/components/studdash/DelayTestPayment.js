@@ -49,77 +49,77 @@ const DelayTestPayment = () => {
     return subject ? subject.name : 'Unknown Subject';
   };
 
-  // const handlePayment = async (event) => {
-  //   event.preventDefault();
-  //   setIsProcessing(true);  // Disable the button to prevent multiple clicks
-    
-  //   try {
-  //     // Simulate a successful payment response (for testing)
-  //     const fakePaymentResponse = { paymentIntent: { status: "succeeded" }, paymentId: "fakePaymentId", orderId: "fakeOrderId" };
-  
-  //     // Send data to the backend as if the payment was successful
-  //     await axios.post("/api/delayTest", { 
-  //       studentId, 
-  //       selectedCourse, 
-  //       selectedSubject, 
-  //       testDate: testDateState, 
-  //       testTime: testTimeState, 
-  //       amount: delayAmount, 
-  //       paymentId: fakePaymentResponse.paymentId, 
-  //       orderId: fakePaymentResponse.orderId 
-  //     });
-  
-  //     // Call the API to update the test schedule
-  //     await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
-  
-  //     setPaymentStatus("success");  // Show success message
-  //     alert("Data saved successfully (payment skipped for testing).");
-  
-  //     navigate("/studpanel", { state: { studentId } });  // Redirect to student panel
-  //   } catch (error) {
-  //     console.error("Error during testing:", error);
-  //     setPaymentStatus("failed");
-  //     alert("Error saving data during test: " + error.message);
-  //   } finally {
-  //     setIsProcessing(false);  // Re-enable button
-  //   }
-  // };
-  
-
   const handlePayment = async (event) => {
     event.preventDefault();
-    if (!stripe || !elements) return;
-    setIsProcessing(true);
+    setIsProcessing(true);  // Disable the button to prevent multiple clicks
+    
     try {
-      const { data } = await axios.post("/api/payment/create-payment-intent", {
-        amount: delayAmount * 100, // Convert to cents
+      // Simulate a successful payment response (for testing)
+      const fakePaymentResponse = { paymentIntent: { status: "succeeded" }, paymentId: "fakePaymentId", orderId: "fakeOrderId" };
+  
+      // Send data to the backend as if the payment was successful
+      await axios.post("/api/delayTest", { 
+        studentId, 
+        selectedCourse, 
+        selectedSubject, 
+        testDate: testDateState, 
+        testTime: testTimeState, 
+        amount: delayAmount, 
+        paymentId: fakePaymentResponse.paymentId, 
+        orderId: fakePaymentResponse.orderId 
       });
-      const { clientSecret, paymentId, orderId } = data;
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
-      });
-      if (result.error) {
-        console.error(result.error.message);
-        setPaymentStatus("failed");
-        alert(result.error.message || "Payment failed. Please try again.");
-      } else if (result.paymentIntent.status === "succeeded") {
-        await axios.post("/api/delayTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState, amount: delayAmount, paymentId: paymentId, orderId: orderId });
-        await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
-
-        setPaymentStatus("success");
-        alert("Payment successful! Test date and time updated.");
-        navigate("/studpanel", { state: { studentId } });
-      }
+  
+      // Call the API to update the test schedule
+      await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
+  
+      setPaymentStatus("success");  // Show success message
+      alert("Data saved successfully (payment skipped for testing).");
+  
+      navigate("/studpanel", { state: { studentId } });  // Redirect to student panel
     } catch (error) {
-      console.error("Error during payment:", error);
+      console.error("Error during testing:", error);
       setPaymentStatus("failed");
-      alert("Payment failed: " + error.message);
+      alert("Error saving data during test: " + error.message);
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false);  // Re-enable button
     }
   };
+  
+
+  // const handlePayment = async (event) => {
+  //   event.preventDefault();
+  //   if (!stripe || !elements) return;
+  //   setIsProcessing(true);
+  //   try {
+  //     const { data } = await axios.post("/api/payment/create-payment-intent", {
+  //       amount: delayAmount * 100, // Convert to cents
+  //     });
+  //     const { clientSecret, paymentId, orderId } = data;
+  //     const result = await stripe.confirmCardPayment(clientSecret, {
+  //       payment_method: {
+  //         card: elements.getElement(CardElement),
+  //       },
+  //     });
+  //     if (result.error) {
+  //       console.error(result.error.message);
+  //       setPaymentStatus("failed");
+  //       alert(result.error.message || "Payment failed. Please try again.");
+  //     } else if (result.paymentIntent.status === "succeeded") {
+  //       await axios.post("/api/delayTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState, amount: delayAmount, paymentId: paymentId, orderId: orderId });
+  //       await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
+
+  //       setPaymentStatus("success");
+  //       alert("Payment successful! Test date and time updated.");
+  //       navigate("/studpanel", { state: { studentId } });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during payment:", error);
+  //     setPaymentStatus("failed");
+  //     alert("Payment failed: " + error.message);
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
 
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px", backgroundColor: "#f9fafb", borderRadius: "12px", boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)", fontFamily: "'Poppins', sans-serif", color: "#333" }}>

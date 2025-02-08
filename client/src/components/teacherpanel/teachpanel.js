@@ -55,7 +55,7 @@ const TeachPanel = () => {
   };
 
   return (
-    <Container fluid>
+    <Container fluid style={{ padding: 0, overflowX: 'hidden' }}>
       <Row style={{ margin: 0 }}>
         {/* Left Sidebar Panel */}
         <Col xs={12} md={3} lg={2} 
@@ -65,51 +65,28 @@ const TeachPanel = () => {
             zIndex: 1000, transition: 'width 0.3s ease', overflowY: 'auto'
           }}>
 
-          <div style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '20px', color: '#FFF' }}>
-            {!isSidebarClosed && `Teacher Panel - welcome, ${teacher.firstname}`}
+          <div style={{ textAlign: 'center', fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '20px', color: '#FFF' }}>
+            {!isSidebarClosed && `Welcome, ${teacher.firstname}`}
           </div>
 
-          {/* Teacher's name and arrow only if sidebar is open */}
-          {!isSidebarClosed && (
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              {/* <div style={{ color: '#FFF' }}>
-                {teacher.firstname} {teacher.lastname}
-              </div> */}
-            </div>
-          )}
-
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {[{ icon: <FaUserAlt />, label: 'Dashboard', section: 'dashboard' },
+            {[{ icon: <FaUserAlt/>, label: 'Dashboard', section: 'dashboard' },
               { icon: <FaUsers />, label: 'Students', section: 'students' },
               { icon: <FaBook />, label: 'Courses', section: 'courses' },
               { icon: <FaClipboard />, label: 'Subjects', section: 'subjects' },
               { icon: <FaImage />, label: 'Images', section: 'images' },
               { icon: <FaQuestionCircle />, label: 'Questions', section: 'questions' },
-              { icon: <FaTicketAlt />, label: 'Coupons', section: 'coupons' },
               { icon: <FaUsers />, label: 'Student Enrollment', section: 'studentenroll' },
-              { icon: <FaPoll />, label: 'Student Test Results', section: 'studtestresult' },
-              { icon: <FaHourglassStart />, label: 'Delayed Tests', section: 'delaytests' }]
-              .map(({ icon, label, section }) => (
+              { icon: <FaHourglassStart />, label: 'Delayed Tests', section: 'delaytests' }].map(({ icon, label, section }) => (
                 <li key={section} style={{ marginBottom: '20px' }} onClick={() => setActiveSection(section)}>
-                  <Link
-                    to="#"
-                    style={{
-                      textDecoration: 'none',
-                      color: activeSection === section ? '#FFF' : '#CCC',
-                      backgroundColor: activeSection === section ? '#007bff' : '',
-                      padding: '10px',
-                      fontSize: '1.1rem',
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <span style={{ marginRight: isSidebarClosed ? '0' : '10px' }}>
+                  <Link to="#" style={{textDecoration: 'none',color: activeSection === section ? '#FFF' : '#CCC',backgroundColor: activeSection === section ? '#007bff' : '',padding: '10px',fontSize: '1.1rem',display: 'flex',alignItems: 'center',width: '100%', }}>
+                    <span style={{ marginRight: isSidebarClosed ? '100px' : '10px' }}>
                       {icon}
                     </span>
                     {!isSidebarClosed && label}
                   </Link>
                 </li>
-              ))}
+            ))}
           </ul>
 
           {/* Logout Button */}
@@ -124,7 +101,7 @@ const TeachPanel = () => {
         <Col xs={12} md={9} lg={10} 
           style={{
             padding: '20px',
-            marginLeft: isSidebarClosed ? '60px' : '250px', 
+            marginLeft: isSidebarClosed ? '50px' : 'auto', // Adjust margin-left dynamically based on sidebar state
             transition: 'margin-left 0.3s ease',
             paddingTop: '20px',
           }}>
