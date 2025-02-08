@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const CompletedTest = require('../models/completedTest'); // Import the CompletedTest model
+const CompletedTest = require('../models/completetest-model'); // Import the CompletedTest model
 
 // POST route to save completed test data
 router.post('/saveCompletedTest', async (req, res) => {
