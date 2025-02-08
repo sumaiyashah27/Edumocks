@@ -106,14 +106,14 @@ const TeacherLogin = () => {
                 {error && <div style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
                 <Form onSubmit={handleTeacherLogin}>
                   <Form.Group controlId="TeacherId" className="mb-3 position-relative">
-                    <Form.Label style={{ color: '#100b5c' }}>Email or TeacherID</Form.Label>
+                    <Form.Label style={{ color: '#100b5c' }}>Email </Form.Label>
                     <div className="input-with-icon">
                       <FaEnvelope className="input-icon" />
                       <Form.Control
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value.toLowerCase())}
-                        placeholder="Enter Email or TeacherID"
+                        placeholder="Enter Email"
                         required
                         className="input-field"
                       />
