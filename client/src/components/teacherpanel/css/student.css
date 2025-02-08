@@ -1,0 +1,180 @@
+/* General Styles */
+.student-container {
+    padding: 20px;
+  }
+  
+  .no-underline {
+    text-decoration: none; /* Remove underline */
+  }
+  
+  .controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap; /* Ensure buttons wrap on smaller screens */
+  }
+  
+  /* Search Bar Styles */
+  .search-container {
+    width: 100%;
+  }
+  
+  .search-bar {
+    padding-left: 40px; /* Space for the search icon */
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensure padding is included in input's width */
+    border-radius: 4px;
+    border: 1px solid #ccc; /* Border for visibility */
+    background-color: #fff; /* Background color for input */
+    transition: border 0.3s ease;
+  }
+  
+  .search-bar:focus {
+    border: 1px solid #100B5C; /* Focus effect */
+    outline: none;
+  }
+  
+  /* Button Styles */
+  .upload-btn {
+    cursor: pointer;
+  }
+  
+  /* Student List Styles */
+  .student-list {
+    max-height: 500px;
+    overflow-y: auto; /* Makes the student list scrollable */
+    margin-top: 20px;/* Subtle border around the student list */
+   /* Rounded corners for the scrollable area */
+  }
+  
+  /* Table Design */
+  .student-list table {
+    width: 100%;
+  }
+  
+  .student-list th,
+  .student-list td {
+    text-align: center;
+    padding: 16px 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #e0e0e0; /* Light border between rows */
+  }
+  
+  .student-list th {
+    background-color: #100B5C;
+    color: #FFF;
+    font-size: 16px;
+    font-weight: 600; /* Bold header text */
+    border-top-left-radius: 8px; /* Rounded corners on top-left */
+    border-top-right-radius: 8px; /* Rounded corners on top-right */
+  }
+  
+  .student-list td {
+    background-color: #f9f9f9;
+    color: #333;
+    border-bottom: 1px solid #f1f1f1; /* Subtle border between rows */
+  }
+  
+  .student-list tr:hover {
+    background-color: #f1f1f1; /* Hover effect for rows */
+  }
+  
+  .student-list tr:nth-child(odd) {
+    background-color: #fafafa; /* Striped rows */
+  }
+  
+  .student-list input[type='checkbox'] {
+    cursor: pointer;
+  }
+  
+  .student-list button {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 6px 12px;
+  }
+  
+  /* Button Style - Default */
+  .student-container .controls button {
+    background-color: #100B5C;
+    color: #FFF;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto; /* Default width */
+  }
+  
+  .student-container .controls button:hover {
+    background-color: #C80D18;
+    transform: translateY(-2px); /* Slight lift effect on hover */
+  }
+  
+  .student-container .controls button:active {
+    transform: translateY(1px); /* Button click effect */
+  }
+  
+  /* Icon Style within Buttons */
+  .student-container .controls button svg {
+    color: #FFF;
+    font-size: 18px;
+  }
+  
+  /* Responsive Layout for Buttons */
+  @media (max-width: 768px) {
+    .student-container {
+      padding: 10px;
+    }
+  
+    .controls {
+      flex-direction: column; /* Stack buttons vertically on smaller screens */
+      gap: 10px;
+    }
+  
+    .student-list {
+      max-height: none;
+    }
+  
+    .student-list th,
+    .student-list td {
+      font-size: 12px;
+    }
+  
+    .student-list button {
+      padding: 6px 12px;
+    }
+  
+    /* Full-width buttons on smaller screens */
+    .student-container .controls button {
+      width: 100%; /* Make buttons full-width */
+      padding: 12px 16px; /* Larger padding for better touch targets */
+      font-size: 16px; /* Larger font for better readability */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .search-container {
+      width: 100%;
+      margin-right: 0;
+    }
+  
+    /* Button styles for very small screens */
+    .student-container .controls button {
+      width: 100%; /* Full-width buttons */
+      margin-bottom: 10px;
+      padding: 12px 16px; /* Slightly larger padding */
+      font-size: 18px; /* Larger font size for better readability */
+    }
+  
+    .student-list th,
+    .student-list td {
+      font-size: 10px; /* Smaller text on small screens */
+    }
+  }
+  

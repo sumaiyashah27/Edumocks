@@ -1,0 +1,22 @@
+/* ForgotPassword.css */
+.forgot-password-form {
+    background-color: #f7f7f7;
+    padding: 30px;
+    border-radius: 10px;
+  }
+  
+  .forgot-password-button {
+    background-color: #100b5c;
+    color: white;
+    border: none;
+  }
+  
+  .forgot-password-button:hover {
+    background-color: #1a1a64;
+  }
+  
+  .forgot-password-link {
+    text-decoration: none;
+    color: #100b5c;
+  }
+  

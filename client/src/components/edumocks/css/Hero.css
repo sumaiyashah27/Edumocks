@@ -1,0 +1,56 @@
+
+.hero-section {
+    height: 100vh; /* Full height of viewport */
+    background-image: url('../assets/hero-img.png'); /* Adjust the path to the image */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    color: white;
+  }
+
+  
+  .hero-overlay {
+    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for readability */
+    height: 100%;
+    width: 100%;
+    padding-top: 50px;
+    padding-bottom: 50px;
+  }
+  
+  .hero-heading {
+    font-size: 3rem; /* Adjust for responsiveness */
+    color: #ffffff; /* Yellow color for heading */
+    font-weight: bold;
+  }
+  
+  .hero-description {
+    font-size: 1.2rem;
+    color: #fff; /* White color for description */
+  }
+  
+  
+  /* Mobile and Small Screen Adjustments */
+@media (max-width: 767px) {
+    .hero-section {
+        height: auto; /* Adjust height for smaller screens */
+        margin-top: 50px;
+    }
+    .text-col{
+        text-align: center;
+    }
+
+    .hero-description{
+      display: none;
+    }
+
+    .hero-heading {
+      font-size: 2rem; /* Smaller heading size for small screens */
+      text-align: center; /* Center align text on small screens */
+    }
+  
+    .cta-button {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }

@@ -1,0 +1,152 @@
+/* General Styles for the Carousel */
+.features-section {
+  background-color: #fff;
+  padding: 50px 0;
+}
+
+.card-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden; /* Hide the overflow of the cards */
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.card-carousel .my-card {
+  height: 300px; /* Increased card height */
+  width: 240px; /* Increased card width */
+  margin: 0 20px; /* Adjusted margin for spacing */
+  background: #2e5266;
+  background: linear-gradient(to top, #100b5c, #10055d);
+  color: white;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  transform: scale(0.8);
+  transition: transform 0.5s ease, opacity 0.2s ease; /* Reduced transition time */
+  position: relative;
+  flex-direction: column;
+  text-align: center;
+}
+
+.card-carousel .my-card.active {
+  z-index: 3;
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.card-carousel .my-card.prev,
+.card-carousel .my-card.next {
+  z-index: 2;
+  transform: scale(0.9) translateY(-10px);
+  opacity: 0.8;
+}
+
+.card-carousel .my-card .card-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-carousel .my-card .icon {
+  margin-bottom: 1rem;
+  font-size: 2.5rem; /* Slightly bigger icon size */
+}
+
+.card-carousel .my-card .card-title {
+  font-size: 1rem; /* Reduced title font size */
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.card-carousel .my-card .card-description {
+  font-size: 0.875rem; /* Reduced description font size */
+}
+
+.card-carousel .my-card:before {
+  content: '';
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  border-radius: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  bottom: -5rem;
+  filter: blur(4px);
+}
+
+/* Column Layout for Larger Screens */
+@media (min-width: 768px) {
+  .card-carousel .my-card-col {
+    padding: 0 15px; /* Space between cards */
+  }
+}
+
+/* Adjust layout for screens between 768px and 1000px */
+@media (min-width: 768px) and (max-width: 1000px) {
+  .card-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    overflow-x: scroll; /* Enable horizontal scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    width: 100%;
+    max-width: 1000px; /* Constrain the width */
+    margin: 0 auto;
+  }
+
+  .card-carousel .my-card {
+    flex-shrink: 0; /* Prevent cards from shrinking */
+    width: 70%; /* Adjust width for better visibility */
+    max-width: 280px; /* Ensure cards don't get too large */
+    margin: 0 12px; /* Spacing between cards */
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .card-carousel .my-card.active,
+  .card-carousel .my-card.prev,
+  .card-carousel .my-card.next {
+    transform: none;
+  }
+}
+
+/* Adjust layout for screens smaller than 768px */
+@media (max-width: 768px) {
+  .card-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    overflow-x: scroll; /* Enable horizontal scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .card-carousel .my-card {
+    flex-shrink: 0; /* Prevent cards from shrinking */
+    width: 80%; /* Adjust width for better visibility */
+    max-width: 300px; /* Ensure cards don't get too large */
+    margin: 0 10px; /* Spacing between cards */
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .card-carousel .my-card.active,
+  .card-carousel .my-card.prev,
+  .card-carousel .my-card.next {
+    transform: none;
+  }
+}

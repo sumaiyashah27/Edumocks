@@ -1,0 +1,126 @@
+/* Global Styles */
+  
+  /* Login Card Styling */
+  .login-card {
+    border-radius: 15px;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    padding: 2rem;
+    color: white;
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .login-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Form Elements Styling */
+  .input-field {
+    font-size: 1rem;
+    padding: 12px 15px;
+    padding-left: 35px; /* Added space for the icon */
+    padding-right: 40px;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease;
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #2575fc;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.3);
+  }
+  
+  /* Input with Icons (Email and Password) */
+  .input-with-icon {
+    position: relative;
+  }
+  
+  .input-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #100b5c;
+    font-size: 1rem;
+  }
+  
+  .password-input-container {
+    position: relative;
+  }
+  
+  .eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #2575fc;
+    font-size: 1.2rem;
+  }
+  
+  /* Button Styling */
+  button {
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #004c8c;
+    transform: scale(1.05);
+  }
+  
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+  }
+  
+  /* Title and Label Styling */
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  label {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  /* Error Message Styling */
+  .alert {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  /* Forgot Password Link Styling */
+  .text-center a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .text-center a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 576px) {
+    .login-card {
+      padding: 1.5rem;
+    }
+  
+    .card h2 {
+      font-size: 1.5rem;
+    }
+  
+    .input-field,
+    button {
+      font-size: 1rem;
+      padding: 10px 15px;
+    }
+  }
+  

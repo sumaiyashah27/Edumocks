@@ -1,0 +1,196 @@
+/* Default Navbar Styles */
+.navbar {
+  transition: background-color 0.3s ease, height 0.3s ease;
+  background-color: #FFFFFF;
+  z-index: 1000; /* Ensure navbar is always on top */
+}
+
+.brand img {
+  border-radius: 3px;
+  margin: 5px 12px;
+}
+
+.navbar-nav{
+  margin-right: 30px; /* Adjust this as needed to space the nav links */
+}
+
+/* Default Navbar Links */
+.navbar-nav .nav-link {
+  color: #100B5C; /* Default color for non-scrolled state */
+  transition: color 0.3s ease, border-bottom 0.3s ease;
+  cursor: pointer;
+  margin-right: 20px; /* Adjust this for spacing between links */
+}
+
+
+/* Adjust space between nav links and login button */
+.navbar-nav .nav-link:last-child {
+  margin-right: 15px; /* Optional, just to space out from the button */
+}
+
+/* Active State for Navbar Menu */
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: #FFDC5C !important; /* Ensure the color stays even when scrolled */
+  border-bottom: 2px solid #FFDC5C;
+}
+
+/* Navbar When Scrolled - Active Link Styling */
+.navbar-scrolled .navbar-nav .nav-link.active {
+  color: #FFDC5C !important; /* Ensure active link is the correct color when scrolled */
+}
+
+
+/* Spacing between the login button and nav links */
+.navbar-nav .nav-item:last-child {
+  margin-left: 20px; /* Add space between nav items and login button */
+}
+
+
+/* Navbar When Scrolled */
+.navbar-scrolled {
+  background-color: #100B5C;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navbar When Scrolled */
+.navbar-scrolled .nav-link {
+  color: #FFFFFF !important; /* Change link color to white when scrolled */
+}
+
+/* Navbar When Scrolled */
+.navbar-scrolled .button {
+  background-color: #FFFFFF; /* Change link color to white when scrolled */
+  color: #100B5C;
+}
+/* Hover Effect */
+.navbar-nav .nav-link:hover {
+  color: #FFDC5C;
+}
+
+/* Add margin to move the Login button a little away from the right edge */
+.navbar-item .button {
+  margin-left: 20px; /* Adjust this to move it left or right */
+}
+
+.button{
+  background-color: #100B5C;
+  color: #FFFFFF;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+}
+
+/* Responsive Navbar Adjustments */
+@media (max-width: 992px) {
+  .navbar .navbar-nav {
+    text-align: center;
+  }
+
+  .navbar {
+    background-color: #FFFFFF;
+    color: #100B5C;
+  }
+
+  .navbar-scrolled {
+    background-color: #100B5C; /* Ensure the background is dark when scrolled */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .button{
+    background-color: #100b5c;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #100B5C;
+  }
+
+  /* Navbar When Scrolled */
+  .navbar-scrolled .button {
+    background-color: #fff; /* Change background when scrolled */
+    color: #100b5c;
+  }
+
+  .navbar-scrolled .nav-link {
+    color: #FFFFFF; /* Change link color to white when scrolled */
+  }
+
+  .navbar-brand img {
+    width: auto;
+    height: 50px;
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 16px;
+    padding: 10px 15px;
+  }
+
+  .navbar-toggler-icon {
+    width: 40px;
+    height: 40px;
+    border: none;
+  }
+
+  /* Adjust the navbar brand size for mobile */
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-brand img {
+    width: auto;
+    height: 50px;
+  }
+
+  .navbar-brand .brand-name {
+    font-size: 18px;
+    margin-left: 10px;
+  }
+}
+
+/* Lottie Animation Color Change */
+.lottie-container {
+  transition: filter 0.3s ease;
+}
+
+.lottie-black {
+  filter: invert(0) brightness(1); /* Black color (default) */
+}
+
+.lottie-white {
+  filter: invert(1) brightness(2); /* White color when scrolled */
+}
+
+/* Close Icon */
+.close-icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.close-icon:hover {
+  color: #FFDC5C;
+}
+
+.navbar-scrolled .close-icon {
+  color: #FFFFFF; /* Ensure close icon matches white theme when scrolled */
+}
+
+/* Active State for Navbar Menu */
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  color: #FFDC5C;
+  border-bottom: 2px solid #FFDC5C;
+}
+
+/* Content Shifting when Menu is Open */
+.content-wrapper {
+  transition: margin-top 0.3s ease;
+}
+
+.content-wrapper.menu-open {
+  margin-top: 250px; /* Adjust based on the expanded navbar height */
+}
+

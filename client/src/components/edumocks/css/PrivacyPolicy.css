@@ -1,0 +1,99 @@
+/* Privacy Policy Page Styling */
+.privacy-policy-container {
+    padding: 30px;
+    background-color: #f9f9f9;
+    margin-top: 70px;
+  }
+  
+  .toc-container {
+    position: sticky;
+    top: 80px; /* Adjusted top margin to account for the navbar */
+  }
+  
+  .toc-navbar {
+    padding: 20px 20px;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .toc-navbar .nav-link {
+    font-size: 16px;
+    padding-left: 20px;
+    padding-right: 20px;
+    color: #333;
+  }
+
+  
+  
+  .toc-navbar .nav-link:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+  }
+  
+  .privacy-policy-title {
+    margin-bottom: 40px; /* Added margin to space out from the content */
+  }
+  
+  .privacy-policy-title h1 {
+    font-size: 36px;
+    color: #2a2a2a;
+    font-weight: bold;
+  }
+  
+  .privacy-policy-content {
+    font-family: Arial, sans-serif;
+    color: #555;
+    padding-left: 30px;
+    margin-top: 60px; /* Added margin to give space below the navbar */
+  }
+  
+  .section {
+    margin-bottom: 40px;
+  }
+  
+  .section h2 {
+    font-size: 22px;
+    color: #2a2a2a;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    text-align: justify;
+  }
+  
+  .section ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .section ul li {
+    margin-bottom: 10px;
+  }
+  
+  .section a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .section a:hover {
+    text-decoration: underline;
+  }
+  
+
+  @media (max-width: 576px) {
+    .toc-container {
+      display: none; /* Hide the Table of Contents on very small screens */
+    }
+  
+    .privacy-policy-title h1 {
+      font-size: 26px;
+    }
+  
+    .privacy-policy-content {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
+  
+    .section h2 {
+      font-size: 20px;
+    }
+  }

@@ -1,0 +1,99 @@
+/* General Styles */
+
+
+.signup-card {
+  transition: 0.3s ease-in-out;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.signup-card h2 {
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Input Container with Icons */
+.input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #100b5c;
+  font-size: 1rem;
+  margin-left: 5px;
+}
+
+.input-field {
+  padding-left: 40px; /* Ensure space for the icon */
+  padding-right: 40px; /* Space for the eye icon */
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* Eye Icon for Password Fields */
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #c80d18;
+}
+
+/* Signup Button */
+.signup-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.signup-button:hover {
+  background-color: #0056b3;
+}
+
+/* Alert Messages */
+.alert {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+
+@media (max-width: 768px) {
+  .signup-card {
+    padding: 20px;
+    width: 90%; /* Make the card take up more space on smaller screens */
+  }
+
+  .signup-button {
+    padding: 10px;
+  }
+}

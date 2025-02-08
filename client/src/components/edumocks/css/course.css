@@ -1,0 +1,117 @@
+/* Course Section Styles */
+.course-section {
+  padding: 80px 0;
+  background: url('../assets/course-bg.jpg') no-repeat center center/cover;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  border-bottom-left-radius: 60% 50px;
+  border-bottom-right-radius: 60% 50px;
+  z-index: 1;  /* Ensure section itself is above overlay */
+}
+
+
+.course-card {
+  padding: 0;
+}
+
+.course-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 11, 92, 0.8), rgba(37, 117, 252, 0.8)); /* Overlay with gradient */
+  z-index: 0; /* Set the overlay behind the content */
+}
+
+.container {
+  position: relative;
+  z-index: 2; /* Make sure the content inside the container is above the overlay */
+  text-align: start; /* Ensuring heading is centered */
+}
+
+/* Heading Styles */
+.course-section p {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 50px; /* Ensure space between heading and cards */
+  z-index: 2; /* Ensure heading is above the overlay */
+}
+
+/* Card Styling */
+.course-card {
+  border-radius: 35px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #100b5c 35%, #fff 35%);
+  color: #333;
+  height: 100%;
+  border: none;
+  position: relative;  /* Ensure cards are above the overlay */
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Icon */
+.card-icon {
+  font-size: 25px;
+  color: #ffdf5c;
+  margin-bottom: 15px;
+}
+
+.card-icon i {
+  font-size: 50px;  /* Adjusting icon size */
+}
+
+/* Card Title */
+.card-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #100b5c;
+  margin-bottom: 15px;
+}
+
+/* Button Styling */
+.custom-button {
+  background-color: #100b5c;
+  color: white;
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 30px;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.custom-button:hover {
+  background-color: #6a11cb;
+  transform: scale(1.05);
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .course-card {
+    padding: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .course-section .container {
+    padding: 0 20px;
+  }
+
+  .course-card {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 576px) {
+  .course-card {
+    margin-bottom: 20px;
+  }
+}
