@@ -41,7 +41,7 @@ const BookTest = ({ onScheduleTest }) => {
       setSelectedCourse(course);
       axios.get(`/api/subject?courseId=${course._id}`)
         .then((response) => setSubjects(response.data))
-        .catch((error) => console.error("Error fetching subjects:", error));
+        .catch((error) => console.error("Error fetching Topics:", error));
     };
   
     const handleCheckboxChange = (subject) => {
@@ -57,7 +57,7 @@ const BookTest = ({ onScheduleTest }) => {
   
     const handlePayment = async () => {
       if (selectedSubjects.length === 0) {
-        setErrorMessage("Please select at least one subject.");
+        setErrorMessage("Please select at least one Topics.");
         return;
       } else {
         setErrorMessage("");
@@ -109,7 +109,7 @@ const BookTest = ({ onScheduleTest }) => {
   
         {selectedCourse && (
           <div className="popup" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", width: "80%", maxWidth: "600px", zIndex: "1000", overflowY: "auto", boxSizing: "border-box", maxHeight: "80vh" }}>
-            <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>Select Subjects for {selectedCourse.name}</h2>
+            <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>Select Topics for {selectedCourse.name}</h2>
             <ul className="subject-list" style={{ listStyleType: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", justifyContent: "center" }}>
               {selectedCourse.subjects.map((subject) => (
                 <li key={subject._id} style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "15px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", textAlign: "center", transition: "transform 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-5px)"} onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>

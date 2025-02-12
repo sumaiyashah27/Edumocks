@@ -19,8 +19,7 @@ const completedTestSchema = new mongoose.Schema({
   },
   questionSet: {
     type: Number, // The number of questions (30, 90, or 120)
-    required: true,
-    enum: [30, 90, 120], // Enum to restrict the values to 30, 90, or 120
+    required: true, // Enum to restrict the values to 30, 90, or 120
   },
   testDate: {
     type: Date, // The date for the test
@@ -43,7 +42,7 @@ const completedTestSchema = new mongoose.Schema({
       ref: 'Question', // Reference to the Question collection
     },
     selectedAnswer: {
-      type: mongoose.Schema.Types.ObjectId, // Reference to the selected answer
+      type: String, // Reference to the selected answer
       required: true,
       ref: 'Answer', // Reference to the Answer collection
     },

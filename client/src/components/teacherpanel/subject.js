@@ -31,7 +31,7 @@ const Subject = () => {
       const { data } = await axios.get('/api/subject');
       setSubjects(data);
     } catch (error) {
-      toast.error("Error fetching subjects:", error);
+      toast.error("Error fetching Topic:", error);
     } finally {
       setLoading(false);
     }
@@ -39,7 +39,7 @@ const Subject = () => {
 
   const handleAddSubject = async () => {
     if (!newSubjectName.trim()) {
-      toast.error("Please enter a subject name.");
+      toast.error("Please enter a Topic name.");
       return;
     }
     const priceInDollars = parseFloat(newSubjectPrice);
@@ -55,7 +55,7 @@ const Subject = () => {
       setShowAddSubjectModal(false);
       fetchSubjects();
     } catch (error) {
-      toast.error('Error adding subject:', error);
+      toast.error('Error adding Topic:', error);
     } finally {
       setLoading(false);
     }
@@ -75,19 +75,19 @@ const Subject = () => {
       setShowEditSubjectModal(false);
       fetchSubjects();
     } catch (error) {
-      toast.error('Error updating subject:', error);
+      toast.error('Error updating Topic:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteSubject = async (id) => {
-    if (window.confirm('Are you sure you want to delete this subject?')) {
+    if (window.confirm('Are you sure you want to delete this Topic?')) {
       try {
         await axios.delete(`/api/subject/${id}`);
         fetchSubjects();
       } catch (error) {
-        toast.error('Error deleting subject:', error);
+        toast.error('Error deleting Topic:', error);
       }
     }
   };
@@ -150,11 +150,11 @@ const handleAddQuesetToSubject = (subjectId) => {
 
   axios.post(`/api/subject/${subjectId}/add-queset-questions`, { quesetId: selectedQueset })
     .then((response) => {
-      alert("Questions from the queset have been added to the subject!");
+      alert("Questions from the queset have been added to the Topic!");
       // Optionally update the UI to show the new questions
     })
     .catch((error) => {
-      console.error("Error adding queset questions to subject:", error);
+      console.error("Error adding queset questions to Topic:", error);
       alert("An error occurred while adding the questions.");
     });
 };
@@ -163,11 +163,11 @@ const handleAddQuesetToSubject = (subjectId) => {
   return (
     <div>
        <ToastContainer />
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#4CAF50' }}>Subject Details</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#100B5C' }}>Topics Details</h2>
 
       {/* Button to Add Subject */}
-      <button onClick={() => setShowAddSubjectModal(true)} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
-        <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} /> Add Subject
+      <button onClick={() => setShowAddSubjectModal(true)} style={{marginBottom:'20px' , backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
+        <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px', }} /> Add Topic
       </button>
 
       {/* Add Subject Modal */}
@@ -177,14 +177,14 @@ const handleAddQuesetToSubject = (subjectId) => {
             <span onClick={() => setShowAddSubjectModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>
               <FontAwesomeIcon icon={faTimes} />
             </span>
-            <h3>Add New Subject</h3>
-            <input type="text" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} placeholder="Subject Name" style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
+            <h3>Add New Topic</h3>
+            <input type="text" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} placeholder="Topic Name" style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
             <div style={{ position: 'relative', width: '100%', margin: '10px 0' }}>
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
-              <input type="number" value={newSubjectPrice} onChange={(e) => setNewSubjectPrice(e.target.value)} placeholder="Subject Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} min="0" />
+              <input type="number" value={newSubjectPrice} onChange={(e) => setNewSubjectPrice(e.target.value)} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} min="0" />
             </div>
-            <button onClick={handleAddSubject} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
-              Add Subject
+            <button onClick={handleAddSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
+             <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px', }} />Add Topic
             </button>
           </div>
         </div>
@@ -197,14 +197,14 @@ const handleAddQuesetToSubject = (subjectId) => {
             <span onClick={() => setShowEditSubjectModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>
               <FontAwesomeIcon icon={faTimes} />
             </span>
-            <h3>Edit Subject</h3>
-            <input type="text" value={editingSubject.name} onChange={(e) => setEditingSubject({ ...editingSubject, name: e.target.value })} placeholder="Subject Name" style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
+            <h3>Edit Topic</h3>
+            <input type="text" value={editingSubject.name} onChange={(e) => setEditingSubject({ ...editingSubject, name: e.target.value })} placeholder="Topic Name" style={{ width: '100%', padding: '10px', margin: '10px 0' }} />
             <div style={{ position: 'relative', width: '100%', margin: '10px 0' }}>
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
-              <input type="number" value={editingSubject.price} onChange={(e) => setEditingSubject({ ...editingSubject, price: e.target.value })} placeholder="Subject Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}} />            
+              <input type="number" value={editingSubject.price} onChange={(e) => setEditingSubject({ ...editingSubject, price: e.target.value })} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}} />            
             </div>
-            <button onClick={handleUpdateSubject} style={{ backgroundColor: '#4CAF50', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
-              Update Subject
+            <button onClick={handleUpdateSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
+              Update Topic
             </button>
           </div>
         </div>

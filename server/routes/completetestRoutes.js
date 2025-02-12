@@ -37,4 +37,19 @@ router.post('/saveCompletedTest', async (req, res) => {
   }
 });
 
+// GET route to retrieve all completed test results
+router.get('/getCompletedTests', async (req, res) => {
+  try {
+    const completedTests = await CompletedTest.find()
+      .populate('studentId', 'firstname lastname')
+      .populate('selectedCourse', 'name')
+      .populate('selectedSubject', 'name');
+    
+    res.status(200).json(completedTests);
+  } catch (error) {
+    console.error('Error fetching completed test results:', error);
+    res.status(500).json({ message: 'Error fetching completed test results' });
+  }
+});
+
 module.exports = router;

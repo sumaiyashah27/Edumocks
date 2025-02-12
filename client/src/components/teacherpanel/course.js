@@ -44,7 +44,7 @@ const Course = () => {
       const { data } = await axios.get('/api/subject');
       setSubjectOptions(data);
     } catch (error) {
-      toast.error('Error fetching subjects.');
+      toast.error('Error fetching Topics.');
     }
   };
 
@@ -63,7 +63,7 @@ const Course = () => {
 
   const handleAddSubjectToCourse = async () => {
     if (!selectedCourse || !selectedSubject) {
-      toast.warn('Please select both a course and a subject.');
+      toast.warn('Please select both a course and a Topics.');
       return;
     }
 
@@ -72,7 +72,7 @@ const Course = () => {
       courseToUpdate && courseToUpdate.subjects.some((subject) => subject._id === selectedSubject);
 
     if (isSubjectAlreadyAdded) {
-      toast.info('This subject is already added to the course.');
+      toast.info('This Topics is already added to the course.');
       return;
     }
 
@@ -90,9 +90,9 @@ const Course = () => {
       await axios.put(`/api/course/${selectedCourse}/add-subject`, { subjectId: selectedSubject });
       handleCourseSelect(selectedCourse);
       closeAddSubjectModal();
-      toast.success('Subject added successfully.');
+      toast.success('Topics added successfully.');
     } catch (error) {
-      toast.error('Error adding subject to course.');
+      toast.error('Error adding Topics to course.');
       fetchCourses();
     }
   };
@@ -135,9 +135,9 @@ const Course = () => {
         )
       );
       handleCourseSelect(courseId);
-      toast.success('Subject deleted successfully.');
+      toast.success('Topics deleted successfully.');
     } catch (error) {
-      toast.error('Error deleting subject from course.');
+      toast.error('Error deleting Topics from course.');
     }
   };
 
@@ -198,7 +198,7 @@ const Course = () => {
         onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
         onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
       >
-        <FontAwesomeIcon icon={faPlus} style={{ fontSize: '18px', marginRight: '8px' }} /> Add New Course
+        <FontAwesomeIcon icon={faPlus} style={{ fontSize: '18px', marginRight: '8px', }} /> Add New Course
       </Button>
 
       {/* One Column, One Row for Courses */}
@@ -211,7 +211,7 @@ const Course = () => {
                 {course.name !== 'CFA LEVEL - 1' && (
                   <FontAwesomeIcon
                     icon={faTrash}
-                    style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px' }}
+                    style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px', marginRight: '10px' }}
                     onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id); }}
                   />
                 )}
@@ -236,7 +236,7 @@ const Course = () => {
                     fontSize: '14px', // Smaller font size
                     textAlign: 'left', // To ensure the text is aligned nicely at the start
                   }}
-                ><FontAwesomeIcon icon={faPlus}/> Add Subject
+                ><FontAwesomeIcon icon={faPlus}/> Add Topic
                 </Button>
                 {course.subjects.map((subject) => (
                   <div key={subject._id} className="d-flex justify-content-between">
@@ -285,7 +285,7 @@ const Course = () => {
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h5 className="modal-title">Add Subject to {modalCourseName}</h5>
+              <h5 className="modal-title">Add Topics to {modalCourseName}</h5>
               
             </div>
             <div className="modal-body">
@@ -294,7 +294,7 @@ const Course = () => {
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 className="form-control"
               >
-                <option value="">Select Subject</option>
+                <option value="">Select Topic</option>
                 {subjectOptions.map((subject) => (
                   <option key={subject._id} value={subject._id}>
                     {subject.name}
@@ -304,7 +304,7 @@ const Course = () => {
             </div>
             <div className="modal-footer">
               <Button onClick={handleAddSubjectToCourse} style={{ backgroundColor: '#100B5C', color: '#fff' }}>
-                Add Subject
+                Add Topic
               </Button>
               <Button variant="secondary" onClick={closeAddSubjectModal}>Close</Button>
             </div>

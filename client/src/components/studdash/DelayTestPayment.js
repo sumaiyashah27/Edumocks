@@ -19,6 +19,7 @@ const DelayTestPayment = () => {
   const [isLoading, setIsLoading] = useState(true);
   const stripe = useStripe();
   const elements = useElements();
+  const [currency, setCurrency] = useState("USD"); 
 
   // Fetch student, course, and subject data on component mount
   useEffect(() => {
@@ -38,6 +39,19 @@ const DelayTestPayment = () => {
     };
     fetchData();
   }, [studentId, selectedCourse, selectedSubject]);
+  // Dynamically load Razorpay script
+    useEffect(() => {
+      if (typeof window.Razorpay === "undefined") {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => {
+          console.log("Razorpay script loaded successfully!");
+        };
+        script.onerror = (error) => {
+          console.error("Error loading Razorpay script", error);
+        };document.body.appendChild(script);
+      }
+    }, []);
 
   const getCourseName = (courseId) => {
     const course = courses.find(c => c._id === courseId);
@@ -49,82 +63,197 @@ const DelayTestPayment = () => {
     return subject ? subject.name : 'Unknown Subject';
   };
 
+  // const handlePayment = async (event) => {
+  //   event.preventDefault();
+  //   setIsProcessing(true);  // Disable the button to prevent multiple clicks
+    
+  //   try {
+  //     // Simulate a successful payment response (for testing)
+  //     const fakePaymentResponse = { paymentIntent: { status: "succeeded" }, paymentId: "fakePaymentId", orderId: "fakeOrderId" };
+  
+  //     // Send data to the backend as if the payment was successful
+  //     await axios.post("/api/delayTest", { 
+  //       studentId, 
+  //       selectedCourse, 
+  //       selectedSubject, 
+  //       testDate: testDateState, 
+  //       testTime: testTimeState, 
+  //       amount: delayAmount, 
+  //       paymentId: fakePaymentResponse.paymentId, 
+  //       orderId: fakePaymentResponse.orderId 
+  //     });
+  
+  //     // Call the API to update the test schedule
+  //     await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
+  
+  //     setPaymentStatus("success");  // Show success message
+  //     alert("Data saved successfully (payment skipped for testing).");
+  
+  //     navigate("/studpanel", { state: { studentId } });  // Redirect to student panel
+  //   } catch (error) {
+  //     console.error("Error during testing:", error);
+  //     setPaymentStatus("failed");
+  //     alert("Error saving data during test: " + error.message);
+  //   } finally {
+  //     setIsProcessing(false);  // Re-enable button
+  //   }
+  // };
+  
+
   const handlePayment = async (event) => {
     event.preventDefault();
-    setIsProcessing(true);  // Disable the button to prevent multiple clicks
-    
+    if (!stripe || !elements) return;
+    setIsProcessing(true);
     try {
-      // Simulate a successful payment response (for testing)
-      const fakePaymentResponse = { paymentIntent: { status: "succeeded" }, paymentId: "fakePaymentId", orderId: "fakeOrderId" };
-  
-      // Send data to the backend as if the payment was successful
-      await axios.post("/api/delayTest", { 
-        studentId, 
-        selectedCourse, 
-        selectedSubject, 
-        testDate: testDateState, 
-        testTime: testTimeState, 
-        amount: delayAmount, 
-        paymentId: fakePaymentResponse.paymentId, 
-        orderId: fakePaymentResponse.orderId 
+      const { data } = await axios.post("/api/payment/create-payment-intent", {
+        amount: delayAmount * 100, // Convert to cents
       });
-  
-      // Call the API to update the test schedule
-      await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
-  
-      setPaymentStatus("success");  // Show success message
-      alert("Data saved successfully (payment skipped for testing).");
-  
-      navigate("/studpanel", { state: { studentId } });  // Redirect to student panel
+      const { clientSecret, paymentId, orderId } = data;
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+      if (result.error) {
+        console.error(result.error.message);
+        setPaymentStatus("failed");
+        alert(result.error.message || "Payment failed. Please try again.");
+      } else if (result.paymentIntent.status === "succeeded") {
+        await axios.post("/api/delayTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState, amount: delayAmount, paymentId: paymentId, orderId: orderId });
+        await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
+
+        setPaymentStatus("success");
+        alert("Payment successful! Test date and time updated.");
+        navigate("/studpanel", { state: { studentId } });
+      }
     } catch (error) {
-      console.error("Error during testing:", error);
+      console.error("Error during payment:", error);
       setPaymentStatus("failed");
-      alert("Error saving data during test: " + error.message);
+      alert("Payment failed: " + error.message);
     } finally {
-      setIsProcessing(false);  // Re-enable button
+      setIsProcessing(false);
     }
   };
   
-
-  // const handlePayment = async (event) => {
-  //   event.preventDefault();
-  //   if (!stripe || !elements) return;
+  const convertCurrency = (amount, fromCurrency, toCurrency) => {
+    const usdToInrRate = 85.54; // Example conversion rate (USD to INR)
+    const inrToUsdRate = 1 / usdToInrRate; // Reverse conversion rate
+  
+    if (fromCurrency === "USD" && toCurrency === "INR") {
+      return amount * usdToInrRate; // Convert USD to INR
+    } else if (fromCurrency === "INR" && toCurrency === "USD") {
+      return amount * inrToUsdRate; // Convert INR to USD
+    } else {
+      return amount;
+    }
+  };
+  const handleRazorpayPayment = async () => {
+    setIsProcessing(true);
+  
+    try {
+      const paymentAmount =
+        currency === "USD"
+          ? convertCurrency(delayAmount, "USD", "INR") // Convert if currency is USD
+          : delayAmount;
+  
+      const finalAmount = Math.round(paymentAmount * 100); // Convert to paise (integer)
+  
+      // Create Razorpay order with INR amount
+      const { data } = await axios.post("/api/payment/create-razorpay-order", {
+        amount: finalAmount, // Send integer value in paise
+      });
+  
+      const options = {
+        key: "rzp_live_DwM6A80CoAIf8E",
+        amount: data.order.amount, // Ensure INR is always used
+        currency: "INR",
+        order_id: data.order.id,
+        name: "Edumocks Test Reschedule",
+        description: "Reschedule Test Payment",
+        handler: async (response) => {
+          await axios.post("/api/delayTest", {
+            studentId,
+            selectedCourse,
+            selectedSubject,
+            testDate: testDateState,
+            testTime: testTimeState,
+            amount: paymentAmount, // Save actual amount
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+          });
+          await axios.put("/api/scheduleTest", {
+            studentId,
+            selectedCourse,
+            selectedSubject,
+            testDate: testDateState,
+            testTime: testTimeState,
+          });
+  
+          alert("Payment successful!");
+          navigate("/studpanel", { state: { studentId } });
+        },
+        prefill: {
+          name: "Student",
+          email: "student@example.com",
+        },
+      };
+  
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      alert("Razorpay payment failed: " + error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  // const handleRazorpayPayment = async () => {
   //   setIsProcessing(true);
+  
   //   try {
-  //     const { data } = await axios.post("/api/payment/create-payment-intent", {
-  //       amount: delayAmount * 100, // Convert to cents
+  //     // Simulated payment response for testing
+  //     const fakePaymentResponse = {
+  //       razorpay_payment_id: "fake_payment_12345",
+  //       razorpay_order_id: "fake_order_67890",
+  //       status: "succeeded"
+  //     };
+  
+  //     // Simulate backend call as if payment was successful
+  //     await axios.post("/api/delayTest", {
+  //       studentId,
+  //       selectedCourse,
+  //       selectedSubject,
+  //       testDate: testDateState,
+  //       testTime: testTimeState,
+  //       amount: delayAmount,
+  //       paymentId: fakePaymentResponse.razorpay_payment_id,
+  //       orderId: fakePaymentResponse.razorpay_order_id,
   //     });
-  //     const { clientSecret, paymentId, orderId } = data;
-  //     const result = await stripe.confirmCardPayment(clientSecret, {
-  //       payment_method: {
-  //         card: elements.getElement(CardElement),
-  //       },
+  
+  //     // Call API to update the test schedule
+  //     await axios.put("/api/scheduleTest", {
+  //       studentId,
+  //       selectedCourse,
+  //       selectedSubject,
+  //       testDate: testDateState,
+  //       testTime: testTimeState,
   //     });
-  //     if (result.error) {
-  //       console.error(result.error.message);
-  //       setPaymentStatus("failed");
-  //       alert(result.error.message || "Payment failed. Please try again.");
-  //     } else if (result.paymentIntent.status === "succeeded") {
-  //       await axios.post("/api/delayTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState, amount: delayAmount, paymentId: paymentId, orderId: orderId });
-  //       await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
-
-  //       setPaymentStatus("success");
-  //       alert("Payment successful! Test date and time updated.");
-  //       navigate("/studpanel", { state: { studentId } });
-  //     }
+  
+  //     alert("Payment simulation successful! Data saved.");
+  //     navigate("/studpanel", { state: { studentId } }); // Redirect after success
   //   } catch (error) {
-  //     console.error("Error during payment:", error);
-  //     setPaymentStatus("failed");
-  //     alert("Payment failed: " + error.message);
+  //     console.error("Error during test payment:", error);
+  //     alert("Error saving data during test: " + error.message);
   //   } finally {
   //     setIsProcessing(false);
   //   }
   // };
-
+  
+  
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "20px", backgroundColor: "#f9fafb", borderRadius: "12px", boxShadow: "0 8px 30px rgba(0, 0, 0, 0.1)", fontFamily: "'Poppins', sans-serif", color: "#333" }}>
       <div style={{ backgroundColor: "#ffffff", padding: "30px", borderRadius: "10px", boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)" }}>
-        <h2 style={{ textAlign: "center", color: "#1a202c", fontSize: "36px", fontWeight: "600", marginBottom: "20px" }}>Delay Test Payment</h2>
+        <h2 style={{ textAlign: "center", color: "#1a202c", fontSize: "36px", fontWeight: "600", marginBottom: "20px" }}>Reschedule Test Payment</h2>
         {/* Display student information */}
         {!isLoading && (
           <>
@@ -157,9 +286,11 @@ const DelayTestPayment = () => {
               <CardElement options={{ style: { base: { fontSize: "16px", color: "#333", padding: "12px", borderRadius: "8px", border: "1px solid #ddd", marginBottom: "20px" }}}} />
 
               <button onClick={handlePayment} disabled={isProcessing} style={{width: "100%", padding: "16px", backgroundColor: isProcessing ? "#cccccc" : "#4CAF50", color: "white", border: "none", borderRadius: "8px", fontSize: "18px", cursor: isProcessing ? "not-allowed" : "pointer", transition: "background-color 0.3s ease, transform 0.2s", marginTop: "20px", fontWeight: "600", boxShadow: isProcessing ? "none" : "0 4px 8px rgba(0, 128, 0, 0.3)" }}>
-                {isProcessing ? "Processing..." : "Proceed to Payment"}
+                {isProcessing ? "Processing..." : "International Credit Card"}
               </button>
-
+              <button onClick={handleRazorpayPayment} disabled={isProcessing} style={{ width: "100%", padding: "16px", backgroundColor: "#ff5722", color: "white", border: "none", borderRadius: "8px", fontSize: "18px" }}>
+                Upi, Wallet, credit card netbanking
+              </button>
               {/* Payment status message */}
               {paymentStatus === "success" && (
                 <p style={{ color: "#4CAF50", fontSize: "16px", textAlign: "center", marginTop: "20px", fontWeight: "600" }}>

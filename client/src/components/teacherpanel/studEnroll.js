@@ -86,7 +86,7 @@ const QuizEnroll = () => {
       console.log("Subjects fetched:", response.data); // Debugging
       setSubjects(response.data.subjects);
     } catch (error) {
-      console.error("Error fetching subjects:", error);
+      console.error("Error fetching Topics:", error);
     }
   };
   
@@ -221,7 +221,7 @@ const QuizEnroll = () => {
           {/* Subject selection checkboxes */}
           {selectedCourse && (
             <div className="mb-3">
-              <label className="fw-bold">Select Subjects:</label>
+              <label className="fw-bold">Select Topic:</label>
               {subjects.length > 0 ? (
                 subjects.map((subject) => (
                   <div key={subject._id} className="d-flex align-items-center mb-2">
@@ -237,7 +237,7 @@ const QuizEnroll = () => {
                   </div>
                 ))
               ) : (
-                <p>No subjects available for this course.</p>
+                <p>No Topics available for this course.</p>
               )}
             </div>
           )}
@@ -253,7 +253,7 @@ const QuizEnroll = () => {
             <th>#</th>
             <th>Student Name</th>
             <th>Course</th>
-            <th>Subject</th>
+            <th>Topic</th>
             <th>Payment Status</th>
           </tr>
         </thead>

@@ -36,7 +36,7 @@ const DashBoard = () => {
         const response = await axios.get(`/api/subject`);
         setSubjects(response.data); // Update the `subjects` state with the fetched data
       } catch (error) {
-        console.error('Error fetching subjects:', error);
+        console.error('Error fetching Topics:', error);
       }
     };
     
@@ -165,16 +165,16 @@ const handleLoadMore = () => {
                   <thead style={{ backgroundColor: '#1D1A6D', color: '#FFD700' }}>
                     <tr>
                       <th style={{ padding: '10px', border: '1px solid #ddd' }}>COURSE</th>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>SUBJECT</th>
+                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>TOPIC</th>
                       <th style={{ padding: '10px', border: '1px solid #ddd' }}>SCORE</th>
                       <th style={{ padding: '10px', border: '1px solid #ddd' }}>%</th>
                       <th style={{ padding: '10px', border: '1px solid #ddd' }}>Grade</th>
                     </tr>
                   </thead>
                   <tbody>
-                  {tests.map((test, index) => {
+                    {[...tests].reverse().map((test, index) => {
                       const percentage = (test.score / test.questionSet) * 100;
-                      const { grade, status } = getGrade(percentage);// Calculate grade based on percentage
+                      const { grade, status } = getGrade(percentage);
                       return (
                         <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff' }}>
                           <td style={{ padding: '10px', border: '1px solid #ddd' }}>
@@ -246,7 +246,7 @@ const handleLoadMore = () => {
                       }
                     }}
                   >
-                    <option value="">-- Select Subject --</option>
+                    <option value="">-- Select Topics --</option>
                     {[
                       ...new Map(
                         tests.map((test) => [test.selectedSubject, test.selectedSubject])

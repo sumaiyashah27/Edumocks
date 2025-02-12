@@ -25,7 +25,7 @@ const DelayTest = () => {
   return (
     <Container>
       <h2 className="text-center my-4" style={{ color: "#100B5C" }}>
-        Delayed Tests
+        Resheduled Tests
       </h2>
 
       {loading ? (
@@ -42,7 +42,7 @@ const DelayTest = () => {
                 <th>#</th>
                 <th>Student</th>
                 <th>Course</th>
-                <th>Subject</th>
+                <th>Topic</th>
                 <th>Test Date</th>
                 <th>Test Time</th>
                 <th>Amount</th>

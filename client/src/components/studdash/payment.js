@@ -340,7 +340,7 @@ const Payment = () => {
               <p><strong>Course Name:</strong> {selectedCourse.name}</p>
               <div style={{ backgroundColor: "#f0fff4", padding: "15px", borderRadius: "8px", marginTop: "20px" }}>
                 <h3 style={{ color: "#555", fontSize: "22px", fontWeight: "500", marginBottom: "15px" }} >
-                  Selected Subjects
+                  Selected Topics
                 </h3>
                 <ul style={{ paddingLeft: "20px", listStyleType: "none", marginBottom: "15px", fontSize: "18px", color: "#333" }}>
                   {selectedSubjects.map((subject) => (
@@ -398,11 +398,11 @@ const Payment = () => {
           {/* Stripe Payment */}
           <CardElement options={{style: {base: { fontSize: "16px", color: "#333", padding: "12px", borderRadius: "5px", border: "1px solid #ddd", marginBottom: "20px"}}}} />
           <button onClick={handleStripePayment} disabled={isProcessing} style={{ width: "100%", padding: "15px", backgroundColor: isProcessing ? "#cccccc" : "#4CAF50", color: "white", border: "none", borderRadius: "8px", fontSize: "18px", cursor: isProcessing ? "not-allowed" : "pointer", transition: "background-color 0.3s ease", marginTop: "20px", fontWeight: "600" }}>
-            {isProcessing ? "Processing..." : "Proceed to Stripe Payment"}
+            {isProcessing ? "Processing..." : "International Credit Card"}
           </button>
           {/* Razorpay Payment */}
           <button onClick={handleRazorpayPayment} style={{ width: "100%", padding: "15px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "8px", fontSize: "18px", marginTop: "20px", fontWeight: "600" }}>
-          Proceed to Razorpay
+            Upi, Wallet, credit card netbanking
           </button>
           {paymentStatus === "success" && (
             <p style={{ color: "#4CAF50", fontSize: "16px", textAlign: "center", marginTop: "20px", fontWeight: "600" }}>

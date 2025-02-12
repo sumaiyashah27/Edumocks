@@ -73,11 +73,12 @@ const TeachPanel = () => {
             {[{ icon: <FaUserAlt/>, label: 'Dashboard', section: 'dashboard' },
               { icon: <FaUsers />, label: 'Students', section: 'students' },
               { icon: <FaBook />, label: 'Courses', section: 'courses' },
-              { icon: <FaClipboard />, label: 'Subjects', section: 'subjects' },
+              { icon: <FaClipboard />, label: 'Topics', section: 'subjects' },
               { icon: <FaImage />, label: 'Images', section: 'images' },
               { icon: <FaQuestionCircle />, label: 'Questions', section: 'questions' },
               { icon: <FaUsers />, label: 'Student Enrollment', section: 'studentenroll' },
-              { icon: <FaHourglassStart />, label: 'Delayed Tests', section: 'delaytests' }].map(({ icon, label, section }) => (
+              { icon: <FaPoll />, label: 'Student Results', section: 'studtestresult' },
+              { icon: <FaHourglassStart />, label: 'Resheduled Tests', section: 'delaytests' }].map(({ icon, label, section }) => (
                 <li key={section} style={{ marginBottom: '20px' }} onClick={() => setActiveSection(section)}>
                   <Link to="#" style={{textDecoration: 'none',color: activeSection === section ? '#FFF' : '#CCC',backgroundColor: activeSection === section ? '#007bff' : '',padding: '10px',fontSize: '1.1rem',display: 'flex',alignItems: 'center',width: '100%', }}>
                     <span style={{ marginRight: isSidebarClosed ? '100px' : '10px' }}>

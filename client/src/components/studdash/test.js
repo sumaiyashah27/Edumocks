@@ -675,26 +675,26 @@ const Test = () => {
     });
     
     // Save the test results in the CompletedTest collection
-    // axios.post('/api/completed/saveCompletedTest', {
-    //   studentId,
-    //   selectedCourse,
-    //   selectedSubject,
-    //   questionSet,  // Assuming you have a `questionSet` variable
-    //   testDate: new Date(), // Set current date for testDate
-    //   testTime: new Date().toLocaleTimeString(), // Current time for testTime
-    //   score: calculatedScore,
-    //   studentAnswers: Object.keys(selectedOptions).map((questionId) => ({
-    //     questionId: questionId, 
-    //     selectedAnswer: selectedOptions[questionId], 
-    //     isCorrect: selectedOptions[questionId] === correctAnswers[questionId],
-    //   })),
-    // })
-    //   .then((response) => {
-    //     console.log('Completed collection Test saved successfully:', response.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error('Completed collection Error saving test:', error.response?.data || error.message);
-    //   });
+    axios.post('/api/completed/saveCompletedTest', {
+      studentId,
+      selectedCourse,
+      selectedSubject,
+      questionSet,  // Assuming you have a `questionSet` variable
+      testDate: new Date(), // Set current date for testDate
+      testTime: new Date().toLocaleTimeString(), // Current time for testTime
+      score: calculatedScore,
+      studentAnswers: Object.keys(selectedOptions).map((questionId) => ({
+        questionId: questionId, 
+        selectedAnswer: selectedOptions[questionId], 
+        isCorrect: selectedOptions[questionId] === correctAnswers[questionId],
+      })),
+    })
+      .then((response) => {
+        console.log('Completed collection Test saved successfully:', response.data);
+      })
+      .catch((error) => {
+        console.error('Completed collection Error saving test:', error.response?.data || error.message);
+      });
 
     // Generate PDF for the results
     const pdfBlob = generatePDF();
