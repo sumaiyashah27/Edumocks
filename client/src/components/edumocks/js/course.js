@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaBook } from 'react-icons/fa';  // Importing the necessary icons
+import { useNavigate } from "react-router-dom";
 
 const CourseSection = () => {
   const sectionStyle = {
@@ -62,6 +63,7 @@ const CourseSection = () => {
   const buttonHoverStyle = {
     backgroundColor: '#100b59',
   };
+  const navigate = useNavigate();
 
   return (
     <section style={sectionStyle} id="our-courses">
@@ -76,7 +78,7 @@ const CourseSection = () => {
             </div>
             <span style={{ fontSize: '1rem', color: '#6c757d' }}>COURSE</span>
             <h3 style={cardTitleStyle}>CFA LEVEL 1</h3>
-            <button style={buttonStyle} onMouseOver={(e) => e.target.style.backgroundColor = buttonHoverStyle.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = buttonStyle.backgroundColor}>
+            <button onClick={() => navigate("/login")} style={buttonStyle} onMouseOver={(e) => e.target.style.backgroundColor = buttonHoverStyle.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = buttonStyle.backgroundColor}>
               Book Test
             </button>
           </div>
@@ -90,7 +92,7 @@ const CourseSection = () => {
             </div>
             <span style={{ fontSize: '1rem', color: '#6c757d' }}>COURSE</span>
             <h3 style={cardTitleStyle}>CFA LEVEL 2</h3>
-            <button style={buttonStyle} onMouseOver={(e) => e.target.style.backgroundColor = buttonHoverStyle.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = buttonStyle.backgroundColor}>
+            <button onClick={() => navigate("/login")} style={buttonStyle} onMouseOver={(e) => e.target.style.backgroundColor = buttonHoverStyle.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = buttonStyle.backgroundColor}>
               Book Test
             </button>
           </div>
