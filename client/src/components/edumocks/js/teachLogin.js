@@ -159,14 +159,14 @@ const TeacherLogin = () => {
                   </div>
 
                   {/* Added Signup Link */}
-                  <div className="mt-3 text-center">
+                  {/* <div className="mt-3 text-center">
                     <p className="text-primary">
                       <Link to="/teachSignup" className="text-danger">
                       Don't have an account?{' '}
                         Signup
                       </Link>
                     </p>
-                  </div>
+                  </div> */}
                 </Form>
               </Card.Body>
             </Card>
