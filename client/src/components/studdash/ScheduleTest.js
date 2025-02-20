@@ -451,7 +451,7 @@ const ScheduleTest = () => {
                       <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2c3e50', marginBottom: '10px', padding: '8px', borderRadius: '8px', backgroundColor: '#ecf0f1', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)', display: 'inline-block' }}> {getCourseName(test.course)}</p>
                       <p>{getSubjectName(test.subject)}</p>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap'  }}>
                       {isScheduled ? (
                         <>
                           <button style={{ fontSize: '1rem', backgroundColor: '#3498db', color: 'white', padding: '10px 10px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = '#2980b9')} onMouseLeave={(e) => (e.target.style.backgroundColor = '#3498db')} onClick={() => handleAttendTest(test.course, test.subject)}><FontAwesomeIcon icon={faEdit} style={{ animation: 'bounce 1s ease-in-out infinite' }} /> Attend Test</button>
