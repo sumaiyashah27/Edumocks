@@ -350,6 +350,16 @@ const Test = () => {
     const drawPageBorder = () => {
       doc.setDrawColor(16, 11, 92); // RGB for #100B5C
       doc.rect(pageMargin, pageMargin, pageWidth, pageHeight); // Draw rectangle
+
+      // Add Student Name on the left
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("times", "bold");
+      doc.text(`Name: ${studentName}`, pageMargin + 5, pageMargin - 2, { align: "left" });
+
+      // Add Student Email on the right
+      const emailX = doc.internal.pageSize.width - pageMargin - doc.getTextWidth(`Email: ${studentEmail}`);
+      doc.text(`Email: ${studentEmail}`, emailX, pageMargin - 2, { align: "right" });
     };
     drawPageBorder();
 
@@ -389,6 +399,10 @@ const Test = () => {
     // Basic Info Section
     const textPadding = 5;
     doc.setFont("times", "bold");
+    doc.text(`Student Name: ${studentName}`, pageMargin + textPadding, yPosition);
+    yPosition += 10;
+    doc.text(`Student Email: ${studentEmail}`, pageMargin + textPadding, yPosition);
+    yPosition += 10;
     doc.text(`Course: ${courseName}`, pageMargin + textPadding, yPosition);
     doc.text(`Subject: ${subjectName}`, pageMargin + textPadding, yPosition + 10);
     yPosition += 20;
@@ -791,7 +805,7 @@ const Test = () => {
                 </button>
               </div>
               {/* Combined Box for Left and Right Side Panels */}
-              <div className="quiz-container" style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden'}}>
+              <div className="quiz-container" style={{ display: 'flex', width: '100%', height: '100vh', overflow: 'hidden'}}>
                 {/* Left Side Panel with Question Numbers */}
                 <div className="question-list" style={{ backgroundColor: '#fff', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxHeight: '800px', overflowY: 'auto' , fontSize: '16px' }}>
                   {quizquestionSet.map((_, index) => (

@@ -20,8 +20,12 @@ const sendReminderEmail = async (student, test, reminderType) => {
   const localTestDateTime = testDateTime.setZone(studentTimezone);
 
   // Format the date and time for the student's timezone
-  const formattedDate = localTestDateTime.toLocaleString(DateTime.DATE_FULL);
-  const formattedTime = localTestDateTime.toLocaleString(DateTime.TIME_SIMPLE);
+  // const formattedDate = localTestDateTime.toLocaleString(DateTime.DATE_FULL);
+  // const formattedTime = localTestDateTime.toLocaleString(DateTime.TIME_SIMPLE);
+  const formattedDate = localTestDateTime.toFormat('dd MMMM yyyy');
+  // const formattedTime = testTime;//localTestDateTime.toFormat('hh:mm a');
+  const formattedTime = DateTime.fromFormat(testTime.split(':').slice(0, 2).join(':'), 'HH:mm').toFormat('hh:mm a'); // Converts to 12-hour format with AM/PM
+
 
   const reminderSubject = `${reminderType} Test Reminder ⏰`;
   const reminderMessage = `
@@ -72,12 +76,22 @@ const checkAndSendReminders = async () => {
       }
 
       // Combine testDate and testTime into a full DateTime object (UTC)
-      //const testDateTime = DateTime.fromISO(`${testDate.toISOString().split('T')[0]}T${testTime}`, { zone: 'utc' });
-      // Convert testDate to UTC DateTime
-      const testDateUTC = DateTime.fromJSDate(new Date(testDate), { zone: 'utc' });
+      const testDateUTC = DateTime.fromJSDate(testDate, { zone: 'utc' });
+
+      // Validate testTime format
+      if (!testTime || typeof testTime !== 'string') {
+        console.error(`❌ Invalid testTime format for testId: ${test._id}, received:`, testTime);
+        continue;
+      }
 
       // Extract only the time part from testTime
-      const testTimeObj = DateTime.fromISO(testTime, { setZone: true }); // Keeps the correct time
+      const extractedTestTime = testTime.split(':').slice(0, 2).join(':');
+      // const testTimeObj = DateTime.fromFormat(testTime, 'HH:mm', { zone: 'utc' });
+      const testTimeObj = DateTime.fromFormat(extractedTestTime, 'HH:mm', { zone: 'utc' });
+      if (!testTimeObj.isValid) {
+        console.error(`❌ Failed to parse testTime for testId: ${test._id}, received:`, testTime);
+        continue;
+      }
 
       // Merge testDate (UTC) with testTime (local time)
       const testDateTime = testDateUTC.set({
