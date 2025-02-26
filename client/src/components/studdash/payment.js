@@ -34,159 +34,51 @@ const Payment = () => {
       };document.body.appendChild(script);
     }
   }, []);
-
+  
+  const validateCoupon = async () => {
+    try {
+      const { data } = await axios.post("/api/coupon/check", { studentId, couponCode });
+  
+      if (!data.valid) {
+        toast.error("Coupon already used or invalid.");
+        return;
+      }
+  
+      if (couponCode === "FREE100") { 
+        setFinalPrice(0);
+        toast.success("Coupon applied! Payment amount is now $0.");
+      } else if (couponCode === "99%OFF") {
+        const discountAmount = totalPrice * 0.99;
+        setFinalPrice(Math.max(0, totalPrice - discountAmount));
+        toast.success("99% discount applied successfully!");
+      }
+  
+      setIsCouponApplied(true);
+      
+      // Save the applied coupon to prevent reuse
+      await axios.post("/api/coupon/save", { studentId, couponCode });
+  
+    } catch (error) {
+      toast.error("Error validating coupon.");
+    }
+  };
+  
   // const validateCoupon = () => {
-  //   if (couponCode === "FREE100") { // Yahan aap apne valid coupon codes rakh sakte hain
-  //     setIsCouponApplied(true); // Coupon apply ho gaya
+  //   if (couponCode === "FREE100") { 
+  //     setIsCouponApplied(true);
+  //     setFinalPrice(0);
   //     toast.success("Coupon applied! Payment amount is now $0.");
+  //   } else if (couponCode === "99%OFF") {
+  //     const discountAmount = totalPrice * 0.99;
+  //     setFinalPrice(Math.max(0, totalPrice - discountAmount));
+  //     setIsCouponApplied(true);
+  //     toast.success("99% discount applied successfully!");
   //   } else {
   //     toast.error("Invalid coupon code. Please try again.");
   //   }
   // };
-
-  const validateCoupon = () => {
-    if (couponCode === "FREE100") { 
-      setIsCouponApplied(true);
-      setFinalPrice(0);
-      toast.success("Coupon applied! Payment amount is now $0.");
-    } else if (couponCode === "99%OFF") {
-      const discountAmount = totalPrice * 0.99;
-      setFinalPrice(Math.max(0, totalPrice - discountAmount));
-      setIsCouponApplied(true);
-      toast.success("99% discount applied successfully!");
-    } else {
-      toast.error("Invalid coupon code. Please try again.");
-    }
-  };
   
   const [currency, setCurrency] = useState("USD"); // Default currency is USD
-  
-  // Handle Stripe payment
-// const handleStripePayment = async (event) => {
-//   event.preventDefault();
-//   if (!stripe || !elements) return;
-
-//   setIsProcessing(true);
-
-//   try {
-//     if (isCouponApplied) {
-//       console.log("Sending data to /api/studenroll (Coupon Applied):", {
-//         studentId,
-//         selectedCourse: courseId,
-//         selectedSubject: selectedSubjects.map((subject) => subject._id),
-//         paymentStatus: "success",
-//         paymentId: "FREE_COUPON",
-//         amount: 0,
-//         orderId: "COUPON_ORDER",
-//       });
-
-//       // Enroll student directly if coupon is applied
-//       await axios.post("/api/studenroll/enroll", {
-//         enrollments: [{
-//           studentId,
-//           selectedCourse: courseId,
-//           selectedSubjects: selectedSubjects.map((subject) => subject._id),
-//           paymentStatus: "success",
-//           paymentId: "FREE_COUPON",
-//           amount: 0,
-//           orderId: "COUPON_ORDER",
-//         }]
-//       });
-
-//       setPaymentStatus("success");
-//       toast.success("Enrollment Successful! Coupon Applied.");
-      
-//       // Send confirmation email
-//       console.log("📤 Sending Email API Request:", {
-//         studentId,
-//         selectedCourse: selectedCourse,
-//         selectedSubjects: selectedSubjects,
-//       });
-
-//       const emailResponse = await axios.post('/api/enrollmail/send-enrollemail', {
-//         studentId,
-//         selectedCourse: selectedCourse,
-//         selectedSubjects: selectedSubjects,
-//       });
-
-//       if (emailResponse.status === 200) {
-//         console.log("📨 Email sent successfully!");
-//         toast.success('Confirmation email sent!');
-//       } else {
-//         console.error("⚠️ Email API returned a non-success response:", emailResponse.data);
-//         toast.error('Error sending confirmation email.');
-//       }
-
-//       navigate("/studpanel", {
-//         state: { studentId, firstName: studentData.firstname },
-//       });
-      
-//     } else {
-//       // Proceed with Stripe payment
-//       const { data } = await axios.post("/api/payment/create-payment-intent", {
-//         amount: totalPrice * 100,
-//       });
-
-//       const { clientSecret } = data;
-//       const result = await stripe.confirmCardPayment(clientSecret, {
-//         payment_method: {
-//           card: elements.getElement(CardElement),
-//         },
-//       });
-
-//       if (result.error) {
-//         console.error("Payment Error:", result.error.message);
-//         setPaymentStatus("failed");
-//         toast.error("Payment failed: " + result.error.message);
-//         return; // STOP further execution
-//       }
-
-//       if (result.paymentIntent.status === "succeeded") {
-//         console.log("Payment successful, processing enrollment...");
-
-//         // Call studenroll API only after payment success
-//         await axios.post("/api/studenroll/enroll", {
-//           enrollments: [{
-//             studentId,
-//             selectedCourse: courseId,
-//             selectedSubjects: selectedSubjects.map((subject) => subject._id),
-//             paymentStatus: "success",
-//             paymentId: result.paymentIntent.id,
-//             amount: totalPrice,
-//             orderId: result.paymentIntent.id,
-//           }]
-//         });
-
-//         setPaymentStatus("success");
-//         toast.success("Payment successful. You are enrolled!");
-
-//         // Send confirmation email
-//         console.log("📤 Sending Email API Request:", {
-//           studentId,
-//           selectedCourse: selectedCourse,
-//           selectedSubjects: selectedSubjects,
-//         });
-
-//         await axios.post('/api/enrollmail/send-enrollemail', {
-//           studentId,
-//           selectedCourse: selectedCourse,
-//           selectedSubjects: selectedSubjects,
-//         });
-
-//         toast.success('Confirmation email sent to the student!');
-//         navigate("/studpanel", {
-//           state: { studentId, firstName: studentData.firstname },
-//         });
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Payment failed:", error);
-//     setPaymentStatus("failed");
-//     toast.error("Payment failed: " + error.message);
-//   } finally {
-//     setIsProcessing(false);
-//   }
-// };
 
 const handleStripePayment = async (event) => {
   event.preventDefault();
@@ -316,141 +208,17 @@ const handleStripePayment = async (event) => {
     }
   };
   
-
-  // // Handle Razorpay payment
-  // const handleRazorpayPayment = async () => {
-  //   if (typeof window.Razorpay === "undefined") {
-  //     alert("Razorpay script is not loaded.");
-  //     return;
-  //   }
-
-  //   if (isCouponApplied) {
-  //     // Enroll student directly if coupon applied
-  //     try {
-  //        // Log data before sending
-  //       console.log("Sending data to /api/studenroll (Coupon Applied):", {
-  //         studentId: studentData._id,
-  //         selectedCourse: courseId,
-  //         selectedSubjects: selectedSubjects.map((subject) => subject._id),
-  //         paymentStatus: "success",
-  //         paymentId: "FREE_COUPON",
-  //         amount: 0,
-  //         orderId: "COUPON_ORDER",
-  //       });
-  //       await axios.post("/api/studenroll/enroll", {
-  //         enrollments: [{
-  //           studentId: studentData._id,
-  //           selectedCourse: courseId,
-  //           selectedSubjects: selectedSubjects.map((subject) => subject._id), // ✅ Correct key (selectedSubjects)
-  //           paymentStatus: "success",
-  //           paymentId: "FREE_COUPON",
-  //           amount: 0,
-  //           orderId: "COUPON_ORDER",
-  //         }]
-          
-  //       });
-        
-  //       setPaymentStatus("success");
-  //       toast.success("Enrollment Successful! Coupon Applied.");
-  //       // Call email API
-  //       await axios.post('/api/enrollmail/send-enrollemail', {
-  //         studentId,
-  //         selectedCourse: selectedCourse,
-  //         selectedSubjects: selectedSubjects,
-  //       });
-  //       toast.success('Confirmation email sent to the student!');
-  //       navigate("/studpanel", {
-  //         state: { studentId, firstName: studentData.firstname },
-  //       });
-  //     } catch (error) {
-  //       console.error("Error saving coupon enrollment to database:", error);
-  //       console.log("Enrollment failed. Please try again.");
-  //     }
-  //     return;
-  //   }
-
-  //   try {
-  //     const paymentAmount =
-  //       currency === "USD"
-  //         ? convertCurrency(totalPrice, "USD", "INR")
-  //         : totalPrice;
-
-  //     const options = {
-  //       key: "rzp_live_DwM6A80CoAIf8E", // Razorpay live key
-  //       amount: paymentAmount * 100,
-  //       currency: "INR",
-  //       name: "EduMocks",
-  //       description: "Test Payment",
-  //       handler: async function (response) {
-  //         try {
-  //            // Log data before sending
-  //            await axios.post("/api/studenroll/enroll", {
-  //             enrollments: [{
-  //               studentId: studentData._id,
-  //               selectedCourse: courseId,
-  //               selectedSubjects: selectedSubjects.map((subject) => subject._id), // ✅ Fixed key name
-  //               paymentStatus: "success",
-  //               paymentId: response.razorpay_payment_id,
-  //               amount: totalPrice,
-  //               orderId: response.razorpay_order_id,
-  //             }]
-  //           });
-            
-  //           setPaymentStatus("success");
-  //           toast.success("Payment Successful. You are enrolled!");
-  //           // Call email API
-  //           await axios.post('/api/enrollmail/send-enrollemail', {
-  //             studentId,
-  //             selectedCourse: selectedCourse,
-  //             selectedSubjects: selectedSubjects,
-  //          });
-  //           toast.success('Confirmation email sent to the student!');  
-  //           navigate("/studpanel", {
-  //             state: { studentId, firstName: studentData.firstname },
-  //           });
-  //         } catch (error) {
-  //           console.error("Error saving Razorpay payment to database:", error);
-  //           console.log("Enrollment failed. Please try again.");
-  //         }
-  //       },
-  //       prefill: {
-  //         name: studentData?.firstName,
-  //         email: studentData?.email,
-  //       },
-  //       theme: {
-  //         color: "#F37254",
-  //       },
-  //     };
-
-  //     const razorpay = new window.Razorpay(options);
-  //     razorpay.open();
-  //   } catch (error) {
-  //     console.error("Error initiating Razorpay payment:", error);
-  //     console.log("Error initiating Razorpay payment!");
-  //   }
-  // }; 
   // Handle Razorpay payment
-const handleRazorpayPayment = async () => {
-  if (typeof window.Razorpay === "undefined") {
-    alert("Razorpay script is not loaded.");
-    return;
-  }
+  const handleRazorpayPayment = async () => {
+    if (typeof window.Razorpay === "undefined") {
+      alert("Razorpay script is not loaded.");
+      return;
+    }
 
-  if (finalPrice === 0) {
-    // If the final price is 0 after coupon application, enroll the student directly
-    try {
-      console.log("Sending data to /api/studenroll (Coupon Applied):", {
-        studentId: studentData._id,
-        selectedCourse: courseId,
-        selectedSubjects: selectedSubjects.map((subject) => subject._id),
-        paymentStatus: "success",
-        paymentId: "FREE_COUPON",
-        amount: 0,
-        orderId: "COUPON_ORDER",
-      });
-
-      await axios.post("/api/studenroll/enroll", {
-        enrollments: [{
+    if (finalPrice === 0) {
+      // If the final price is 0 after coupon application, enroll the student directly
+      try {
+        console.log("Sending data to /api/studenroll (Coupon Applied):", {
           studentId: studentData._id,
           selectedCourse: courseId,
           selectedSubjects: selectedSubjects.map((subject) => subject._id),
@@ -458,94 +226,105 @@ const handleRazorpayPayment = async () => {
           paymentId: "FREE_COUPON",
           amount: 0,
           orderId: "COUPON_ORDER",
-        }]
-      });
+        });
 
-      setPaymentStatus("success");
-      toast.success("Enrollment Successful! Coupon Applied.");
+        await axios.post("/api/studenroll/enroll", {
+          enrollments: [{
+            studentId: studentData._id,
+            selectedCourse: courseId,
+            selectedSubjects: selectedSubjects.map((subject) => subject._id),
+            paymentStatus: "success",
+            paymentId: "FREE_COUPON",
+            amount: 0,
+            orderId: "COUPON_ORDER",
+          }]
+        });
 
-      // Send confirmation email
-      await axios.post('/api/enrollmail/send-enrollemail', {
-        studentId,
-        selectedCourse: selectedCourse,
-        selectedSubjects: selectedSubjects,
-      });
+        setPaymentStatus("success");
+        toast.success("Enrollment Successful! Coupon Applied.");
 
-      toast.success('Confirmation email sent to the student!');
-      navigate("/studpanel", {
-        state: { studentId, firstName: studentData.firstname },
-      });
+        // Send confirmation email
+        await axios.post('/api/enrollmail/send-enrollemail', {
+          studentId,
+          selectedCourse: selectedCourse,
+          selectedSubjects: selectedSubjects,
+        });
 
-    } catch (error) {
-      console.error("Error saving coupon enrollment to database:", error);
-      toast.error("Enrollment failed. Please try again.");
+        toast.success('Confirmation email sent to the student!');
+        navigate("/studpanel", {
+          state: { studentId, firstName: studentData.firstname },
+        });
+
+      } catch (error) {
+        console.error("Error saving coupon enrollment to database:", error);
+        toast.error("Enrollment failed. Please try again.");
+      }
+      return;
     }
-    return;
-  }
 
-  // If finalPrice > 0, proceed with Razorpay payment
-  try {
-    const paymentAmount =
-      currency === "USD"
-        ? convertCurrency(finalPrice, "USD", "INR") // Use finalPrice instead of totalPrice
-        : finalPrice;
+    // If finalPrice > 0, proceed with Razorpay payment
+    try {
+      const paymentAmount =
+        currency === "USD"
+          ? convertCurrency(finalPrice, "USD", "INR") // Use finalPrice instead of totalPrice
+          : finalPrice;
 
-    const options = {
-      key: "rzp_live_DwM6A80CoAIf8E", // Razorpay live key
-      amount: paymentAmount * 100,
-      currency: "INR",
-      name: "EduMocks",
-      description: "Test Payment",
-      handler: async function (response) {
-        try {
-          await axios.post("/api/studenroll/enroll", {
-            enrollments: [{
-              studentId: studentData._id,
-              selectedCourse: courseId,
-              selectedSubjects: selectedSubjects.map((subject) => subject._id),
-              paymentStatus: "success",
-              paymentId: response.razorpay_payment_id,
-              amount: finalPrice, // Use finalPrice instead of totalPrice
-              orderId: response.razorpay_order_id,
-            }]
-          });
+      const options = {
+        key: "rzp_live_DwM6A80CoAIf8E", // Razorpay live key
+        amount: paymentAmount * 100,
+        currency: "INR",
+        name: "EduMocks",
+        description: "Test Payment",
+        handler: async function (response) {
+          try {
+            await axios.post("/api/studenroll/enroll", {
+              enrollments: [{
+                studentId: studentData._id,
+                selectedCourse: courseId,
+                selectedSubjects: selectedSubjects.map((subject) => subject._id),
+                paymentStatus: "success",
+                paymentId: response.razorpay_payment_id,
+                amount: finalPrice, // Use finalPrice instead of totalPrice
+                orderId: response.razorpay_order_id,
+              }]
+            });
 
-          setPaymentStatus("success");
-          toast.success("Payment Successful. You are enrolled!");
+            setPaymentStatus("success");
+            toast.success("Payment Successful. You are enrolled!");
 
-          // Send confirmation email
-          await axios.post('/api/enrollmail/send-enrollemail', {
-            studentId,
-            selectedCourse: selectedCourse,
-            selectedSubjects: selectedSubjects,
-          });
+            // Send confirmation email
+            await axios.post('/api/enrollmail/send-enrollemail', {
+              studentId,
+              selectedCourse: selectedCourse,
+              selectedSubjects: selectedSubjects,
+            });
 
-          toast.success('Confirmation email sent to the student!');
-          navigate("/studpanel", {
-            state: { studentId, firstName: studentData.firstname },
-          });
+            toast.success('Confirmation email sent to the student!');
+            navigate("/studpanel", {
+              state: { studentId, firstName: studentData.firstname },
+            });
 
-        } catch (error) {
-          console.error("Error saving Razorpay payment to database:", error);
-          toast.error("Enrollment failed. Please try again.");
-        }
-      },
-      prefill: {
-        name: studentData?.firstName,
-        email: studentData?.email,
-      },
-      theme: {
-        color: "#F37254",
-      },
-    };
+          } catch (error) {
+            console.error("Error saving Razorpay payment to database:", error);
+            toast.error("Enrollment failed. Please try again.");
+          }
+        },
+        prefill: {
+          name: studentData?.firstName,
+          email: studentData?.email,
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
 
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
-  } catch (error) {
-    console.error("Error initiating Razorpay payment:", error);
-    toast.error("Error initiating Razorpay payment!");
-  }
-};
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Error initiating Razorpay payment:", error);
+      toast.error("Error initiating Razorpay payment!");
+    }
+  };
 
   useEffect(() => {
     if (!courseId || !selectedSubjects) {

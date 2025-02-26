@@ -20,6 +20,7 @@ const checkAndSendReminders = require('./services/scheduler');
 const studResultsRoutes = require('./routes/studResultsRoutes');
 const teacherDashRoutes = require('./routes/teacherDashRoutes');
 const completedTestRoutes = require('./routes/completetestRoutes'); 
+const couponRoutes = require("./routes/couponRoutes");
 
 require('dotenv').config();
 const app = express();
@@ -66,6 +67,8 @@ app.use("/api/email", emailRoutes);
 app.use('/api/studResults', studResultsRoutes);
 app.use('/api/teachdash', teacherDashRoutes); 
 app.use('/api/completed', completedTestRoutes);
+app.use("/api/coupon", couponRoutes);
+
 
 
 // Serve the React client (in production)
