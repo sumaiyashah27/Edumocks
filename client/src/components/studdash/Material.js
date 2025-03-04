@@ -2,14 +2,11 @@ import React, { useState } from "react";
 import { Container, Row, Col, Button, Carousel, Badge, Modal } from "react-bootstrap";
 
 const videos = [
-  { id: 1, title: "CFA Level 1 2025 Fast Track Book", videoUrl: "https://www.youtube.com/embed/qRg6xGoIQrk?si=jUupkPL0SJWYq27X" },
-  { id: 2, title: "CFA Level 2 Batch for May 2025", videoUrl: "https://www.youtube.com/embed/0GYt-WjrlL0?si=9h9lLiLxe5p_jm0l" },
-  { id: 3, title: "Quantitative Methods R7", videoUrl: "https://www.youtube.com/embed/_fMRsQu14t0?si=zkr5ngyTKGC4fgFR" },
-  { id: 4, title: "CFA Level 1 Results", videoUrl: "https://www.youtube.com/embed/qi8432vGy5Q?si=fJAm0NB1NL56k4fc" },
-  { id: 5, title: "Top 10 Questions", videoUrl: "https://www.youtube.com/embed/pZk1OEh70E4?si=wBkr8YjqIIT4C6Ci" },
-  { id: 6, title: "CFA Level 2 Batch for May 2025", videoUrl: "https://www.youtube.com/embed/kZtyUD8krKM?si=daQZM1h-G6aF4TkV" },
-  { id: 7, title: "Financial Statement Analysis R3", videoUrl: "https://www.youtube.com/embed/ACoI95h5g_k?si=i1EXQXCl4mA3urLD" },
-  { id: 8, title: "CFA Level 1 Fast Track Revision", videoUrl: "https://www.youtube.com/embed/ul7kbzDSUDc?si=DbCApdIFhIMelIwB" },
+  { id: 1, title: "How to Sign Up on EduMocks ", videoUrl: "https://www.youtube.com/watch?v=DzvrSz7CFz0" },
+  { id: 2, title: "How to Book a Mock Test", videoUrl: "https://www.youtube.com/watch?v=GPO-mUlmREY" },
+  { id: 3, title: "How to Find Your Confirmation Email", videoUrl: "https://www.youtube.com/watch?v=iQ5LU8-Cg28" },
+  { id: 4, title: "How to Reschedule Your Mock Test", videoUrl: "https://www.youtube.com/watch?v=ErFu0TD733g" },
+  { id: 5, title: "How to Schedule & Attend Your Mock Test", videoUrl: "https://www.youtube.com/watch?v=xBYciGU-RBw" },
 ];
 
 const VideoSection = () => {
