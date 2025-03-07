@@ -29,7 +29,7 @@ function edumocks({ pageContent }) {
             <Step />
             <Features />
             <Course />
-            <Video videoId="ZlgEfbPrm1c" />
+            <Video videoId="DzvrSz7CFz0" />
             <Data />
             <Testimonial />
             <Faq />

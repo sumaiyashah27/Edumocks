@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { Container, Row, Col, Button, Carousel, Badge, Modal } from "react-bootstrap";
 
 const videos = [
-  { id: 1, title: "How to Sign Up on EduMocks ", videoUrl: "https://www.youtube.com/watch?v=DzvrSz7CFz0" },
-  { id: 2, title: "How to Book a Mock Test", videoUrl: "https://www.youtube.com/watch?v=GPO-mUlmREY" },
-  { id: 3, title: "How to Find Your Confirmation Email", videoUrl: "https://www.youtube.com/watch?v=iQ5LU8-Cg28" },
-  { id: 4, title: "How to Reschedule Your Mock Test", videoUrl: "https://www.youtube.com/watch?v=ErFu0TD733g" },
-  { id: 5, title: "How to Schedule & Attend Your Mock Test", videoUrl: "https://www.youtube.com/watch?v=xBYciGU-RBw" },
+  { id: 1, title: "How to Sign Up on EduMocks", videoUrl: "https://www.youtube.com/embed/DzvrSz7CFz0" },
+  { id: 2, title: "How to Book a Mock Test", videoUrl: "https://www.youtube.com/embed/GPO-mUlmREY" },
+  { id: 3, title: "How to Find Your Confirmation Email", videoUrl: "https://www.youtube.com/embed/iQ5LU8-Cg28" },
+  { id: 4, title: "How to Reschedule Your Mock Test", videoUrl: "https://www.youtube.com/embed/ErFu0TD733g" },
+  { id: 5, title: "How to Schedule & Attend Your Mock Test", videoUrl: "https://www.youtube.com/embed/xBYciGU-RBw" },
 ];
+
 
 const VideoSection = () => {
   const [isAllVisible, setIsAllVisible] = useState(false); // State to toggle video visibility
