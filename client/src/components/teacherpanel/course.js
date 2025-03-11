@@ -21,6 +21,8 @@ const Course = () => {
   const [expandedCourse, setExpandedCourse] = useState(null);
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [newCoursePrice, setNewCoursePrice] = useState(''); // Add this line
+
 
   useEffect(() => {
     fetchCourses();
@@ -104,7 +106,7 @@ const Course = () => {
     }
 
     try {
-      const newCourse = { name: newCourseName };
+      const newCourse = { name: newCourseName, price: newCoursePrice  };
       await axios.post('/api/course', newCourse);
       fetchCourses();
       closeAddCourseModal();
@@ -206,7 +208,7 @@ const Course = () => {
         {filteredCourses.map((course) => (
           <div key={course._id} className="card mb-3" style={{ padding: '15px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <h5 style={{ color: '#100B5C' }}>{course.name}</h5>
+              <h5 style={{ color: '#100B5C' }}>{course.name} - ${course.price}</h5>
               <div>
                 {course.name !== 'CFA LEVEL - 1' && (
                   <FontAwesomeIcon
@@ -268,6 +270,13 @@ const Course = () => {
                 onChange={(e) => setNewCourseName(e.target.value)} 
                 className="form-control" 
                 placeholder="Enter course name" 
+              />
+              <input 
+                type="number" 
+                value={newCoursePrice} 
+                onChange={(e) => setNewCoursePrice(e.target.value)} 
+                className="form-control mt-2" 
+                placeholder="Enter course price" 
               />
             </div>
             <div className="modal-footer">

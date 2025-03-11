@@ -7,8 +7,8 @@ const router = express.Router();
 // Create a course
 router.post('/', async (req, res) => {
   try {
-    const { name } = req.body;
-    const course = new Course({ name });
+    const { name, price } = req.body;
+    const course = new Course({ name, price });
     await course.save();
     res.status(201).json(course);
   } catch (error) {
