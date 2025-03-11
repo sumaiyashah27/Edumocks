@@ -17,36 +17,63 @@ const Studforgot = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false); // To toggle visibility of confirm password
   const navigate = useNavigate();
 
-  // Predefined email for email verification (simulating database check)
-  const validEmail = 'surajpawar1253661@gmail.com';
-
   // Handle form submission for email (email verification)
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    if (email === validEmail) {
-      setEmailVerified(true);
-      setShowEmailVerifiedModal(true); // Show verification success popup
-      setTimeout(() => setStep(3), 2000); // Proceed to password change after delay
-      setError('');
-    } else {
-      setError('Invalid email. Please try again.');
+    setError('');
+  
+    try {
+      const response = await fetch('/api/student/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        setEmailVerified(true);
+        setShowEmailVerifiedModal(true);
+        setTimeout(() => setStep(3), 2000); // Proceed to password reset
+      } else {
+        setError(data.message);
+      }
+    } catch (error) {
+      setError('Something went wrong. Please try again.');
     }
   };
+  
 
   // Handle password reset submission
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+  
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    // Simulate password reset (backend logic should update password)
-    console.log(`Password reset for ${email}`);
-    setShowPasswordChangedModal(true); // Show password change success popup
-    setTimeout(() => {
-      navigate('/login'); // Redirect to login after 2 seconds
-    }, 2000);
+  
+    try {
+      const response = await fetch('/api/student/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, newPassword }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        setShowPasswordChangedModal(true);
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setError(data.message);
+      }
+    } catch (error) {
+      setError('Error resetting password. Please try again.');
+    }
   };
+  
 
   return (
     <Container fluid className="d-flex justify-content-center align-items-center min-vh-100" style={{ background: 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)' }}>

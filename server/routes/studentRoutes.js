@@ -329,5 +329,46 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error updating student profile' });
   }
 });
+//===============================================================
+// Verify if the email exists in the database
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const student = await Student.findOne({ email });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    res.status(200).json({ message: 'Email verified successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reset password route
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    const student = await Student.findOne({ email });
+    if (!student) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    student.password = await bcrypt.hash(newPassword, salt);
+
+    await student.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 module.exports = router;
