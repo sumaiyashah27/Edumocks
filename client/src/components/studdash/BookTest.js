@@ -37,27 +37,26 @@ const BookTest = ({ onScheduleTest }) => {
       return () => window.removeEventListener('resize', handleResize);
     }, []);
   
-    // const handleBookTest = (course) => {
-    //   setSelectedCourse(course);
-    //   axios.get(`/api/subject?courseId=${course._id}`)
-    //     .then((response) => setSubjects(response.data))
-    //     .catch((error) => console.error("Error fetching Topics:", error));
-    // };
     const handleBookTest = (course) => {
       setSelectedCourse(course);
       axios.get(`/api/subject?courseId=${course._id}`)
-        .then((response) => {
-          setSubjects(response.data);
-          setSelectedSubjects(response.data); // Select all subjects by default
-          if (course.price === 0) {
-            const total = response.data.reduce((sum, subject) => sum + subject.price, 0);
-            setTotalPrice(parseFloat(total.toFixed(2)));
-          } else {
-            setTotalPrice(course.price); // Use course price if not zero
-          }
-        })
+        .then((response) => setSubjects(response.data))
         .catch((error) => console.error("Error fetching Topics:", error));
     };
+    
+    useEffect(() => {
+      if (selectedCourse && selectedCourse.subjects) {
+        setSelectedSubjects(selectedCourse.subjects); // Select all subjects in the selected course
+        
+        if (selectedCourse.price > 0) {
+          setTotalPrice(selectedCourse.price); // Use course price if it's greater than 0
+        } else {
+          const total = selectedCourse.subjects.reduce((sum, subject) => sum + (subject.price || 0), 0);
+          setTotalPrice(parseFloat(total.toFixed(2))); // Calculate total price based on selected course subjects
+        }
+      }
+    }, [selectedCourse]); // Runs when selectedCourse changes
+    
     
   
     const handleCheckboxChange = (subject) => {
@@ -122,55 +121,27 @@ const BookTest = ({ onScheduleTest }) => {
             ))}
           </div>
         </div>
-  
-        {/* {selectedCourse && (
-          <div className="popup" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", width: "80%", maxWidth: "600px", zIndex: "1000", overflowY: "auto", boxSizing: "border-box", maxHeight: "80vh" }}>
-            <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>Select Topics for {selectedCourse.name}</h2>
-            
-            <ul className="subject-list" style={{ listStyleType: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", justifyContent: "center" }}>
-              {selectedCourse.subjects.map((subject) => (
-                <li key={subject._id} style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "15px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", textAlign: "center", transition: "transform 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-5px)"} onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-                  <label style={{ fontSize: "1rem", color: "#202021", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                    <input type="checkbox" onChange={() => handleCheckboxChange(subject)} style={{ accentColor: "#C80D18", width: "20px", height: "20px" }} />
-                    {subject.name}
-                  </label>
-                </li>
-              ))}
-            </ul>
-            {errorMessage && (
-              <p style={{ color: "red", fontWeight: "bold", marginTop: "20px", textAlign: "center" }}>
-                {errorMessage}
-              </p>
-            )}
-            <div className="popup-footer" style={{ marginTop: "30px", textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <p style={{ fontSize: "1.2rem", color: "#202021", fontWeight: "bold", marginBottom: "20px" }}>Total Price: ${parseFloat(totalPrice).toFixed(2)}</p>
-              <button className="popup-button" onClick={handlePayment} style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 25px", fontSize: "1.2rem", border: "none", borderRadius: "8px", cursor: "pointer", marginRight: "10px", transition: "background-color 0.3s ease, transform 0.3s ease" }} onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "#d47b09"; e.currentTarget.style.transform = "scale(1.05)"; }} onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "#C80D18"; e.currentTarget.style.transform = "scale(1)"; }}>Book Test</button>
-              <div style={{ position: "absolute", top: "15px", right: "15px", cursor: "pointer" }} onClick={() => { setSelectedCourse(null); setSubjects([]); setSelectedSubjects([]); setTotalPrice(0); }}>
-                <FaTimes size={20} style={{ color: "#100B5C" }} />
-              </div>
-            </div>
-          </div>
-        )} */}
+        
         {selectedCourse && (
           <div className="popup" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", width: "80%", maxWidth: "600px", zIndex: "1000", overflowY: "auto", boxSizing: "border-box", maxHeight: "80vh" }}>
             <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>
               Select Topics for {selectedCourse.name}
             </h2>
-
+            
             {/* Select All Checkbox */}
             {selectedCourse.price === 0 && (
               <div style={{ textAlign: "center", marginBottom: "15px" }}>
                 <label style={{ fontSize: "1rem", fontWeight: "bold", color: "#202021", cursor: "pointer" }}>
                   <input 
                     type="checkbox" 
-                    checked={selectedSubjects.length === subjects.length} 
+                    checked={selectedSubjects.length === selectedCourse.subjects.length}  // Only check selected course subjects
                     onChange={() => {
-                      if (selectedSubjects.length === subjects.length) {
+                      if (selectedSubjects.length === selectedCourse.subjects.length) {
                         setSelectedSubjects([]); 
                         setTotalPrice(0);
                       } else {
-                        setSelectedSubjects(subjects);
-                        const total = subjects.reduce((sum, subject) => sum + subject.price, 0);
+                        setSelectedSubjects(selectedCourse.subjects);
+                        const total = selectedCourse.subjects.reduce((sum, subject) => sum + (subject.price || 0), 0);
                         setTotalPrice(parseFloat(total.toFixed(2)));
                       }
                     }} 
@@ -183,7 +154,7 @@ const BookTest = ({ onScheduleTest }) => {
 
             {/* Subject List */}
             <ul className="subject-list" style={{ listStyleType: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", justifyContent: "center" }}>
-              {subjects.map((subject) => (
+              {selectedCourse.subjects.map((subject) =>  (
                 <li key={subject._id} style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "15px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", textAlign: "center", transition: "transform 0.3s ease" }}
                     onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-5px)"} 
                     onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>
