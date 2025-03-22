@@ -8,6 +8,7 @@ const quesetSchema = new mongoose.Schema({
       ref: 'Question', // Reference to the Question schema
     },
   ],
+  createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Queset', quesetSchema);

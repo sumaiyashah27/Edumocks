@@ -3,11 +3,11 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import Select from 'react-select';
 import { ToastContainer, toast } from 'react-toastify';
-import { Form } from 'react-bootstrap';
-import { FaPlus, FaTimes,} from 'react-icons/fa';
+import { FaPlus, FaTimes, } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { Table } from 'react-bootstrap';
+import { Table, Container, Spinner, Alert, Form, InputGroup } from "react-bootstrap";
+import { BsSearch } from "react-icons/bs"; // Import Bootstrap search icon
 
 Modal.setAppElement('#root'); // Required for accessibility
 
@@ -22,6 +22,8 @@ const QuizEnroll = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [enrollments, setEnrollments] = useState([]);
+  const [filteredEnrollments, setFilteredEnrollments] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchStudents();
@@ -32,12 +34,12 @@ const QuizEnroll = () => {
   // Fetch all students from API
   const fetchStudents = async () => {
     try {
-        const response = await axios.get('/api/student');
-        console.log("Students Fetched:", response.data); // Debugging
-        setStudents(response.data);
+      const response = await axios.get('/api/student');
+      console.log("Students Fetched:", response.data); // Debugging
+      setStudents(response.data);
     } catch (error) {
-        console.error("Error fetching students:", error);
-        toast.error('Error fetching students');
+      console.error("Error fetching students:", error);
+      toast.error('Error fetching students');
     }
   };
 
@@ -62,7 +64,7 @@ const QuizEnroll = () => {
       label: `${s.firstname} ${s.lastname}`
     }))
   ];
-  
+
   // Fetch all courses from API
   const fetchCourses = async () => {
     try {
@@ -77,10 +79,10 @@ const QuizEnroll = () => {
   const handleCourseChange = async (selectedOption) => {
     const courseId = selectedOption.value;
     console.log("Selected Course ID:", courseId); // Debugging
-    
+
     setSelectedCourse(courseId);
     setSelectedSubjects([]);
-  
+
     try {
       const response = await axios.get(`/api/course/${courseId}`);
       console.log("Subjects fetched:", response.data); // Debugging
@@ -89,7 +91,7 @@ const QuizEnroll = () => {
       console.error("Error fetching Topics:", error);
     }
   };
-  
+
   // Handle subject selection
   const handleSubjectChange = (subjectId) => {
     setSelectedSubjects((prev) =>
@@ -99,14 +101,50 @@ const QuizEnroll = () => {
     );
   };
 
-   // Fetch all enrollments
-   const fetchEnrollments = async () => {
+  // Fetch all enrollments
+  const fetchEnrollments = async () => {
     try {
-      const response = await axios.get('/api/studenroll');
-      setEnrollments(response.data);
+      const { data } = await axios.get("/api/studenroll");
+      setEnrollments(data);
+      setFilteredEnrollments(data);
     } catch (error) {
       toast.error('Error fetching enrollments');
     }
+  };
+
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = enrollments
+      .map((enrollment) => {
+        const matchedSubjects = enrollment.selectedSubjects.filter(subject =>
+          subject.name.toLowerCase().includes(query)
+        );
+
+        const matchesStudent = `${enrollment.studentId?.firstname} ${enrollment.studentId?.lastname}`
+          .toLowerCase()
+          .includes(query);
+
+        const matchesCourse = enrollment.selectedCourse?.name.toLowerCase().includes(query);
+        const matchesPayment = enrollment.paymentStatus.toLowerCase().includes(query);
+
+        // If student, course, or payment status matches, keep all subjects
+        if (matchesStudent || matchesCourse || matchesPayment) {
+          return enrollment;
+        }
+
+        // If only specific subjects match, return the enrollment with filtered subjects
+        if (matchedSubjects.length > 0) {
+          return { ...enrollment, selectedSubjects: matchedSubjects };
+        }
+
+        // Otherwise, exclude this enrollment
+        return null;
+      })
+      .filter(Boolean); // Remove null values (enrollments that didn't match)
+
+    setFilteredEnrollments(filtered);
   };
 
   // Handle form submission
@@ -114,55 +152,55 @@ const QuizEnroll = () => {
     e.preventDefault();
 
     if (!selectedStudents.length || !selectedCourse || !selectedSubjects.length) {
-        toast.error('All fields are required');
-        return;
+      toast.error('All fields are required');
+      return;
     }
 
     // Har student ke liye ek enrollment object banayenge
     const enrollmentRequests = selectedStudents.map((studentId) => ({
-        studentId,
-        selectedCourse,
-        selectedSubjects,
-        paymentStatus: "success",
-        paymentId: "adminapproved",
-        amount: 0,
-        orderId: "adminapproved",
+      studentId,
+      selectedCourse,
+      selectedSubjects,
+      paymentStatus: "success",
+      paymentId: "adminapproved",
+      amount: 0,
+      orderId: "adminapproved",
     }));
 
     try {
-        // Multiple enrollments ek saath bhejne ke liye axios ka use karenge
-        await axios.post('/api/studenroll/enroll', { enrollments: enrollmentRequests });
-        
-        toast.success('Students successfully enrolled for the quiz!');
-        fetchEnrollments(); //refresh enrollments after successful enrollment
-        
-        // Email API bhi har student ke liye call karenge
-        await Promise.all(
-          enrollmentRequests
-              .filter((enroll) => enroll.paymentStatus === "success")  // ✅ Ensure only successful payments send emails
-              .map((enroll) =>
-                  axios.post('/api/enrollmail/send-enrollemail', {
-                      studentId: enroll.studentId,
-                      selectedCourse: enroll.selectedCourse,
-                      selectedSubjects: enroll.selectedSubjects,
-                  })
-              )
-        );
+      // Multiple enrollments ek saath bhejne ke liye axios ka use karenge
+      await axios.post('/api/studenroll/enroll', { enrollments: enrollmentRequests });
 
-        toast.success('Confirmation emails sent!');
-        setModalOpen(false);
+      toast.success('Students successfully enrolled for the quiz!');
+      fetchEnrollments(); //refresh enrollments after successful enrollment
+
+      // Email API bhi har student ke liye call karenge
+      await Promise.all(
+        enrollmentRequests
+          .filter((enroll) => enroll.paymentStatus === "success")  // ✅ Ensure only successful payments send emails
+          .map((enroll) =>
+            axios.post('/api/enrollmail/send-enrollemail', {
+              studentId: enroll.studentId,
+              selectedCourse: enroll.selectedCourse,
+              selectedSubjects: enroll.selectedSubjects,
+            })
+          )
+      );
+
+      toast.success('Confirmation emails sent!');
+      setModalOpen(false);
     } catch (error) {
-        toast.error('Error enrolling students. Please try again later.');
-        console.error(error);
+      toast.error('Error enrolling students. Please try again later.');
+      console.error(error);
     }
   };
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
       <h2>Enroll in a Quiz</h2>
-      <button style={{ background: '#4CAF50', color: 'white', padding: '10px', border: 'none', cursor: 'pointer' }} onClick={() => setModalOpen(true)}> <FaPlus/> Enroll Students</button>
+      <button style={{ background: '#4CAF50', color: 'white', padding: '10px', border: 'none', cursor: 'pointer' }} onClick={() => setModalOpen(true)}> <FaPlus /> Enroll Students</button>
       <Modal isOpen={modalOpen} onRequestClose={() => setModalOpen(false)} style={{ overlay: { backgroundColor: 'rgba(0, 0, 0, 0.5)' }, content: { width: '400px', margin: 'auto', padding: '20px', borderRadius: '10px' } }}>
-        <FaTimes onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', alignItems:'right' }} />
+        <FaTimes onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', alignItems: 'right' }} />
         <h3>Quiz Enrollment</h3>
         <form onSubmit={handleSubmit}>
           {/*student selection dropdown */}
@@ -195,7 +233,7 @@ const QuizEnroll = () => {
 
                   return (
                     <div ref={innerRef} {...innerProps} className="d-flex align-items-center px-2" style={{ cursor: 'pointer', gap: '5px' }} >
-                      <Form.Check type="checkbox" checked={isSelected} onChange={() => {}} className="m-0" style={{ marginRight: '2px' }} />
+                      <Form.Check type="checkbox" checked={isSelected} onChange={() => { }} className="m-0" style={{ marginRight: '2px' }} />
                       <span>{data.label}</span>
                     </div>
                   );
@@ -241,11 +279,25 @@ const QuizEnroll = () => {
               )}
             </div>
           )}
-          
+
           <button type="submit" style={{ width: '100%', background: '#4CAF50', color: 'white', padding: '10px', border: 'none', cursor: 'pointer' }}>Enroll</button>
         </form>
       </Modal>
       {/* Enrolled Students Table */}
+      <div className='mt-3'>
+      <InputGroup className="mb-3">
+        <InputGroup.Text>
+          <BsSearch />
+        </InputGroup.Text>
+        <Form.Control
+          type="text"
+          placeholder="Search by Student Name, course, Topic, or Payment Status..."
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </InputGroup>
+      </div>
+
       <h3 className="text-center mt-4">Enrolled Students</h3>
       <Table striped bordered hover>
         <thead>
@@ -258,11 +310,11 @@ const QuizEnroll = () => {
           </tr>
         </thead>
         <tbody>
-          {enrollments.length > 0 ? (
-            enrollments.flatMap((enrollment, index) =>
-              enrollment.selectedSubjects.map((subject, subIndex) => (
+          {filteredEnrollments.length > 0 ? (
+            filteredEnrollments.flatMap((enrollment, index) =>
+              enrollment.selectedSubjects.map((subject) => (
                 <tr key={`${enrollment._id}-${subject._id}`}>
-                  <td>{index + 1}</td> 
+                  <td>{index + 1}</td>
                   <td>{enrollment.studentId?.firstname} {enrollment.studentId?.lastname}</td>
                   <td>{enrollment.selectedCourse?.name}</td>
                   <td>{subject.name}</td>

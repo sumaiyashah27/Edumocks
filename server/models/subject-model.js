@@ -1,22 +1,10 @@
 const mongoose = require('mongoose');
 
 const subjectSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  price: {
-    type: Number, // Define price as a number
-    required: true, // Make it mandatory
-    min: 0, // Ensure price is non-negative
-  },
-  questions: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question', // Reference to the Question schema
-    },
-  ],
+  name: { type: String, required: true, trim: true },
+  price: { type: Number, required: true, min: 0 },
+  questions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
+  quesets: [{ _id: mongoose.Schema.Types.ObjectId, name: String }] // Store queset details
 }, { timestamps: true });
 
 module.exports = mongoose.model('Subject', subjectSchema);

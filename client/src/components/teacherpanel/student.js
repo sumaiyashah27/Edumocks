@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Table, Button, Form, Modal, InputGroup } from 'react-bootstrap';
 import Papa from 'papaparse';
 import './css/student.css'; // Add styles
-
+import { toast, ToastContainer } from "react-toastify";
 const Student = () => {
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,7 +59,7 @@ const Student = () => {
   
           if (invalidStudents.length > 0) {
             console.log('Invalid students:', invalidStudents);  // Log the invalid students for debugging
-            alert('Some students have missing required fields: firstname, lastname, or email.');
+            toast.error('Some students have missing required fields: firstname, lastname, or email.');
             return;
           }
   
@@ -68,7 +68,7 @@ const Student = () => {
           const invalidEmails = studentsData.filter(student => student.email && !emailRegex.test(student.email));
   
           if (invalidEmails.length > 0) {
-            alert('Some emails are invalid. Please check the email format.');
+            toast.warning('Some emails are invalid. Please check the email format.');
             return;
           }
   
@@ -83,14 +83,14 @@ const Student = () => {
             if (response.ok) {
               // Fetch and display updated list of students
               fetchStudents();
-              alert('Students added successfully!');
+              toast.success('Students added successfully!');
               setShowUploadModal(false);
             } else {
               throw new Error('Error uploading students');
             }
           } catch (error) {
             console.error('Error uploading students:', error);
-            alert('There was an error uploading students.');
+            toast.error('There was an error uploading students.');
           }
         },
       });
@@ -165,9 +165,6 @@ const Student = () => {
             <FaUserPlus /> Add Student
           </Button>
         </Link>
-        <Button variant="secondary" onClick={handleDownloadTemplate}>
-          <FaDownload /> Bulk Format
-        </Button>
         <Button variant="primary" onClick={() => setShowUploadModal(true)}>
           <FaUpload /> Upload Students
         </Button>
@@ -233,12 +230,16 @@ const Student = () => {
         <Modal.Body>
           <Form.Control type="file" accept=".csv" onChange={handleBulkUpload} />
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className='d-flex justify-content-between'>
+          <Button variant="secondary" onClick={handleDownloadTemplate}>
+            <FaDownload /> Bulk Format
+          </Button>
           <Button variant="primary" onClick={() => setShowUploadModal(false)}>
             Upload
           </Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer />
     </div>
   );
 };

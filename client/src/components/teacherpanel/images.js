@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaPlus, FaTimes, FaImage, FaTrashAlt, FaFolder, FaCopy, FaDownload } from 'react-icons/fa';
+import { FaPlus, FaTimes, FaImage, FaTrashAlt, FaFolder, FaCopy, FaDownload, FaFolderOpen, FaEdit } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 
 export default function ImageManager() {
@@ -16,41 +18,54 @@ export default function ImageManager() {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [selectedFileNames, setSelectedFileNames] = useState([]);
+  const [openFolders, setOpenFolders] = useState(new Set());
+  const [editingImage, setEditingImage] = useState(null);
+  const [newImageName, setNewImageName] = useState("");
 
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get('/api/folders');
-        setFolders(response.data);
-      } catch (error) {
-        toast.error('Error fetching folders');
-      }
-    };
-
     fetchFolders();
   }, []);
+
+  const fetchFolders = async () => {
+    try {
+      const response = await axios.get('/api/folders');
+      setFolders(organizeFolders(response.data));
+    } catch (error) {
+      toast.error('Error fetching folders');
+    }
+  };
 
   const createFolder = async () => {
     if (!newFolderName.trim()) {
       toast.error('Folder name cannot be empty.');
       return;
     }
+
     try {
-      const response = await axios.post('/api/folders/create-folder', { name: newFolderName });
-      setFolders((prevFolders) => [...prevFolders, response.data]);
+      const response = await axios.post('/api/folders/create-folder', {
+        name: newFolderName,
+        pfolder: selectedFolder ? selectedFolder._id : null, // ✅ Ensure null for top-level
+      });
+
+      setFolders(organizeFolders([...folders, response.data]));
       setNewFolderName('');
       setIsFolderModalOpen(false);
       toast.success('Folder created successfully.');
+
+      fetchFolders(); // Refresh the list
+      setSelectedFolder(null); // ✅ Reset after creation
     } catch (error) {
       console.error(error.response?.data?.message || 'Error creating folder');
     }
   };
+
 
   const deleteFolder = async (folderId) => {
     try {
       await axios.delete(`/api/folders/${folderId}`);
       setFolders(folders.filter(folder => folder._id !== folderId));
       toast.success('Folder deleted successfully.');
+      fetchFolders();
     } catch (error) {
       console.error('Error deleting folder');
     }
@@ -65,11 +80,20 @@ export default function ImageManager() {
   const fetchImages = async (folderId) => {
     try {
       const response = await axios.get(`/api/folders/${folderId}/images`);
-      setImages(response.data);
+
+      setImages((prev) => ({
+        ...prev,
+        [folderId]: response.data, // ✅ Store images under folderId
+      }));
+
+      console.log("Fetched images:", response.data); // ✅ Debugging
     } catch (error) {
-      console.error('Error fetching images');
+      console.error("Error fetching images:", error);
     }
   };
+
+
+  console.log('images', images);
 
   const selectFolder = (folder) => {
     if (selectedFolder === folder._id) {
@@ -81,34 +105,66 @@ export default function ImageManager() {
     }
   };
 
+  const organizeFolders = (folders) => {
+    const folderMap = new Map();
+
+    // Create a map of folders with their ID as keys
+    folders.forEach(folder => folderMap.set(folder._id, { ...folder, subfolders: [] }));
+
+    const rootFolders = [];
+
+    // Assign subfolders to their parent
+    folderMap.forEach(folder => {
+      if (folder.pfolder) {
+        folderMap.get(folder.pfolder)?.subfolders.push(folder);
+      } else {
+        rootFolders.push(folder);
+      }
+    });
+
+    return rootFolders;
+  };
+
   const uploadImages = async () => {
     if (!selectedFolder) {
-      console.error('Please select a folder first.');
+      console.error("Please select a folder first.");
       return;
     }
-  
+
     const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append('images', file));
-  
+    selectedFiles.forEach((file) => formData.append("images", file));
+    formData.append("folderId", selectedFolder._id); // Ensure folder ID is sent
+
     try {
-      const response = await axios.post(`/api/folders/${selectedFolder}/upload-images`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-  
-      setImages([...images, ...response.data]);
+      const response = await axios.post(
+        `/api/folders/${selectedFolder._id}/upload-images`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      // Update images state only for the selected folder
+      setImages((prevImages) => ({
+        ...prevImages,
+        [selectedFolder._id]: [...(prevImages[selectedFolder._id] || []), ...response.data],
+      }));
+
       setIsImageModalOpen(false);
       setSelectedFiles([]);
-      toast.success('Images uploaded successfully.');
+      toast.success("Images uploaded successfully.");
     } catch (error) {
-      console.error('Error uploading images');
+      console.error("Error uploading images");
     }
   };
 
-  const deleteImage = async (imageId) => {
+  const deleteImage = async (imageId, folderId) => {
     try {
       await axios.delete(`/api/folders/images/${imageId}`);
-      setImages(images.filter(image => image._id !== imageId));
+      setImages((prevImages) => ({
+        ...prevImages,
+        [folderId]: prevImages[folderId].filter((image) => image._id !== imageId),
+      }));
       toast.success('Image deleted successfully.');
+      fetchFolders();
     } catch (error) {
       console.error('Error deleting image:', error);
       toast.error('Error deleting image.');
@@ -138,6 +194,209 @@ export default function ImageManager() {
     }
   };
 
+  const downloadFolder = async (folderId) => {
+    try {
+      const response = await axios.get(`/api/folders/download/${folderId}`, {
+        responseType: 'blob',
+      });
+
+      // Extract filename from Content-Disposition header (fallback to folderId)
+      const contentDisposition = response.headers['content-disposition'];
+      const match = contentDisposition && contentDisposition.match(/filename="(.+)"/);
+      const filename = match ? match[1] : `folder_${folderId}.zip`;
+
+      const link = document.createElement('a');
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading folder:', error);
+      toast.error('Folder is empty');
+    }
+  };
+
+  const handleEditClick = (image) => {
+    // Extract name without extension
+    const nameWithoutExtension = image.name.replace(/\.[^/.]+$/, "");
+    setEditingImage(image._id);
+    setNewImageName(nameWithoutExtension);
+  };
+
+  const handleSaveEdit = async (image) => {
+    if (!newImageName.trim() || newImageName === image.name.replace(/\.[^/.]+$/, "")) return;
+
+    try {
+      const updatedName = newImageName + image.name.match(/\.[^/.]+$/)[0]; // Append original extension
+      const response = await axios.put(`/api/folders/update-image/${image._id}`, { newName: updatedName });
+
+      if (response.status === 200) {
+        setImages((prevImages) => ({
+          ...prevImages,
+          [image.folder]: prevImages[image.folder].map((img) =>
+            img._id === image._id ? { ...img, name: updatedName } : img
+          ),
+        }));
+
+        // Reset the input after updating
+        fetchFolders();
+        setEditingImage(null);
+        setNewImageName("");
+      }
+    } catch (error) {
+      console.error("Error updating image name:", error);
+    }
+  };
+
+  const toggleFolder = (folderId) => {
+    setOpenFolders((prev) => {
+      const newOpenFolders = new Set(prev);
+      if (newOpenFolders.has(folderId)) {
+        newOpenFolders.delete(folderId); // Close folder
+      } else {
+        newOpenFolders.add(folderId); // Open folder
+        fetchImages(folderId); // ✅ Fetch images when opening the folder
+      }
+      return newOpenFolders;
+    });
+  };
+
+  const renderFolders = (folders) => {
+    return folders.map((folder) => (
+      <div key={folder._id} className="ms-3">
+        {/* Parent Folder */}
+        <div
+          className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded"
+          style={{ cursor: "pointer" }}
+          onClick={() => toggleFolder(folder._id)}
+        >
+          <div className="d-flex align-items-center">
+            <FontAwesomeIcon
+              icon={openFolders.has(folder._id) ? faMinus : faPlus}
+              style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
+            />
+            {openFolders.has(folder._id) ? <FaFolderOpen fontSize={26} className="me-2" /> : <FaFolder fontSize={26} className="me-2" />}
+            {folder.name}
+          </div>
+          <div>
+            {folder.pfolder && (
+              <FaDownload
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadFolder(folder._id);
+                }}
+                className="text-success me-3"
+                style={{ cursor: "pointer" }}
+              />
+            )}
+
+            <FaTrashAlt
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteFolder(folder._id);
+              }}
+              className="text-danger"
+              style={{ cursor: "pointer" }}
+            />
+          </div>
+        </div>
+
+        {/* Show "Create New Folder" for parent folders */}
+        {openFolders.has(folder._id) && !folder.pfolder && (
+          <div className="text-center mb-2">
+            <Button variant="primary" onClick={() => {
+              setIsFolderModalOpen(true)
+              setSelectedFolder(folder)
+            }}>
+              <FaFolder className="me-2" /> Create New Folder
+            </Button>
+          </div>
+        )}
+
+        {/* Show "Upload Images" inside subfolders */}
+        {openFolders.has(folder._id) && folder.pfolder && (
+          <div className="text-center mb-2">
+            <Button variant="primary"
+              onClick={() => {
+                setSelectedFolder(folder);
+                setIsImageModalOpen(true);
+              }}>
+              <FaImage className="me-2" /> Upload Images
+            </Button>
+          </div>
+        )}
+
+        {openFolders.has(folder._id) && images[folder._id]?.length > 0 && (
+          <div className="d-flex flex-wrap">
+            {images[folder._id].map((image) => {
+              const imageUrl = `/images/${image.location.replace(/^\/image\//, "")}`;
+
+              return (
+                <div key={image._id} className="p-2">
+                  {/* Image Preview */}
+                  <img
+                    src={imageUrl}
+                    alt={image.name}
+                    className="img-fluid"
+                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                  />
+
+                  {/* Editable Image Name */}
+                  {editingImage === image._id ? (
+                    <input
+                      type="text"
+                      value={newImageName}
+                      onChange={(e) => setNewImageName(e.target.value)}
+                      className="form-control"
+                      onBlur={() => handleSaveEdit(image)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveEdit(image);
+                        if (e.key === "Escape") setEditingImage(null);
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    <div onClick={() => handleEditClick(image)} style={{ cursor: "pointer" }}>
+                      {image.name} <FaEdit className="ms-2" />
+                    </div>
+                  )}
+
+                  {/* Copy Image Link */}
+                  <Button variant="link" onClick={() => copyImageLink(imageUrl)}>
+                    <FaCopy />
+                  </Button>
+
+                  {/* Save or Edit Button */}
+                  {editingImage === image._id ? (
+                    <Button variant="link" onClick={() => handleSaveEdit(image)}>
+                      ✅
+                    </Button>
+                  ) : (
+                    <Button variant="link" onClick={() => handleEditClick(image)}>
+                      <FaEdit />
+                    </Button>
+                  )}
+
+                  {/* Delete Image */}
+                  <Button variant="link" onClick={() => deleteImage(image._id, folder._id)} className="text-danger">
+                    <FaTrashAlt />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Recursively Render Subfolders if Opened */}
+        {openFolders.has(folder._id) && folder.subfolders.length > 0 && (
+          <div className="ms-4">{renderFolders(folder.subfolders)}</div>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <div className="container" style={{ padding: '30px', backgroundColor: '#f4f4f4' }}>
       <ToastContainer />
@@ -147,7 +406,11 @@ export default function ImageManager() {
       </h1>
 
       <div className="d-flex justify-content-center mb-3">
-        <Button variant="warning" onClick={() => setIsFolderModalOpen(true)} className="me-2">
+        <Button variant="warning" onClick={() => {
+          setIsFolderModalOpen(true);
+          setSelectedFolder(null); // ✅ Reset to make it a top-level folder
+        }}
+          className="me-2">
           <FaPlus className="me-2" /> Add New Folder
         </Button>
         <Button variant="success" onClick={downloadAllFolders}>
@@ -157,54 +420,8 @@ export default function ImageManager() {
 
       <div className="mb-3">
         <h3>Folders</h3>
-        {folders.length === 0 ? (
-          <p>No folders available.</p>
-        ) : (
-          folders.map((folder) => (
-            <div key={folder._id} className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
-              <div className="d-flex align-items-center" style={{ cursor: 'pointer' }} onClick={() => selectFolder(folder)}>
-                <FaFolder className="me-2" />
-                {folder.name}
-              </div>
-              <div>
-                <FaTrashAlt
-                  onClick={() => deleteFolder(folder._id)}
-                  className="text-danger"
-                  style={{ cursor: 'pointer' }}
-                />
-              </div>
-            </div>
-          ))
-        )}
+        {folders.length === 0 ? <p>No folders available.</p> : renderFolders(folders)}
       </div>
-
-      {selectedFolder && (
-        <div className="text-center mb-4">
-          <Button variant="primary" onClick={() => setIsImageModalOpen(true)}>
-            <FaImage className="me-2" /> Upload Images
-          </Button>
-        </div>
-      )}
-
-      {selectedFolder && images.length > 0 && (
-        <div className="d-flex flex-wrap">
-          {images.map((image) => {
-            const imageUrl = `/images/${image.location.replace(/^\/image\//, '')}`;
-            return (
-              <div key={image._id} className="p-2">
-                <img src={imageUrl} alt={image.name} className="img-fluid" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                <div>{image.name}</div>
-                <Button variant="link" onClick={() => copyImageLink(imageUrl)}>
-                  <FaCopy />
-                </Button>
-                <Button variant="link" onClick={() => deleteImage(image._id)} className="text-danger">
-                  <FaTrashAlt />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       <Modal show={isFolderModalOpen} onHide={() => setIsFolderModalOpen(false)}>
         <Modal.Header closeButton>

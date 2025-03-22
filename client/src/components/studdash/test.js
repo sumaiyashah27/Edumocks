@@ -6,10 +6,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faTimes, faFlag  } from '@fortawesome/free-solid-svg-icons';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 
 const Test = () => {
   const location = useLocation();
-  const { studentId, studentName, studentEmail, selectedCourse, selectedSubject } = location.state || {};
+  const navigate = useNavigate();
+  const [studentId, setStudentId] = useState(localStorage.getItem("_id") || "");
+  const [studentName, setStudentName] = useState(localStorage.getItem("firstname") || "");
+  const [studentEmail, setStudentEmail] = useState(localStorage.getItem("email") || "");
+  const [selectedCourse, setSelectedCourse] = useState(localStorage.getItem("selectedCourse") || "");
+  const [selectedSubject, setSelectedSubject] = useState(localStorage.getItem("selectedSubject") || "");
   const [courseName, setCourseName] = useState('');
   const [modalOpen, setModalOpen] = useState(false); // Modal state
   const [subjectName, setSubjectName] = useState('');
@@ -24,7 +31,6 @@ const Test = () => {
   const [score, setScore] = useState(null);
   const [correctAnswers, setCorrectAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
-  const navigate = useNavigate();
   const [visitedQuestions, setVisitedQuestions] = useState(new Set());
   const [showPopup, setShowPopup] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState([]);
@@ -34,37 +40,52 @@ const Test = () => {
   const [isSubmitClicked, setIsSubmitClicked] = useState(false);
   const [isEnterRoomClicked, setIsEnterRoomClicked] = useState(false);
   const [showSubmitPopup, setShowSubmitPopup] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false); 
 
   useEffect(() => {
-    let isConfirmationDisplayed = false; // Flag to avoid repeated prompts
-  
-    const handlePopState = (event) => {
-      if (!isConfirmationDisplayed) {
-        isConfirmationDisplayed = true; // Set the flag to true
-        const confirmation = window.confirm("If you go back, you will lose this test. Do you want to go back?");
-        if (confirmation) {
-          // If "Yes" is clicked, allow navigation
-          window.history.back();
-        } else {
-          // If "Cancel" is clicked, prevent navigation
-          window.history.pushState(null, null, window.location.pathname);
-        }
-        isConfirmationDisplayed = false; // Reset the flag
-      }
+    if (location.state?.studentId) {
+      setStudentId(location.state.studentId);
+      localStorage.setItem("studentId", location.state.studentId);
+    }
+    if (location.state?.studentName) {
+      setStudentName(location.state.studentName);
+      localStorage.setItem("studentName", location.state.studentName);
+    }
+    if (location.state?.studentEmail) {
+      setStudentEmail(location.state.studentEmail);
+      localStorage.setItem("studentEmail", location.state.studentEmail);
+    }
+    if (location.state?.selectedCourse) {
+      setSelectedCourse(location.state.selectedCourse);
+      localStorage.setItem("selectedCourse", location.state.selectedCourse);
+    }
+    if (location.state?.selectedSubject) {
+      setSelectedSubject(location.state.selectedSubject);
+      localStorage.setItem("selectedSubject", location.state.selectedSubject);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    // Push a state to history to prevent immediate navigation
+    window.history.pushState(null, "", window.location.href);
+
+    const handleBackButton = (event) => {
+      event.preventDefault();
+      setConfirmModalOpen(true); // Show confirmation modal instead of going back
     };
-  
-    // Add an initial dummy state to detect back navigation
-    window.history.pushState(null, null, window.location.pathname);
-  
-    // Add popstate event listener
-    window.addEventListener("popstate", handlePopState);
-  
+
+    window.addEventListener("popstate", handleBackButton);
+
     return () => {
-      // Cleanup on component unmount
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("popstate", handleBackButton);
     };
   }, []);
-  
+
+  const handleConfirmBack = () => {
+    setConfirmModalOpen(false);
+    navigate(-1);
+  };
+
   // Fetch course name
   const fetchCourseName = useCallback(() => {
     if (selectedCourse) {
@@ -205,17 +226,17 @@ const Test = () => {
   };
  
   // Prevent page reload during the test
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      const message = "Reloading the page is prohibited during the test!";
-      e.returnValue = message;
-      return message;
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const handleBeforeUnload = (e) => {
+  //     const message = "Reloading the page is prohibited during the test!";
+  //     e.returnValue = message;
+  //     return message;
+  //   };
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, []);
 
 
   
@@ -431,18 +452,31 @@ const Test = () => {
 
       questionFields.forEach(({ text, image, table }) => {
         // Text Handling
+        const extractTextFromHTML = (html) => {
+          const div = document.createElement("div");
+          div.innerHTML = html;
+        
+          // Convert <br> tags to new lines
+          div.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+        
+          // Extract text while preserving new lines
+          return div.innerText;
+        };
+        
+        // Text Handling
         if (text) {
-          const textPadding = 5;
-          const lines = doc.splitTextToSize(text, pageWidth - 2 * pageMargin); // Wrap text
+          const textContent = extractTextFromHTML(text);
+          const lines = doc.splitTextToSize(textContent, pageWidth - 2 * pageMargin); 
+        
           lines.forEach(line => {
             if (yPosition > pageHeight - 10) { 
               doc.addPage();
               drawPageBorder();
               addWatermark();
-              yPosition = pageMargin + 10; // Reset y-position for the new page
+              yPosition = pageMargin + 10;
             }
             doc.text(line, pageMargin + textPadding, yPosition);
-            yPosition += 10; // Increment y-position for the next line
+            yPosition += 10;
           });
         }
 
@@ -511,31 +545,37 @@ const Test = () => {
         }
       });
 
-      // Add Options
-      doc.setFontSize(14);
-      doc.setFont("times", "bold")
-      doc.text("Options:", pageMargin + textPadding, yPosition);
-      doc.setFont("times", "normal")
-      yPosition += 10;
-      doc.setFontSize(12);
-      Object.entries(question.options).forEach(([key, value]) => {
-        if (['a', 'b', 'c', 'd'].includes(key) && !value) {
-          return;
-        }
+// Add Options
+doc.setFontSize(14);
+doc.setFont("times", "bold");
+doc.text("Options:", pageMargin + textPadding, yPosition);
+doc.setFont("times", "normal");
+yPosition += 10;
+doc.setFontSize(12);
 
-        const lines = doc.splitTextToSize(`${key.toUpperCase()}: ${value}`, pageWidth - 2 * pageMargin);
+Object.entries(question.options).forEach(([key, value]) => {
+  if (['a', 'b', 'c', 'd'].includes(key) && !value) {
+    return;
+  }
 
-        lines.forEach(line => {
-          if (yPosition > pageHeight - 10) {
-            doc.addPage();
-            drawPageBorder();
-            addWatermark();
-            yPosition = pageMargin + 10;
-          }
-          doc.text(line, pageMargin + textPadding, yPosition);
-          yPosition += 10;
-        });
-      });
+  // Convert HTML to plain text
+  const div = document.createElement("div");
+  div.innerHTML = value;
+  const plainText = div.innerText || div.textContent;
+
+  const lines = doc.splitTextToSize(`${key.toUpperCase()}: ${plainText}`, pageWidth - 2 * pageMargin);
+
+  lines.forEach(line => {
+    if (yPosition > pageHeight - 10) {
+      doc.addPage();
+      drawPageBorder();
+      addWatermark();
+      yPosition = pageMargin + 10;
+    }
+    doc.text(line, pageMargin + textPadding, yPosition);
+    yPosition += 10;
+  });
+});
 
       // Add Selected and Correct Answers
       doc.setTextColor(0, 123, 0); 
@@ -549,37 +589,54 @@ const Test = () => {
       yPosition += 10;
 
       // Add Explanation
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("times", "bold")
-      doc.text("Answer Description:", pageMargin + textPadding, yPosition);
-      doc.setFont("times", "normal")
+      const getPlainText = (html) => {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        return div.innerText || div.textContent;
+      };
+      // Add Selected and Correct Answers
+      doc.setTextColor(0, 123, 0);
+      doc.setFont("times", "bold");
+      // Convert selected answer to plain text
+      const selectedAnswer = getPlainText(selectedOptions[question._id] || "None");
+      doc.text(`Your Answer: ${selectedAnswer}`, pageMargin + textPadding, yPosition);
+      yPosition += 10;
+      doc.setTextColor(255, 0, 0);
+      doc.setFont("times", "bold");
+      
+
+      // Convert correct answer to plain text
+      const correctAnswer = getPlainText(question.correctAns);
+      doc.text(`Correct Answer: ${correctAnswer}`, pageMargin + textPadding, yPosition);
       yPosition += 10;
 
       const explanationFields = [
-        { text: question.answerDescriptionText1, image: question.answerDescriptionImage1, table: question.answerDescriptionTable1 },
-        { text: question.answerDescriptionText2, image: question.answerDescriptionImage2, table: question.answerDescriptionTable2 },
-        { text: question.answerDescriptionText3, image: question.answerDescriptionImage3, table: question.answerDescriptionTable3 },
-      ];
+  { text: question.answerDescriptionText1, image: question.answerDescriptionImage1, table: question.answerDescriptionTable1 },
+  { text: question.answerDescriptionText2, image: question.answerDescriptionImage2, table: question.answerDescriptionTable2 },
+  { text: question.answerDescriptionText3, image: question.answerDescriptionImage3, table: question.answerDescriptionTable3 },
+];
+      
+explanationFields.forEach(({ text, image, table }) => {
+  // Text Handling
+  if (text) {
+    const textPadding = 5;
+    
+    // Convert explanation text to plain text
+    const plainText = getPlainText(text);
 
-      explanationFields.forEach(({ text, image, table }) => {
-        // Similar logic for Explanation (text, image, table) as done for questions
-        // Text Handling
-        if (text) {
-          const textPadding = 5;
-          const lines = doc.splitTextToSize(text, pageWidth - 2 * pageMargin); // Wrap text
-          lines.forEach(line => {
-            if (yPosition > pageHeight - 10) { 
-              doc.addPage();
-              drawPageBorder();
-              addWatermark();
-              yPosition = pageMargin + 10; // Reset y-position for the new page
-            }
-            doc.text(line, pageMargin + textPadding, yPosition);
-            yPosition += 10; // Increment y-position for the next line
-          });
-        }
-
+    const lines = doc.splitTextToSize(plainText, pageWidth - 2 * pageMargin); // Wrap text
+    lines.forEach(line => {
+      if (yPosition > pageHeight - 10) { 
+        doc.addPage();
+        drawPageBorder();
+        addWatermark();
+        yPosition = pageMargin + 10; // Reset y-position for the new page
+      }
+      doc.text(line, pageMargin + textPadding, yPosition);
+      yPosition += 10; // Increment y-position for the next line
+    });
+  }
+  
         // Image Handling
         if (image) {
           const imgWidth = doc.internal.pageSize.width * 0.8;
@@ -656,66 +713,50 @@ const Test = () => {
   }, [courseName, subjectName, quizquestionSet, selectedOptions]);
 
 
-  // Submit quiz and calculate the score
   const handleSubmitQuiz = useCallback(() => {
     setQuizSubmitted(true);
-    // Calculate the score by comparing selected options to correct answers
-    const calculatedScore = Object.keys(selectedOptions).reduce((acc, questionId) => {
-      return acc + (selectedOptions[questionId] === correctAnswers[questionId] ? 1 : 0);
-    }, 0);
+  
+    // Calculate score
+    const calculatedScore = Object.keys(selectedOptions).reduce(
+      (acc, questionId) => acc + (selectedOptions[questionId] === correctAnswers[questionId] ? 1 : 0),
+      0
+    );
     setScore(calculatedScore);
-    console.log('Score:', calculatedScore);
     setShowResults(true);
-
+  
+    // Update test status
     axios.post('/api/scheduleTest/updateTestStatus', {
       studentId,
       selectedCourse,
       selectedSubject,
-      score: calculatedScore, // Make sure this is 2
+      score: calculatedScore,
       status: "Completed",
-    })
-    .then((response) => {
-      console.log('Payload sent:', {
-        studentId,
-        selectedCourse,
-        selectedSubject,
-        score: calculatedScore,
-        status: "Completed",
-      });
-      console.log('Test updated successfully:', response.data);
-    })
-    .catch((error) => {
-      console.error('Error updating test:', error.response?.data || error.message);
     });
-    
-    // Save the test results in the CompletedTest collection
+  
+    // Save test results in CompletedTest collection
     axios.post('/api/completed/saveCompletedTest', {
       studentId,
       selectedCourse,
       selectedSubject,
-      questionSet,  // Assuming you have a `questionSet` variable
-      testDate: new Date(), // Set current date for testDate
-      testTime: new Date().toLocaleTimeString(), // Current time for testTime
+      questionSet,
+      testDate: new Date(),
+      testTime: new Date().toLocaleTimeString(),
       score: calculatedScore,
       studentAnswers: Object.keys(selectedOptions).map((questionId) => ({
-        questionId: questionId, 
-        selectedAnswer: selectedOptions[questionId], 
+        questionId,
+        selectedAnswer: selectedOptions[questionId],
         isCorrect: selectedOptions[questionId] === correctAnswers[questionId],
       })),
-    })
-      .then((response) => {
-        console.log('Completed collection Test saved successfully:', response.data);
-      })
-      .catch((error) => {
-        console.error('Completed collection Error saving test:', error.response?.data || error.message);
-      });
-
+    });
+  
     // Generate PDF for the results
-    const pdfBlob = generatePDF();
+    const pdfBlob = generatePDF(); // Ensure this returns a valid Blob
     const formData = new FormData();
     formData.append('studentEmail', studentEmail);
-    formData.append('pdf', pdfBlob); // Assuming you have the PDF as a blob
+    formData.append('pdf', pdfBlob, 'quiz-results.pdf'); // Ensure the filename is set
+  
     console.log('Student Email:', studentEmail);
+  
     // Send the email with the PDF attachment
     axios.post('/api/studResults/sendQuizResults', formData)
       .then((response) => {
@@ -724,9 +765,10 @@ const Test = () => {
       .catch((error) => {
         console.error('Error sending email:', error);
       });
-      
-      navigate('/studpanel');
+  
+    navigate('/studpanel');
   }, [selectedOptions, correctAnswers, generatePDF, studentEmail, studentId, selectedCourse, selectedSubject]);
+  
 
   // Countdown timer
   useEffect(() => {
@@ -749,10 +791,14 @@ const Test = () => {
     return `${hours}h ${minutes}m ${secs}s`;
   };
 
+  useEffect(() => {
+    fetchQuizQuestionSet();
+  }, [fetchQuizQuestionSet]);
+
   return (
-    <div className="quiz-container" style={{ margin: '0 auto', maxWidth: '900px', padding: '20px' }}>
+    <div className="quiz-container" style={{ margin: '0 auto', padding: '20px' }}>
       {/* <h1 style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '20px' }} >Quiz Test</h1> */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '10px', marginBottom: '50px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
           {/* <p>studentId ID: {studentId}</p>
           <p>student Name: {studentName}</p>
           <p>student Email: {studentEmail}</p>
@@ -807,7 +853,7 @@ const Test = () => {
               {/* Combined Box for Left and Right Side Panels */}
               <div className="quiz-container" style={{ display: 'flex', width: '100%', height: '100vh', overflow: 'hidden'}}>
                 {/* Left Side Panel with Question Numbers */}
-                <div className="question-list" style={{ backgroundColor: '#fff', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxHeight: '800px', overflowY: 'auto' , fontSize: '16px' }}>
+                <div className="question-list" style={{ backgroundColor: '#fff', padding: '10px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', maxHeight: '842px', overflowY: 'auto' , fontSize: '16px' }}>
                   {quizquestionSet.map((_, index) => (
                     <button key={index} onClick={() => setCurrentQuestionIndex(index)} className={currentQuestionIndex === index ? 'active' : ''} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '5px', border: 'none', backgroundColor: isQuestionAnswered(index) ? '#ccc' : '#8CC63E', color:'#fff', cursor: 'pointer', borderRadius: '4px', textAlign: 'center', position: 'relative', }}>
                       {`Q${index + 1}`}
@@ -820,152 +866,171 @@ const Test = () => {
                 {/* Right Side Panel with Current Question */}
                 <div className="question-panel" style={{ flex: '3', backgroundColor: '#fff', padding: '20px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',height: '100%',overflowY: 'auto' , fontSize: '16px' }}>
                   {/* Question Text */}
-                  {quizquestionSet[currentQuestionIndex].questionText1 && (
-                    <h5 style={{ color: '#333' , fontSize: '16px' }}>{`Q${currentQuestionIndex + 1} : ${quizquestionSet[currentQuestionIndex].questionText1}`}</h5>
-                  )}
+                {quizquestionSet.length > 0 && currentQuestionIndex < quizquestionSet.length && (
+                  <h5
+                    dangerouslySetInnerHTML={{
+                      __html: `Q${currentQuestionIndex + 1}: ${quizquestionSet[currentQuestionIndex]?.questionText1}`,
+                    }}
+                  />
+                )}
                   {/* Question Image */}
-                  {quizquestionSet[currentQuestionIndex].questionImage1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-                      <img src={quizquestionSet[currentQuestionIndex].questionImage1} alt={`Question ${currentQuestionIndex + 1}`} style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }}/>
-                    </div>
-                  )}
-                  {/* Question Table */}
-                  {quizquestionSet[currentQuestionIndex].questionTable1 && Array.isArray(quizquestionSet[currentQuestionIndex].questionTable1.data) && quizquestionSet[currentQuestionIndex].questionTable1.data.length > 0 && (
-                    <div style={{ marginTop: '10px', overflowX: 'auto' }}>
-                      <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '14px', margin: '0 auto' }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
-                            {quizquestionSet[currentQuestionIndex].questionTable1.data[0].map((header, index) => (
-                              <th key={index} style={{ padding: '6px 10px', border: '1px solid #ddd', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {quizquestionSet[currentQuestionIndex].questionTable1.data.slice(1).map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                              {row.map((cell, colIndex) => (
-                                <td key={colIndex} style={{ padding: '6px 10px', border: '1px solid #ddd', textAlign: 'center', fontSize: '14px' }}>
-                                  {cell}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                  {/* Second Set: Text, Image, Table */}
-                  {quizquestionSet[currentQuestionIndex].questionText2 && (
-                    <h5 style={{ color: '#333', fontSize: '16px' }}>{`${quizquestionSet[currentQuestionIndex].questionText2}`}</h5>
-                  )}
-                  
-                  {quizquestionSet[currentQuestionIndex].questionImage2 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-                      <img src={quizquestionSet[currentQuestionIndex].questionImage2} alt={`Question ${currentQuestionIndex + 1}`} style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }}/>
-                    </div>
-                  )}
+                  {quizquestionSet.length > 0 && currentQuestionIndex < quizquestionSet.length && quizquestionSet[currentQuestionIndex] && (
+  <>
+    {/* Question Image 1 */}
+    {quizquestionSet[currentQuestionIndex]?.questionImage1 && (
+      <div
+        style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}
+        dangerouslySetInnerHTML={{
+          __html: `<img src="${quizquestionSet[currentQuestionIndex].questionImage1}" alt="Question ${currentQuestionIndex + 1}" style="max-width: 100%; max-height: 200px; object-fit: contain;" />`,
+        }}
+      />
+    )}
 
-                  {quizquestionSet[currentQuestionIndex].questionTable2 && Array.isArray(quizquestionSet[currentQuestionIndex].questionTable2.data) && quizquestionSet[currentQuestionIndex].questionTable2.data.length > 0 && (
-                    <div style={{ marginTop: '10px', overflowX: 'auto' }}>
-                      <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '14px', margin: '0 auto' }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
-                            {quizquestionSet[currentQuestionIndex].questionTable2.data[0].map((header, index) => (
-                              <th key={index} style={{ padding: '6px 10px', border: '1px solid #ddd', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {quizquestionSet[currentQuestionIndex].questionTable2.data.slice(1).map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                              {row.map((cell, colIndex) => (
-                                <td key={colIndex} style={{ padding: '6px 10px', border: '1px solid #ddd', textAlign: 'center', fontSize: '14px' }}>
-                                  {cell}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+    {/* Question Table 1 */}
+    {quizquestionSet[currentQuestionIndex]?.questionTable1 && 
+     Array.isArray(quizquestionSet[currentQuestionIndex]?.questionTable1?.data) && 
+     quizquestionSet[currentQuestionIndex]?.questionTable1?.data.length > 0 && (
+      <div style={{ marginTop: '10px', overflowX: 'auto' }}>
+        <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '14px', margin: '0 auto' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
+              {quizquestionSet[currentQuestionIndex]?.questionTable1?.data[0].map((header, index) => (
+                <th key={index} style={{ padding: '6px 10px', border: '1px solid #ddd', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {quizquestionSet[currentQuestionIndex]?.questionTable1?.data.slice(1).map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {row.map((cell, colIndex) => (
+                  <td key={colIndex} style={{ padding: '6px 10px', border: '1px solid #ddd', textAlign: 'center', fontSize: '14px' }}>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
 
-                  {/* Third Set: Text, Image, Table */}
-                  {quizquestionSet[currentQuestionIndex].questionText3 && (
-                    <h5 style={{ color: '#333' , fontSize: '16px'}}>{`${quizquestionSet[currentQuestionIndex].questionText3}`}</h5>
-                  )}
-                  
-                  {quizquestionSet[currentQuestionIndex].questionImage3 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-                      <img src={quizquestionSet[currentQuestionIndex].questionImage3} alt={`Question ${currentQuestionIndex + 1}`} style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }}/>
-                    </div>
-                  )}
+    {/* Question Text 2 */}
+    {quizquestionSet[currentQuestionIndex]?.questionText2 && (
+      <h5 style={{ color: '#333', fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: quizquestionSet[currentQuestionIndex]?.questionText2 }} />
+    )}
 
-                  {quizquestionSet[currentQuestionIndex].questionTable3 && Array.isArray(quizquestionSet[currentQuestionIndex].questionTable3.data) && quizquestionSet[currentQuestionIndex].questionTable3.data.length > 0 && (
-                    <div style={{ marginTop: '10px', overflowX: 'auto' }}>
-                      <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '14px', margin: '0 auto' }}>
-                        <thead>
-                          <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
-                            {quizquestionSet[currentQuestionIndex].questionTable3.data[0].map((header, index) => (
-                              <th key={index} style={{ padding: '6px 10px', border: '1px solid #ddd', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {quizquestionSet[currentQuestionIndex].questionTable3.data.slice(1).map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                              {row.map((cell, colIndex) => (
-                                <td key={colIndex} style={{ padding: '6px 10px', border: '1px solid #ddd', textAlign: 'center', fontSize: '14px' }}>
-                                  {cell}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+    {/* Question Image 2 */}
+    {quizquestionSet[currentQuestionIndex]?.questionImage2 && (
+      <div
+        style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}
+        dangerouslySetInnerHTML={{
+          __html: `<img src="${quizquestionSet[currentQuestionIndex].questionImage2}" alt="Question ${currentQuestionIndex + 1}" style="max-width: 100%; max-height: 200px; object-fit: contain;" />`,
+        }}
+      />
+    )}
 
+    {/* Question Table 2 */}
+    {quizquestionSet[currentQuestionIndex]?.questionTable2 &&
+      Array.isArray(quizquestionSet[currentQuestionIndex]?.questionTable2?.data) &&
+      quizquestionSet[currentQuestionIndex]?.questionTable2?.data.length > 0 && (
+        <div style={{ marginTop: '10px', overflowX: 'auto' }}>
+          <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: '14px', margin: '0 auto' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
+                {quizquestionSet[currentQuestionIndex]?.questionTable2?.data[0].map((header, index) => (
+                  <th key={index} style={{ padding: '6px 10px', border: '1px solid #ddd', fontSize: '14px', fontWeight: 'bold', color: '#555' }}>
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {quizquestionSet[currentQuestionIndex]?.questionTable2?.data.slice(1).map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, colIndex) => (
+                    <td key={colIndex} style={{ padding: '6px 10px', border: '1px solid #ddd', textAlign: 'center', fontSize: '14px' }}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+    )}
+  </>
+)}
+
+
+                {quizquestionSet.length > 0 && currentQuestionIndex < quizquestionSet.length && quizquestionSet[currentQuestionIndex]?.options && (
                   <div className="options" style={{ marginTop: '20px' }}>
-                    {Object.keys(quizquestionSet[currentQuestionIndex].options).map((key, index) => {
-                      // Only render the option if it has a value
-                      if (quizquestionSet[currentQuestionIndex].options[key]) {
+                    {Object.keys(quizquestionSet[currentQuestionIndex]?.options || {}).map((key, index) => {
+                      const optionValue = quizquestionSet[currentQuestionIndex]?.options?.[key];
+
+                      if (optionValue) {
                         return (
-                          <label key={key} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', cursor: 'pointer', marginRight: '10px' , fontSize: '16px'}}>
-                            <input  type="radio"  name={`question-${currentQuestionIndex}`}  value={key}  style={{ display: 'none', fontSize: '16px' }} 
-                              checked={selectedOptions[quizquestionSet[currentQuestionIndex]._id] === key}
+                          <label
+                            key={key}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              marginBottom: '10px',
+                              cursor: 'pointer',
+                              marginRight: '10px',
+                              fontSize: '16px',
+                            }}
+                          >
+                            <input
+                              type="radio"
+                              name={`question-${currentQuestionIndex}`}
+                              value={key}
+                              style={{ display: 'none', fontSize: '16px' }}
+                              checked={selectedOptions[quizquestionSet[currentQuestionIndex]?._id] === key}
                               onChange={() =>
                                 setSelectedOptions((prev) => ({
                                   ...prev,
-                                  [quizquestionSet[currentQuestionIndex]._id]: key,
+                                  [quizquestionSet[currentQuestionIndex]?._id]: key,
                                 }))
                               }
                             />
                             {/* Display the label (A:, B:, etc.) outside the square box */}
-                            <span style={{ marginRight: '10px', fontWeight: 'bold', fontSize: '16px' }}>
-                              {String.fromCharCode(65 + index)} 
-                            </span>
-                            {/* Display the option text inside a square box with a fixed width */}
-                            <span style={{ display: 'inline-block', padding: '10px 20px', width: '500px', border: `2px solid ${selectedOptions[quizquestionSet[currentQuestionIndex]._id] === key ? '#4CAF50' : '#ccc'}`,  backgroundColor: '#fff', color: '#333', textAlign: 'left', fontWeight: 'bold',wordWrap: 'break-word',whiteSpace: 'normal', fontSize: '16px',
-                                ...(selectedOptions[quizquestionSet[currentQuestionIndex]._id] === key && {borderWidth: '4px',
-                                }),
+                            <span
+                              style={{
+                                marginRight: '10px',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
                               }}
                             >
-                              {quizquestionSet[currentQuestionIndex].options[key]} {/* Display only the option data */}
+                              {String.fromCharCode(65 + index)}
                             </span>
-
+                            {/* Display the option text inside a square box */}
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '10px 20px',
+                                width: '500px',
+                                border: `2px solid ${selectedOptions[quizquestionSet[currentQuestionIndex]?._id] === key ? '#4CAF50' : '#ccc'}`,
+                                backgroundColor: '#fff',
+                                color: '#333',
+                                textAlign: 'left',
+                                fontWeight: 'bold',
+                                wordWrap: 'break-word',
+                                whiteSpace: 'normal',
+                                fontSize: '16px',
+                                ...(selectedOptions[quizquestionSet[currentQuestionIndex]?._id] === key && { borderWidth: '4px' }),
+                              }}
+                              dangerouslySetInnerHTML={{ __html: optionValue }}
+                            />
                           </label>
                         );
                       }
-                      return null; // If the option has no data, do not render it
+                      return null;
                     })}
                   </div>
+                )}
+
                 </div>
               </div>
               {showPopup && <UnansweredQuestionsPopup />}
@@ -1016,7 +1081,21 @@ const Test = () => {
           <button onClick={generatePDF}>Download PDF</button>
         </div>
       )} */}
+      <Modal show={confirmModalOpen} onHide={() => setConfirmModalOpen(false)} centered>
+        <Modal.Body>
+          <p>If you go back, you will lose this test. Do you want to go back?</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setConfirmModalOpen(false)}>
+            No
+          </Button>
+          <Button variant="danger" onClick={handleConfirmBack}>
+            Yes, Go Back
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
+    
   );
 };
 

@@ -31,6 +31,7 @@
     "react-lottie": "^1.2.10",
     "react-mathjax2": "^0.0.2",
     "react-modal": "^3.16.3",
+    "react-quill": "^2.0.0",
     "react-router-dom": "^7.1.1",
     "react-scripts": "^5.0.1",
     "react-scroll": "^1.9.2",
@@ -66,5 +67,5 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5001"
 }

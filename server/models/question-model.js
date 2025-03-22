@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
-  questionText1: { type: String },
+  questionText1: { type: String, required: true },
   questionImage1: { type: String },  // URL or file path to image
   questionTable1: { type: mongoose.Schema.Types.Mixed },  // Can store tables as objects or arrays
   

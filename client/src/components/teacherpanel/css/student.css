@@ -125,7 +125,11 @@
     color: #FFF;
     font-size: 18px;
   }
-  
+
+  .select-topic {border: 1px solid #ccc !important; background-color: #fff !important; color: #000 !important;}
+  button.select-topic:hover {transform: unset !important}
+  .form-check {display: flex !important; align-items: center !important; }
+
   /* Responsive Layout for Buttons */
   @media (max-width: 768px) {
     .student-container {

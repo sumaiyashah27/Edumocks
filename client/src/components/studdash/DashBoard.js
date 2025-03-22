@@ -4,13 +4,14 @@ import './css/Dashboard.css';
 import axios from 'axios';
 import DoughnutChart from './DoughnutChart'; // Update path if needed
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { FaDownload } from "react-icons/fa"
 
 const DashBoard = () => {
   const [courses, setCourses] = useState([]); // All courses with subjects
   const [subjects, setSubjects] = useState([]); // All subjects
   const [selectedCourseId, setSelectedCourseId] = useState(''); // Selected course ID
   const [selectedSubjectId, setSelectedSubjectId] = useState(''); // Selected subject ID
-  const [tests, setTests] = useState([]); 
+  const [tests, setTests] = useState([]);
   const [grade, setGrade] = useState('');
   const [status, setStatus] = useState('');
   const [totalScore, setTotalScore] = useState(0);
@@ -19,7 +20,7 @@ const DashBoard = () => {
   const [poorScore, setPoorScore] = useState(0);
   const studentId = localStorage.getItem('_id');
   const [rowsToShow, setRowsToShow] = useState(3);
-  console .log(studentId);
+  console.log(studentId);
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -39,7 +40,7 @@ const DashBoard = () => {
         console.error('Error fetching Topics:', error);
       }
     };
-    
+
 
     const fetchTests = async () => {
       try {
@@ -56,8 +57,10 @@ const DashBoard = () => {
     fetchTests();
   }, [studentId]);
 
-   // Get course name by courseId
-   const getCourseName = (courseId) => {
+  console.log('tests',tests);
+
+  // Get course name by courseId
+  const getCourseName = (courseId) => {
     const course = courses.find((course) => course._id === courseId);
     return course ? course.name : '';
   };
@@ -68,7 +71,7 @@ const DashBoard = () => {
     return subject ? subject.name : '';
   };
 
- 
+
   // Handle course selection
   const handleCourseChange = (e) => {
     setSelectedCourseId(e.target.value);
@@ -83,32 +86,32 @@ const DashBoard = () => {
   const selectedCourse = courses.find((course) => course._id === selectedCourseId);
 
   // Function to evaluate grade and status based on percentage
-const getGrade  = (percentage) => {
-  if (percentage >= 90) {
-    return { grade: 'AAA', status: 'Exceptional Performance' };
-  }
-  if (percentage >= 80) {
-    return { grade: 'AA', status: 'Outstanding Effort' };
-  }
-  if (percentage >= 70) {
-    return { grade: 'BBB', status: 'Passed with Confidence' };
-  }
-  if (percentage >= 60) {
-    return { grade: 'BB', status: 'Borderline Safe' };
-  }
-  if (percentage >= 50) {
-    return { grade: 'C', status: 'Needs Improvement' };
-  }
-  return { grade: 'D', status: 'Reassess and Rebuild' };
-};
+  const getGrade = (percentage) => {
+    if (percentage >= 90) {
+      return { grade: 'AAA', status: 'Exceptional Performance' };
+    }
+    if (percentage >= 80) {
+      return { grade: 'AA', status: 'Outstanding Effort' };
+    }
+    if (percentage >= 70) {
+      return { grade: 'BBB', status: 'Passed with Confidence' };
+    }
+    if (percentage >= 60) {
+      return { grade: 'BB', status: 'Borderline Safe' };
+    }
+    if (percentage >= 50) {
+      return { grade: 'C', status: 'Needs Improvement' };
+    }
+    return { grade: 'D', status: 'Reassess and Rebuild' };
+  };
 
-// Function to handle 'Load More' button click
-const handleLoadMore = () => {
-  setRowsToShow(prevRows => prevRows + 3);
-};
+  // Function to handle 'Load More' button click
+  const handleLoadMore = () => {
+    setRowsToShow(prevRows => prevRows + 3);
+  };
 
- // Calculate if there are more rows to display
- const hasMoreRows = tests.length > rowsToShow;
+  // Calculate if there are more rows to display
+  const hasMoreRows = tests.length > rowsToShow;
 
   return (
     <div className="container dashboard-container" style={{ height: 'auto' }}>
@@ -160,48 +163,50 @@ const handleLoadMore = () => {
                 </div>
               </div>
 
-              <div className="row d-flex align-items-center justify-content-center data-container" style={{ height: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', margin: '20px 0' }}>
-                  <thead style={{ backgroundColor: '#1D1A6D', color: '#FFD700' }}>
+              <div className="row d-flex align-items-center justify-content-center data-container" style={{ height: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", margin: "20px 0" }}>
+                  <thead style={{ backgroundColor: "#1D1A6D", color: "#FFD700" }}>
                     <tr>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>COURSE</th>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>TOPIC</th>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>SCORE</th>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>%</th>
-                      <th style={{ padding: '10px', border: '1px solid #ddd' }}>Grade</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>COURSE</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>TOPIC</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>SCORE</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>%</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>Grade</th>
+                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>Action</th> {/* New Column */}
                     </tr>
                   </thead>
                   <tbody>
                     {[...tests].reverse().map((test, index) => {
                       const percentage = (test.score / test.questionSet) * 100;
                       const { grade, status } = getGrade(percentage);
+
                       return (
-                        <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff' }}>
-                          <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                        <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#ffffff" }}>
+                          <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                             {getCourseName(test.selectedCourse)}
                           </td>
-                          <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                          <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                             {getSubjectName(test.selectedSubject)}
                           </td>
-                          <td style={{ padding: '10px', border: '1px solid #ddd' }}>{test.score}</td>
-                          <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                          <td style={{ padding: "10px", border: "1px solid #ddd" }}>{test.score}</td>
+                          <td style={{ padding: "10px", border: "1px solid #ddd" }}>
                             {percentage.toFixed(2)}%
                           </td>
-                          <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                            {grade}
+                          <td style={{ padding: "10px", border: "1px solid #ddd" }}>{grade}</td>
+                          <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>
+                            <button
+                              // onClick={() => downloadPDF(test)} // Call the function to generate PDF
+                              className="btn btn-light btn-sm"
+                              title="Download PDF"
+                            >
+                              <FaDownload size={16} color="#1D1A6D" />
+                            </button>
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
-                {hasMoreRows && (
-                  <center>
-                    <button className="load-button" onClick={handleLoadMore}>
-                      Load More
-                    </button>
-                  </center>
-                )}
               </div>
 
             </div>

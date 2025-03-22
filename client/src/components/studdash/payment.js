@@ -211,7 +211,7 @@ const handleStripePayment = async (event) => {
   // Handle Razorpay payment
   const handleRazorpayPayment = async () => {
     if (typeof window.Razorpay === "undefined") {
-      alert("Razorpay script is not loaded.");
+      toast.warning("Razorpay script is not loaded.");
       return;
     }
 
@@ -328,7 +328,7 @@ const handleStripePayment = async (event) => {
 
   useEffect(() => {
     if (!courseId || !selectedSubjects) {
-      alert("Invalid course or subjects data.");
+      toast.warning("Invalid course or subjects data.");
       return;
     }
     axios.get(`/api/course/${courseId}`)
@@ -343,7 +343,7 @@ const handleStripePayment = async (event) => {
       })
       .catch((error) => {
         console.error("Error fetching student data:", error);
-        alert("Error fetching student data.");
+        toast.error("Error fetching student data.");
       });
   }, [courseId, selectedSubjects]);
 

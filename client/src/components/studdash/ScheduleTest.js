@@ -319,13 +319,18 @@ const ScheduleTest = () => {
   
   const handleAttendTest = (course, subject) => {
     console.log('Attending Test for:', course, subject);
+  
+    // Save selected course and subject in localStorage
+    localStorage.setItem('selectedCourse', course);
+    localStorage.setItem('selectedSubject', subject);
+  
     // Find the scheduled test that matches the clicked course and subject
     const scheduledTest = scheduledTests.find(
       (test) => test.selectedCourse === course && test.selectedSubject === subject && test.testStatus === 'Scheduled'
     );
+  
     if (scheduledTest) {
       setSelectTest(scheduledTest);
-      // If a match is found, update the modal with the test details
       setQuestionSet(scheduledTest.questionSet);
       setTestTime(scheduledTest.testTime);
       setTestDate(scheduledTest.testDate);

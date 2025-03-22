@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faSearch, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import 'bootstrap/dist/css/bootstrap.min.css'; 
-import { Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Dropdown, Form } from 'react-bootstrap';
 
 const Course = () => {
   const [courses, setCourses] = useState([]);
@@ -50,6 +50,15 @@ const Course = () => {
     }
   };
 
+  // Handle checkbox selection
+  const handleCheckboxChange = (subjectId) => {
+    setSelectedSubject((prevSelected) =>
+      prevSelected.includes(subjectId)
+        ? prevSelected.filter((id) => id !== subjectId)
+        : [...prevSelected, subjectId]
+    );
+  };
+
   const handleCourseSelect = async (courseId) => {
     setSelectedCourse(courseId);
     setLoading(true);
@@ -64,40 +73,35 @@ const Course = () => {
   };
 
   const handleAddSubjectToCourse = async () => {
-    if (!selectedCourse || !selectedSubject) {
-      toast.warn('Please select both a course and a Topics.');
+    if (!selectedCourse || selectedSubject.length === 0) {
+      toast.warn("Please select both a course and at least one topic.");
       return;
     }
-
-    const courseToUpdate = courses.find((course) => course._id === selectedCourse);
-    const isSubjectAlreadyAdded =
-      courseToUpdate && courseToUpdate.subjects.some((subject) => subject._id === selectedSubject);
-
-    if (isSubjectAlreadyAdded) {
-      toast.info('This Topics is already added to the course.');
-      return;
-    }
-
-    const updatedCourses = courses.map((course) => {
-      if (course._id === selectedCourse) {
-        const subjectToAdd = subjectOptions.find((subject) => subject._id === selectedSubject);
-        return { ...course, subjects: [...course.subjects, subjectToAdd] };
-      }
-      return course;
-    });
-
-    setCourses(updatedCourses);
-
+  
     try {
-      await axios.put(`/api/course/${selectedCourse}/add-subject`, { subjectId: selectedSubject });
+      // Ensure we send an array
+      await axios.put(`/api/course/${selectedCourse}/add-subject`, {
+        subjectIds: selectedSubject, // This must be an array
+      });
+  
+      toast.success("Topics added successfully.");
       handleCourseSelect(selectedCourse);
       closeAddSubjectModal();
-      toast.success('Topics added successfully.');
+      fetchCourses(); // Refresh to ensure UI shows updated data
     } catch (error) {
-      toast.error('Error adding Topics to course.');
+      console.error(error);
+      toast.error(error.response?.data?.message || "Error adding topics to course.");
       fetchCourses();
     }
   };
+  
+
+  const selectedSubjectsText = selectedSubject.length > 0
+    ? subjectOptions
+      .filter((subject) => selectedSubject.includes(subject._id))
+      .map((subject) => subject.name)
+      .join(", ")
+    : "Select Topics";
 
   const handleAddCourse = async () => {
     if (!newCourseName) {
@@ -106,7 +110,7 @@ const Course = () => {
     }
 
     try {
-      const newCourse = { name: newCourseName, price: newCoursePrice  };
+      const newCourse = { name: newCourseName, price: newCoursePrice };
       await axios.post('/api/course', newCourse);
       fetchCourses();
       closeAddCourseModal();
@@ -167,6 +171,15 @@ const Course = () => {
   const toggleSubjectExpand = (subjectId) => setExpandedSubject(expandedSubject === subjectId ? null : subjectId);
 
   const filteredCourses = courses.filter(course => course.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const isAllSelected = selectedSubject.length === subjectOptions.length && subjectOptions.length > 0;
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedSubject([]); // Unselect all
+    } else {
+      setSelectedSubject(subjectOptions.map((subject) => subject._id)); // Select all
+    }
+  };
 
   return (
     <div className="container" style={{ paddingTop: '20px' }}>
@@ -179,13 +192,13 @@ const Course = () => {
             <span className="input-group-text" style={{ backgroundColor: '#fff', border: '1px solid #ddd' }}>
               <FontAwesomeIcon icon={faSearch} style={{ color: '#100B5C', transition: 'color 0.3s ease' }} />
             </span>
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="Search for a course..." 
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search for a course..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} 
-              style={{ borderRadius: '5px', transition: 'border-color 0.3s ease' }} 
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ borderRadius: '5px', transition: 'border-color 0.3s ease' }}
             />
           </div>
         </div>
@@ -194,7 +207,7 @@ const Course = () => {
       {loading && <p>Loading...</p>}
 
       <Button
-        onClick={openAddCourseModal} 
+        onClick={openAddCourseModal}
         className="d-flex align-items-center justify-content-center mx-auto mb-3"
         style={{ backgroundColor: '#C80D18', color: '#fff', border: 'none', borderRadius: '5px', padding: '10px 15px', fontSize: '16px', transition: 'background-color 0.3s ease, transform 0.2s ease' }}
         onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
@@ -208,7 +221,13 @@ const Course = () => {
         {filteredCourses.map((course) => (
           <div key={course._id} className="card mb-3" style={{ padding: '15px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <h5 style={{ color: '#100B5C' }}>{course.name} - ${course.price}</h5>
+              <h5 className='d-flex align-items-center gap-3' style={{ color: '#100B5C' }}> 
+              <FontAwesomeIcon
+                  icon={expandedCourse === course._id ? faMinus : faPlus}
+                  style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
+                  onClick={() => toggleCourseExpand(course._id)}
+                />
+                {course.name} - ${course.price}</h5>
               <div>
                 {course.name !== 'CFA LEVEL - 1' && (
                   <FontAwesomeIcon
@@ -216,29 +235,27 @@ const Course = () => {
                     style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px', marginRight: '10px' }}
                     onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id); }}
                   />
-                )}
-                <FontAwesomeIcon
-                  icon={expandedCourse === course._id ? faMinus : faPlus}
-                  style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
-                  onClick={() => toggleCourseExpand(course._id)}
-                />
+                )}              
               </div>
             </div>
             {expandedCourse === course._id && (
               <div className="d-flex flex-column">
                 <Button
                   variant="outline-primary"
-                  onClick={() => openAddSubjectModal(course._id, course.name)}
-                  style={{ 
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents toggling course expansion
+                    openAddSubjectModal(course._id, course.name);
+                  }}
+                  style={{
                     width: '12%', // Smaller width for a smaller button
                     backgroundColor: '#100B5C', // Button color
-                    color: '#fff', 
+                    color: '#fff',
                     borderColor: '#100B5C',
                     marginTop: '10px',
                     fontSize: '14px', // Smaller font size
                     textAlign: 'left', // To ensure the text is aligned nicely at the start
                   }}
-                ><FontAwesomeIcon icon={faPlus}/> Add Topic
+                ><FontAwesomeIcon icon={faPlus} /> Add Topic
                 </Button>
                 {course.subjects.map((subject) => (
                   <div key={subject._id} className="d-flex justify-content-between">
@@ -264,19 +281,19 @@ const Course = () => {
               <h5 className="modal-title">Add New Course</h5>
             </div>
             <div className="modal-body">
-              <input 
-                type="text" 
-                value={newCourseName} 
-                onChange={(e) => setNewCourseName(e.target.value)} 
-                className="form-control" 
-                placeholder="Enter course name" 
+              <input
+                type="text"
+                value={newCourseName}
+                onChange={(e) => setNewCourseName(e.target.value)}
+                className="form-control"
+                placeholder="Enter course name"
               />
-              <input 
-                type="number" 
-                value={newCoursePrice} 
-                onChange={(e) => setNewCoursePrice(e.target.value)} 
-                className="form-control mt-2" 
-                placeholder="Enter course price" 
+              <input
+                type="number"
+                value={newCoursePrice}
+                onChange={(e) => setNewCoursePrice(e.target.value)}
+                className="form-control mt-2"
+                placeholder="Enter course price"
               />
             </div>
             <div className="modal-footer">
@@ -295,21 +312,41 @@ const Course = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Add Topics to {modalCourseName}</h5>
-              
+
             </div>
             <div className="modal-body">
-              <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
-                className="form-control"
-              >
-                <option value="">Select Topic</option>
-                {subjectOptions.map((subject) => (
-                  <option key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </option>
-                ))}
-              </select>
+              <Dropdown>
+                <Dropdown.Toggle variant="light" className="w-100 text-left d-flex align-items-center justify-content-between select-topic">
+                  {selectedSubjectsText}
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="topic-dropdown w-100" style={{ maxHeight: "200px", overflowY: "auto", padding: "10px" }}>
+
+                  {/* Select All Checkbox */}
+                  <Form.Check
+                    id="select-all"
+                    type="checkbox"
+                    className="d-flex align-items-center w-100"
+                    label="Select All"
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    style={{ cursor: "pointer", fontWeight: "bold" }}
+                  />
+
+                  {/* Individual Checkboxes */}
+                  {subjectOptions.map((subject) => (
+                    <Form.Check
+                      key={subject._id}
+                      id={`checkbox-${subject._id}`}
+                      type="checkbox"
+                      className="d-flex align-items-center w-100"
+                      label={subject.name}
+                      checked={selectedSubject.includes(subject._id)}
+                      onChange={() => handleCheckboxChange(subject._id)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
             <div className="modal-footer">
               <Button onClick={handleAddSubjectToCourse} style={{ backgroundColor: '#100B5C', color: '#fff' }}>

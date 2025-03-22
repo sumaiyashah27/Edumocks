@@ -3,6 +3,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { toast, ToastContainer } from "react-toastify";
 
 // Load Stripe with your public key
 const stripePromise = loadStripe("pk_live_51OycdmERHQrnMM9imLJNMrKj0ce8aiM5Id3f3Fysv3blGmFeJukWIZ1yvf3j8VJ0WUCOaMgfyJyXcUkJyjDTesNn00y5Rdqcwh");
@@ -32,7 +33,7 @@ const DelayTestPayment = () => {
         setSubjects(subjectResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
-        alert("Failed to load data. Please try again.");
+        toast.error("Failed to load data. Please try again.");
       } finally {
         setIsLoading(false); // Hide loading spinner after data is fetched
       }
@@ -117,19 +118,19 @@ const DelayTestPayment = () => {
       if (result.error) {
         console.error(result.error.message);
         setPaymentStatus("failed");
-        alert(result.error.message || "Payment failed. Please try again.");
+        toast.error(result.error.message || "Payment failed. Please try again.");
       } else if (result.paymentIntent.status === "succeeded") {
         await axios.post("/api/delayTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState, amount: delayAmount, paymentId: paymentId, orderId: orderId });
         await axios.put("/api/scheduleTest", { studentId, selectedCourse, selectedSubject, testDate: testDateState, testTime: testTimeState });
 
         setPaymentStatus("success");
-        alert("Payment successful! Test date and time updated.");
+        toast.success("Payment successful! Test date and time updated.");
         navigate("/studpanel", { state: { studentId } });
       }
     } catch (error) {
       console.error("Error during payment:", error);
       setPaymentStatus("failed");
-      alert("Payment failed: " + error.message);
+      toast.error("Payment failed: " + error.message);
     } finally {
       setIsProcessing(false);
     }
@@ -188,8 +189,7 @@ const DelayTestPayment = () => {
             testDate: testDateState,
             testTime: testTimeState,
           });
-  
-          alert("Payment successful!");
+          toast.success("Payment successful!");
           navigate("/studpanel", { state: { studentId } });
         },
         prefill: {
@@ -201,7 +201,7 @@ const DelayTestPayment = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      alert("Razorpay payment failed: " + error.message);
+      toast.error("Razorpay payment failed: " + error.message);
     } finally {
       setIsProcessing(false);
     }
@@ -306,6 +306,7 @@ const DelayTestPayment = () => {
           </>
         )}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

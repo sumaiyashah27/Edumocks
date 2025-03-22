@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../css/form.css'; // Custom CSS file for styling
 import { FaCheckCircle } from 'react-icons/fa';
-
+import { toast, ToastContainer } from "react-toastify";
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -56,11 +56,11 @@ const ContactForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validFields.name && validFields.email && validFields.course) {
-      alert('Form submitted successfully!');
+      toast.success("Form submitted successfully!");
       setFormData({ name: '', email: '', course: '', reason: '' });
       setValidFields({ name: false, email: false, course: false });
     } else {
-      alert('Please fill in all required fields correctly.');
+      toast.error("Please fill in all required fields correctly.");
     }
   };
 
@@ -150,6 +150,7 @@ const ContactForm = () => {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </section>
   );
 };
