@@ -30,11 +30,12 @@ const CourseSection = () => {
       <p style={{ fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '30px' }}>What We Offer !!</p>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns per row
+        gridTemplateColumns: 'repeat(3, 1fr)', // Maintains 3 courses per row
         gap: '20px',
         justifyContent: 'center',
         maxWidth: '1200px',
-        margin: 'auto'
+        margin: 'auto',
+        padding: '0 20px'
       }}>
         {courses.map(course => (
           <div key={course.id} style={{
@@ -68,6 +69,16 @@ const CourseSection = () => {
           </div>
         ))}
       </div>
+      <style>
+        {`
+          @media (max-width: 1024px) {
+            #our-courses div {
+              display: grid;
+              grid-template-columns: repeat(1, 1fr) !important;
+            }
+          }
+        `}
+      </style>
     </section>
   );
 };
