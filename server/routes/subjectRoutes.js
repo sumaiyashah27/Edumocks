@@ -6,29 +6,66 @@ const router = express.Router();
 
 // Get all subjects with questions
 router.get("/", async (req, res) => {
-    try {
-        const subjects = await Subject.find().populate("questions");
-        res.status(200).json(subjects);
-    } catch (error) {
-        console.error("Error fetching subjects:", error);
-        res.status(500).json({ message: "Error fetching subjects", error: error.message });
-    }
+  try {
+    // Fetch all subjects
+    const subjects = await Subject.find();
+
+    const updatedSubjects = await Promise.all(
+      subjects.map(async (subject) => {
+        let quesets = [];
+
+        // Only fetch quesets if subject.quesets is defined and not empty
+        if (subject.quesets && subject.quesets.length > 0) {
+          quesets = await Queset.find({
+            _id: { $in: subject.quesets.map((q) => q._id) },
+          }).populate("questions");
+        }
+
+        return {
+          ...subject.toObject(),
+          quesets: quesets.map((q) => ({
+            _id: q._id,
+            name: q.name,
+            questions: q.questions, // Include questions inside quesets
+            createdAt: q.createdAt,
+            updatedAt: q.updatedAt,
+            __v: q.__v,
+          })),
+        };
+      })
+    );
+
+    res.status(200).json(updatedSubjects);
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+    res.status(500).json({
+      message: "Error fetching subjects",
+      error: error.message,
+    });
+  }
 });
+
  // Add a new subject
-router.post("/", async (req, res) => {
-    const { name, price, questions = [] } = req.body; // Removed chapters, now using questions
-    if (!name || !price) {
-      return res.status(400).json({ message: "Name and price are required" });
-    }
-    try {
-      const newSubject = new Subject({ name, price, questions });
-      await newSubject.save();
-      res.status(201).json(newSubject);
-    } catch (error) {
-      console.error("Error adding subject:", error);
-      res.status(500).json({ message: "Error adding subject", error: error.message });
-    }
-  });
+ router.post("/", async (req, res) => {
+  const { name, price, quesets } = req.body; // Now accepting quesets
+
+  if (!name || !price) {
+    return res.status(400).json({ message: "Name and price are required" });
+  }
+  try {
+    const newSubject = new Subject({
+      name,
+      price,
+      quesets: quesets || [] // Ensure quesets is saved, default to empty array
+    });
+    await newSubject.save();
+    res.status(201).json(newSubject);
+  } catch (error) {
+    console.error("Error adding subject:", error);
+    res.status(500).json({ message: "Error adding subject", error: error.message });
+  }
+});
+
 // Update a subject by ID
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
@@ -70,8 +107,7 @@ router.get("/:id", async (req, res) => {
       res.status(500).json({ message: "Server error" });
     }
   });
-  
- 
+
 // Example of returning an array of questions
 router.get("/questions", async (req, res) => {
   const subjectId = req.query.subjectId;
@@ -115,7 +151,6 @@ router.get('/:subjectId/questions', async (req, res) => {
   }
 });
 
-
 // DELETE route to remove a question from a subject
 router.delete("/:subjectId/questions/:questionId", async (req, res) => {
   const { subjectId, questionId } = req.params;
@@ -151,31 +186,73 @@ router.delete("/:subjectId/questions/:questionId", async (req, res) => {
 // Add questions from a queset to a subject
 router.post('/:subjectId/add-queset-questions', async (req, res) => {
   const { subjectId } = req.params;
-  const { quesetId } = req.body;  // We expect the quesetId in the request body
+  const { quesetIds } = req.body; 
 
   try {
-    // Find the subject by its ID
     const subject = await Subject.findById(subjectId);
     if (!subject) {
       return res.status(404).json({ error: 'Subject not found' });
     }
 
-    // Find the queset by its ID
-    const queset = await Queset.findById(quesetId).populate('questions');
-    if (!queset) {
-      return res.status(404).json({ error: 'Queset not found' });
+    const quesets = await Queset.find({ _id: { $in: quesetIds } }).populate('questions');
+
+    if (!quesets.length) {
+      return res.status(404).json({ error: 'No valid quesets found' });
     }
 
-    // Add all the questions from the queset into the subject's questions array
-    subject.questions.push(...queset.questions.map(question => question._id));
+    // Collect all questions and store queset info
+    const questionsToAdd = quesets.flatMap(q => q.questions.map(q => q._id));
+    subject.questions = [...new Set([...subject.questions, ...questionsToAdd])];
 
-    // Save the updated subject
+    // ✅ Fix: Append new quesets without replacing old ones
+    const newQuesets = quesets.map(q => ({ _id: q._id.toString(), name: q.name }));
+
+    // Ensure no duplicates based on `_id`
+    const existingQuesetIds = new Set(subject.quesets.map(q => q._id.toString()));
+    newQuesets.forEach(q => {
+      if (!existingQuesetIds.has(q._id)) {
+        subject.quesets.push(q); // Add only if it’s not already present
+      }
+    });
+
     await subject.save();
 
-    res.status(200).json({ message: 'Questions from queset added to subject' });
+    res.status(200).json({ 
+      message: 'Questions from selected quesets added to subject',
+      selectedQuesets: subject.quesets
+    });
   } catch (error) {
     console.error('Error adding queset questions to subject:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+router.delete('/:subjectId/remove-queset', async (req, res) => {
+  const { subjectId } = req.params;
+  const { quesetId } = req.body;
+
+  try {
+    const subject = await Subject.findById(subjectId);
+    if (!subject) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+
+    // Remove queset reference from the subject
+    subject.quesets = subject.quesets.filter(q => q._id.toString() !== quesetId);
+
+    // Remove associated questions from the subject
+    const queset = await Queset.findById(quesetId);
+    if (queset) {
+      subject.questions = subject.questions.filter(qId => !queset.questions.includes(qId));
+    }
+
+    await subject.save();
+
+    res.status(200).json({ message: 'Queset removed successfully' });
+  } catch (error) {
+    console.error('Error removing queset from subject:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

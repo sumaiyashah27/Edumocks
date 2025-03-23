@@ -79,15 +79,31 @@ const Course = () => {
     }
   
     try {
-      // Ensure we send an array
+      // Fetch current course details to check existing subjects
+      const { data: currentCourse } = await axios.get(`/api/course/${selectedCourse}`);
+      const existingSubjectIds = currentCourse.subjects.map(subject => subject._id);
+  
+      // Check if any of the selected subjects are already present
+      const alreadyAddedSubjects = selectedSubject.filter(id => existingSubjectIds.includes(id));
+  
+      if (alreadyAddedSubjects.length > 0) {
+        const alreadyAddedNames = subjectOptions
+          .filter(subject => alreadyAddedSubjects.includes(subject._id))
+          .map(subject => subject.name)
+          .join(", ");
+        toast.warn(`The following topics are already added: ${alreadyAddedNames}`);
+        return;
+      }
+  
+      // Proceed with adding new subjects
       await axios.put(`/api/course/${selectedCourse}/add-subject`, {
-        subjectIds: selectedSubject, // This must be an array
+        subjectIds: selectedSubject,
       });
   
       toast.success("Topics added successfully.");
       handleCourseSelect(selectedCourse);
       closeAddSubjectModal();
-      fetchCourses(); // Refresh to ensure UI shows updated data
+      fetchCourses(); // Refresh UI to show updated data
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Error adding topics to course.");
@@ -95,7 +111,7 @@ const Course = () => {
     }
   };
   
-
+  
   const selectedSubjectsText = selectedSubject.length > 0
     ? subjectOptions
       .filter((subject) => selectedSubject.includes(subject._id))
@@ -203,8 +219,6 @@ const Course = () => {
           </div>
         </div>
       </div>
-
-      {loading && <p>Loading...</p>}
 
       <Button
         onClick={openAddCourseModal}

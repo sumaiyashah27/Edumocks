@@ -33,34 +33,42 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Add a subject to a course
 router.put('/:courseId/add-subject', async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { subjectId } = req.body;
+    const { subjectIds } = req.body; // Expecting an array
+
+    if (!Array.isArray(subjectIds) || subjectIds.length === 0) {
+      return res.status(400).json({ message: "No subjects provided" });
+    }
 
     // Find the course by ID
     const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      return res.status(404).json({ message: "Course not found" });
     }
 
-    // Find the subject by ID
-    const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(404).json({ message: 'Subject not found' });
+    // Find all subjects by IDs
+    const subjects = await Subject.find({ _id: { $in: subjectIds } });
+
+    // Check if any subject is missing
+    const foundSubjectIds = subjects.map(subject => subject._id.toString());
+    const missingSubjects = subjectIds.filter(id => !foundSubjectIds.includes(id));
+
+    if (missingSubjects.length > 0) {
+      return res.status(404).json({ message: "Some subjects not found", missingSubjects });
     }
 
-    // Add the subject to the course's subjects array
-    if (course.subjects.includes(subjectId)) {
-      return res.status(400).json({ message: 'Subject already added to the course' });
-    }
+    // Update only with new subjects without affecting old subjects
+    await Course.findByIdAndUpdate(
+      courseId,
+      { $addToSet: { subjects: { $each: subjectIds } } }, // Ensures only new unique subjects are added
+      { new: true }
+    );
 
-    course.subjects.push(subjectId);
-    await course.save();
-    res.status(200).json(course);
+    res.status(200).json({ message: "Subjects added successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding subject to course', error });
+    res.status(500).json({ message: "Error adding subjects to course", error });
   }
 });
 
@@ -76,10 +84,13 @@ router.put('/:courseId/remove-subject', async (req, res) => {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    // Remove the subject from the course's subjects array
-    course.subjects = course.subjects.filter(sub => sub.toString() !== subjectId);
+    // Remove subject by filtering based on _id
+    course.subjects = course.subjects.filter(sub => sub._id.toString() !== subjectId);
+
+    // Save updated course
     await course.save();
-    res.status(200).json(course);
+    
+    res.status(200).json({ message: "Subject removed successfully", course });
   } catch (error) {
     res.status(500).json({ message: 'Error removing subject from course', error });
   }

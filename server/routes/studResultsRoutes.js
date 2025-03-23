@@ -7,25 +7,29 @@ require('dotenv').config();
 
 // POST route for sending quiz results via email with PDF attachment
 router.post('/sendQuizResults', upload.single('pdf'), (req, res) => {
-  const { studentEmail} = req.body; // User's email, first name, and subject name
+  const { studentEmail } = req.body;
   console.log('Student Email:', studentEmail);
 
-  const pdf = req.file.buffer; // PDF file sent in the request
+  if (!req.file) {
+    return res.status(400).send('No PDF file uploaded');
+  }
 
-  // Setup the nodemailer transporter using Gmail (or another service)
+  const pdfBuffer = req.file.buffer; // Get the correct buffer
+
+  // Setup the nodemailer transporter
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER, // Use environment variables for sensitive info
-      pass: process.env.GMAIL_PASS,  // Use environment variables for sensitive info
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
     },
   });
 
   // Email options
   const mailOptions = {
-    from: process.env.GMAIL_USER,  // Your Gmail address
-    to: studentEmail,  // Recipient's email
-    subject: 'Test Completed! 🎉 Your Results and Solutions', // Subject of the email
+    from: process.env.GMAIL_USER,
+    to: studentEmail,
+    subject: 'Test Completed! 🎉 Your Results and Solutions',
     html: `
       <p>Hello,</p>
       <p>Congratulations on successfully completing your Test! 🎉 You've taken a big step forward in your exam preparation, and we’re excited to see your results.</p>
@@ -46,17 +50,17 @@ router.post('/sendQuizResults', upload.single('pdf'), (req, res) => {
       <p>Best regards,<br>
       The Edumocks Team<br>
       <a href="https://edumocks.com/">Edumocks</a></p>
-    `,  // HTML content of the email
+    `,
     attachments: [
       {
-        filename: 'quiz-results.pdf',  // The filename of the attachment
-        content: pdf,  // The content of the PDF file
-        cid: 'quiz-results.pdf'  // Content ID to reference the attachment in the HTML body
+        filename: 'quiz-results.pdf',
+        content: pdfBuffer, // Ensure it's a buffer
+        contentType: 'application/pdf', // Set correct MIME type
       },
     ],
   };
 
-  // Send the email with the attached PDF
+  // Send the email
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error('Error sending email:', error);
@@ -66,5 +70,6 @@ router.post('/sendQuizResults', upload.single('pdf'), (req, res) => {
     return res.status(200).send('Email sent successfully');
   });
 });
+
 
 module.exports = router;

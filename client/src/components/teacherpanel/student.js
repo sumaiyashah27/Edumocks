@@ -232,7 +232,7 @@ const Student = () => {
         </Modal.Body>
         <Modal.Footer className='d-flex justify-content-between'>
           <Button variant="secondary" onClick={handleDownloadTemplate}>
-            <FaDownload /> Bulk Format
+            <FaDownload /> Students Template
           </Button>
           <Button variant="primary" onClick={() => setShowUploadModal(false)}>
             Upload

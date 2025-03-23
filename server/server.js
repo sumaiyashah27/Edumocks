@@ -21,6 +21,7 @@ const studResultsRoutes = require('./routes/studResultsRoutes');
 const teacherDashRoutes = require('./routes/teacherDashRoutes');
 const completedTestRoutes = require('./routes/completetestRoutes'); 
 const couponRoutes = require("./routes/couponRoutes");
+const supportRoutes = require("./routes/supportRoutes")
 
 require('dotenv').config();
 const app = express();
@@ -68,6 +69,7 @@ app.use('/api/studResults', studResultsRoutes);
 app.use('/api/teachdash', teacherDashRoutes); 
 app.use('/api/completed', completedTestRoutes);
 app.use("/api/coupon", couponRoutes);
+app.use("/api/support", supportRoutes);
 
 
 
@@ -83,7 +85,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Define server port and listen
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is now running on port ${PORT}`);

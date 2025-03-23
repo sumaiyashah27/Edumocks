@@ -35,26 +35,20 @@ const upload = multer({ storage });
 // Route to create a folder
 router.post('/create-folder', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, pfolder } = req.body;
     if (!name) {
       return res.status(400).json({ message: 'Folder name is required.' });
     }
 
-    // Check if folder already exists
-    const existingFolder = await Folder.findOne({ name });
+    // Check if folder already exists under the same parent
+    const existingFolder = await Folder.findOne({ name, pfolder });
     if (existingFolder) {
       return res.status(400).json({ message: 'Folder already exists.' });
     }
 
     // Create folder in database
-    const newFolder = new Folder({ name });
+    const newFolder = new Folder({ name, pfolder });
     await newFolder.save();
-
-    // Create physical folder inside ../image/
-    const folderPath = path.join(uploadFolder, name);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath); // Create the folder
-    }
 
     res.status(201).json(newFolder);
   } catch (error) {
@@ -62,6 +56,33 @@ router.post('/create-folder', async (req, res) => {
     res.status(500).json({ message: 'Error creating folder' });
   }
 });
+
+// Edit image name
+router.put('/update-image/:imageId', async (req, res) => {
+  try {
+    const { imageId } = req.params;
+    const { newName } = req.body;
+
+    if (!newName) {
+      return res.status(400).json({ message: 'New name is required.' });
+    }
+
+    const image = await Image.findById(imageId);
+    if (!image) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Update image name
+    image.name = newName;
+    await image.save();
+
+    res.json({ message: 'Image name updated successfully', image });
+  } catch (error) {
+    console.error('Error updating image name:', error);
+    res.status(500).json({ message: 'Error updating image name' });
+  }
+});
+
 //Fetch Folders Exists
 router.get('/', async (req, res) => {
   try {
@@ -205,7 +226,7 @@ router.get('/download/all', async (req, res) => {
     // Loop through each folder and add them to the zip
     folders.forEach((folder) => {
       const folderPath = path.join(rootFolderPath, folder);
-
+      console.log("Checking folder path all:", folderPath);
       // Check if it's a directory (folder)
       if (fs.lstatSync(folderPath).isDirectory()) {
         zip.directory(folderPath, folder); // Add the folder to the zip with its name
@@ -219,4 +240,45 @@ router.get('/download/all', async (req, res) => {
     res.status(500).json({ message: 'Error downloading all folders' });
   }
 });
+
+router.get('/download/:folderId', async (req, res) => {
+  try {
+    const { folderId } = req.params;
+    const folder = await Folder.findById(folderId);
+
+    if (!folder) {
+      console.log("Folder not found in DB:", folderId);
+      return res.status(404).json({ message: "Folder not found in database" });
+    }
+
+    const rootFolderPath = path.join(__dirname, '..', 'image');
+    const folderPath = path.join(rootFolderPath, folder.name);
+
+    console.log("Checking folder path:", folderPath);
+
+    if (!fs.existsSync(folderPath)) {
+      console.log("Folder does NOT exist:", folderPath);
+      return res.status(404).json({ message: "Folder directory not found" });
+    }
+
+    const zip = archiver('zip', { zlib: { level: 9 } });
+
+    // Fix filename issue (use folder name)
+    console.log('folder',folder);
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename=${folder.name}.zip`);
+
+    zip.pipe(res);
+
+    // Include the entire folder (parent + subfolders)
+    zip.directory(folderPath, folder.name);
+
+    // Fix: Ensure zip is finalized properly
+    zip.finalize();
+  } catch (error) {
+    console.error("Error downloading folder:", error);
+    res.status(500).json({ message: "Error downloading folder" });
+  }
+});
+
 module.exports = router;

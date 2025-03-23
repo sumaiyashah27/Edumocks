@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
-import { faTachometerAlt, faUser, faBook, faChalkboardTeacher, faBookOpen, faChevronLeft, faChevronRight, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTachometerAlt, faUser, faBook, faChalkboardTeacher, faBookOpen, faChevronLeft, faChevronRight, faSignOutAlt, faHandsHelping } from '@fortawesome/free-solid-svg-icons';
 import Dashboard from './DashBoard';
 import Profile from './Profile';
 import BookTest from './BookTest';
 import ScheduleTest from './ScheduleTest';
 import Material from './Material';
+import SupportStudent from './SupportStudent';
 import { useNavigate } from 'react-router-dom';
 
 const StudPanel = () => {
@@ -55,7 +56,7 @@ const StudPanel = () => {
       } finally {
         setIsLoading(false);
       }
-    };    
+    };
 
     fetchStudentDetails();
   }, [student._id, student.email, navigate]);
@@ -76,6 +77,7 @@ const StudPanel = () => {
     { name: 'Schedule Test', panel: 'schedule test', icon: faBook },
     { name: 'Study Material', panel: 'material', icon: faBookOpen },
     { name: 'Profile', panel: 'profile', icon: faChalkboardTeacher },
+    { name: 'Support', panel: 'support', icon: faHandsHelping },
   ];
 
   const renderContent = () => {
@@ -90,6 +92,8 @@ const StudPanel = () => {
         return <Material />;
       case 'profile':
         return <Profile />;
+      case 'support':
+        return <SupportStudent />;
       default:
         return <h2>Welcome! Please select an option.</h2>;
     }
@@ -141,7 +145,7 @@ const StudPanel = () => {
                       padding: '12px',
                       backgroundColor: activePanel === item.panel ? '#ffdf5c' : '#ECF0F1',
                       border: 'none',
-                      color: activePanel === item.panel ? 'white' : '#100b5c',
+                      color: activePanel === item.panel ? '#100b5c' : '#100b5c',
                       textAlign: 'left',
                       borderRadius: '5px',
                       cursor: 'pointer',
@@ -156,7 +160,7 @@ const StudPanel = () => {
                       style={{
                         marginRight: '10px',
                         fontSize: '20px',
-                        color: activePanel === item.panel ? 'white' : '#100b5c',
+                        color: activePanel === item.panel ? '#100b5c' : '#100b5c',
                         transition: 'transform 0.2s ease',
                         transform: 'scale(1)',
                       }}

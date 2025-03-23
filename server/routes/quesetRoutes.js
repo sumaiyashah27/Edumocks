@@ -11,34 +11,48 @@ const upload = multer({ storage: multer.memoryStorage() });
 // GET all quesets
 router.get('/', async (req, res) => {
   try {
-    const quesets = await Queset.find().populate('questions'); // Populate questions field
+    const quesets = await Queset.find().populate('questions').sort({ createdAt: 1 });
 
-    if (!quesets) {
-      return res.status(404).json({ message: 'Quesets not found' });
+    if (!quesets.length) {
+      return res.status(404).json({ message: 'No quesets found' });
     }
 
-    res.status(200).json(quesets); // Send populated Queset with questions
+    res.status(200).json(quesets);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error fetching Quesets', error: err.message });
   }
 });
+
   
 // POST: Create a new queset
 router.post('/', async (req, res) => {
-    const { name, questions = [] } = req.body; // Default to empty array if no questions
-    if (!name) {
+  const { name, questions = [], originalId } = req.body; // Accept `originalId` for cloning
+
+  if (!name) {
       return res.status(400).json({ message: 'Queset name is required' });
-    }
-    try {
-      const newQueset = new Queset({ name, questions });
+  }
+
+  try {
+      let createdAt = Date.now(); // Default timestamp
+
+      // If cloning, set `createdAt` slightly after the original queset
+      if (originalId) {
+          const originalQueset = await Queset.findById(originalId);
+          if (originalQueset) {
+              createdAt = new Date(originalQueset.createdAt.getTime() + 1); // Ensure it appears below
+          }
+      }
+
+      const newQueset = new Queset({ name, questions, createdAt });
       await newQueset.save();
       res.status(201).json(newQueset);
-    } catch (error) {
+  } catch (error) {
       console.error('Error adding queset:', error);
       res.status(500).json({ message: 'Error adding queset', error });
-    }
+  }
 });
+
 
 // PUT: Update a queset
 router.put('/:id', async (req, res) => {
@@ -76,45 +90,26 @@ router.delete('/:id', async (req, res) => {
 // Route to add a new question to a queset
 router.post('/:quesetId/add', async (req, res) => {
   try {
-    console.log('Request body received:', req.body);  // Log the entire body
-    console.log('QusetId received:', req.params.quesetId);  // Log the quesetId
+    console.log('Request body received:', req.body);
+    console.log('QusetId received:', req.params.quesetId);
 
     const { quesetId } = req.params;
-    const newQuestion = req.body;
+    const { index, ...newQuestion } = req.body; // Get index from request
 
-    // Validate the correctAns field
+    // Validate correctAns field
     if (!newQuestion.correctAns) {
       return res.status(400).json({ message: 'Correct answer is required.' });
     }
 
     // Create a new Question document
     const question = new Question({
-      questionText1: newQuestion.questionText1,
-      questionText2: newQuestion.questionText2,
-      questionText3: newQuestion.questionText3,
-      questionImage1: newQuestion.questionImage1,
-      questionImage2: newQuestion.questionImage2,
-      questionImage3: newQuestion.questionImage3,
-      questionTable1: newQuestion.questionTable1,
-      questionTable2: newQuestion.questionTable2,
-      questionTable3: newQuestion.questionTable3,
-      options: newQuestion.options,
-      correctAns: newQuestion.correctAns,
-      answerDescriptionText1: newQuestion.answerDescriptionText1,
-      answerDescriptionText2: newQuestion.answerDescriptionText2,
-      answerDescriptionText3: newQuestion.answerDescriptionText3,
-      answerDescriptionImage1: newQuestion.answerDescriptionImage1,
-      answerDescriptionImage2: newQuestion.answerDescriptionImage2,
-      answerDescriptionImage3: newQuestion.answerDescriptionImage3,
-      answerDescriptionTable1: newQuestion.answerDescriptionTable1,
-      answerDescriptionTable2: newQuestion.answerDescriptionTable2,
-      answerDescriptionTable3: newQuestion.answerDescriptionTable3
+      quesetId, // Ensure `quesetId` is included
+      ...newQuestion,
     });
 
-    console.log('Question to be saved:', question); // Log the question data before saving
-
-    await question.save();  // Save the question to the database
-    console.log('Saved Question:', question);  // Log the saved question after save
+    console.log('Question to be saved:', question);
+    await question.save();
+    console.log('Saved Question:', question);
 
     // Retrieve the Queset by ID
     const queset = await Queset.findById(quesetId);
@@ -122,18 +117,24 @@ router.post('/:quesetId/add', async (req, res) => {
       return res.status(404).json({ message: 'Queset not found' });
     }
 
-    // Add the question to the queset
-    queset.questions.push(question._id);
+    // Insert at the correct index
+    if (index !== undefined && index >= 0 && index <= queset.questions.length) {
+      queset.questions.splice(index + 1, 0, question._id); // Insert right after the original question
+    } else {
+      queset.questions.push(question._id); // Default to adding at the end if index is invalid
+    }
+
     await queset.save();
 
     // Return the updated queset
     res.status(200).json(queset);
 
   } catch (error) {
-    console.error('Error adding question:', error);  // Log the error message
-    res.status(500).json({ message: 'Error adding question', error: error.message });  // Return error details
+    console.error('Error adding question:', error);
+    res.status(500).json({ message: 'Error adding question', error: error.message });
   }
 });
+
 
 
   //========================================================================================
@@ -190,6 +191,7 @@ router.post('/:quesetId/add', async (req, res) => {
     console.log("quesetId:", req.params.quesetId);console.log("questionId:", req.params.questionId);
     const updatedData = req.body;
     try {
+      console.log("Received update request:", updatedData);
       // Find the question by its ID
       const question = await Question.findByIdAndUpdate(questionId, updatedData, { new: true });
       if (!question) {

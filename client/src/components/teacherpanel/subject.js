@@ -26,7 +26,7 @@ const Subject = () => {
   const [activeQuesetIndex, setActiveQuesetIndex] = useState(0);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   useEffect(() => {
     fetchSubjects();
     fetchQueset();
@@ -62,13 +62,15 @@ const Subject = () => {
       return;
     }
     const priceInDollars = parseFloat(newSubjectPrice);
-    if (isNaN(priceInDollars) || priceInDollars <= 0) {
+    if (isNaN(priceInDollars) || priceInDollars < 0) {
       toast.error("Please enter a valid price.");
       return;
     }
     setLoading(true);
     try {
       await axios.post('/api/subject', { name: newSubjectName, price: priceInDollars.toFixed(2), });
+      toast.success("Topic added successfully!"); 
+
       setNewSubjectName('');
       setNewSubjectPrice('');
       setShowAddSubjectModal(false);
@@ -223,7 +225,7 @@ const Subject = () => {
     // Extracting the existing subjects to find copies
     const copyCount = subjects.filter(s => s.name.startsWith(`${subject.name} copy`)).length;
     const newName = `${subject.name} copy (${copyCount + 1})`;
-  
+
     // Copy the subject along with its quesets
     const newSubject = {
       name: newName,
@@ -231,8 +233,8 @@ const Subject = () => {
       quesets: subject.quesets ? subject.quesets.map(q => ({ ...q })) : [] // Deep copy quesets
     };
 
-    console.log('newSubject',newSubject);
-  
+    console.log('newSubject', newSubject);
+
     axios.post(`/api/subject`, newSubject)
       .then((response) => {
         console.log("Response from API:", response.data);
@@ -244,7 +246,7 @@ const Subject = () => {
         toast.error("An error occurred while copying the subject.");
       });
   };
-  
+
   return (
     <div>
       <ToastContainer />
@@ -310,175 +312,175 @@ const Subject = () => {
       )}
 
       {/* List of Subjects */}
-        {filteredSubjects.map((subject) => (
-          <div key={subject._id} onClick={() => toggleSubjectExpansion(subject._id)} style={{ marginBottom: '20px', backgroundColor: '#f1f1f1', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className='d-flex align-items-center gap-3' style={{ fontWeight: 'bold' }}>
-                <button
-                  className="pd-0"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevents parent click event
-                    setExpandedSubject(expandedSubject === subject._id ? null : subject._id);
+      {filteredSubjects.map((subject) => (
+        <div key={subject._id} onClick={() => toggleSubjectExpansion(subject._id)} style={{ marginBottom: '20px', backgroundColor: '#f1f1f1', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className='d-flex align-items-center gap-3' style={{ fontWeight: 'bold' }}>
+              <button
+                className="pd-0"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevents parent click event
+                  setExpandedSubject(expandedSubject === subject._id ? null : subject._id);
+                }}
+                style={{ background: "transparent", border: "none", cursor: "pointer" }}
+              >
+                <FontAwesomeIcon
+                  icon={expandedSubject === subject._id ? faMinus : faPlus}
+                  style={{
+                    color: "#4CAF50",
+                    cursor: "pointer",
+                    fontSize: "20px",
                   }}
-                  style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                />
+              </button>
+              {subject.name}</div>
+            <div>
+              <button onClick={(e) => {
+                e.stopPropagation(); // Prevents toggling on button click
+                handleEditSubject(subject);
+              }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faEdit} style={{ color: '#333', fontSize: '20px', marginRight: '10px' }} />
+              </button>
+              <button onClick={(e) => {
+                e.stopPropagation();
+                handleCopySubject(subject);
+              }} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faCopy} style={{ color: '#007bff', cursor: 'pointer', fontSize: '20px', marginLeft: '10px', marginRight: '10px' }} />
+              </button>
+              <button onClick={(e) => {
+                e.stopPropagation(); // Prevents toggling on button click
+                handleDeleteSubject(subject._id);
+              }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faTrash} style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px' }} />
+              </button>
+            </div>
+          </div>
+
+          {expandedSubject === subject._id && (
+            <div className='select-queset' style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', gap: '50px', marginBottom: '20px' }}>
+                {/* Checkboxes to select Quesets */}
+                <Dropdown show={showDropdown} onToggle={(isOpen) => setShowDropdown(isOpen)}>
+                  <Dropdown.Toggle variant="light" className="text-left d-flex align-items-center justify-content-between select-topic" onClick={() => setShowDropdown(!showDropdown)}>
+                    {selectedQuesetsText}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu
+                    className="topic-dropdown w-100"
+                    style={{ maxHeight: "200px", overflowY: "auto", padding: "10px" }}
+                  >
+                    {quesets.map((queset) => (
+                      <Form.Check
+                        key={queset._id}
+                        id={`checkbox-${queset._id}`}
+                        type="checkbox"
+                        className="d-flex align-items-center"
+                        label={queset.name}
+                        checked={selectedQueset.includes(queset._id)}
+                        onChange={() => handleCheckboxChange(queset._id)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+
+                {/* Button to add selected quesets */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentSubjectId(subject._id);
+                    handleAddQuesetToSubject(subject._id);
+                  }}
+                  style={{
+                    padding: '5px 12px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <FontAwesomeIcon
-                    icon={expandedSubject === subject._id ? faMinus : faPlus}
-                    style={{
-                      color: "#4CAF50",
-                      cursor: "pointer",
-                      fontSize: "20px",
-                    }}
-                  />
-                </button>
-                {subject.name}</div>
-              <div>
-                <button onClick={(e) => {
-                  e.stopPropagation(); // Prevents toggling on button click
-                  handleEditSubject(subject);
-                }}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                  <FontAwesomeIcon icon={faEdit} style={{ color: '#333', fontSize: '20px', marginRight: '10px' }} />
-                </button>
-                <button onClick={(e) => {
-                  e.stopPropagation();
-                  handleCopySubject(subject);
-                }} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                  <FontAwesomeIcon icon={faCopy} style={{ color: '#007bff', cursor: 'pointer', fontSize: '20px', marginLeft: '10px', marginRight: '10px' }} />
-                </button>
-                <button onClick={(e) => {
-                  e.stopPropagation(); // Prevents toggling on button click
-                  handleDeleteSubject(subject._id);
-                }}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                  <FontAwesomeIcon icon={faTrash} style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px' }} />
+                  Add Queset
                 </button>
               </div>
-            </div>
 
-            {expandedSubject === subject._id && (
-              <div style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ display: 'flex', gap: '50px', marginBottom: '20px' }}>
-                  {/* Checkboxes to select Quesets */}
-                  <Dropdown show={showDropdown} onToggle={(isOpen) => setShowDropdown(isOpen)}>
-                    <Dropdown.Toggle variant="light" className="text-left d-flex align-items-center justify-content-between select-topic" onClick={() => setShowDropdown(!showDropdown)}>
-                      {selectedQuesetsText}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu
-                      className="topic-dropdown w-100"
-                      style={{ maxHeight: "200px", overflowY: "auto", padding: "10px" }}
-                    >
-                      {quesets.map((queset) => (
-                        <Form.Check
-                          key={queset._id}
-                          id={`checkbox-${queset._id}`}
-                          type="checkbox"
-                          className="d-flex align-items-center"
-                          label={queset.name}
-                          checked={selectedQueset.includes(queset._id)}
-                          onChange={() => handleCheckboxChange(queset._id)}
-                          style={{ cursor: "pointer" }}
-                        />
-                      ))}
-                    </Dropdown.Menu>
-                  </Dropdown>
-
-                  {/* Button to add selected quesets */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentSubjectId(subject._id);
-                      handleAddQuesetToSubject(subject._id);
-                    }}
-                    style={{
-                      padding: '5px 12px',
-                      backgroundColor: '#4CAF50',
-                      color: 'white',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Add Queset
-                  </button>
-                </div>
-
-                <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: "10px" }}>
-                  {/* Tabs Navigation */}
-                  <Nav variant="tabs" activeKey={activeQuesetIndex} onSelect={(selectedKey) => setActiveQuesetIndex(selectedKey)}>
-                    {subject.quesets?.length > 0 ? (
-                      subject.quesets.map((subjectQueset, index) => (
-                        <Nav.Item key={subjectQueset._id} style={{ display: 'flex', alignItems: 'center' }}>
-                          <Nav.Link eventKey={`${subject._id}-${index}`}>
-                            {subjectQueset.name} 
-                            <button className='btn'
+              <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: "10px" }}>
+                {/* Tabs Navigation */}
+                <Nav variant="tabs" activeKey={activeQuesetIndex} onSelect={(selectedKey) => setActiveQuesetIndex(selectedKey)}>
+                  {subject.quesets?.length > 0 ? (
+                    subject.quesets.map((subjectQueset, index) => (
+                      <Nav.Item key={subjectQueset._id} style={{ display: 'flex', alignItems: 'center' }}>
+                        <Nav.Link eventKey={`${subject._id}-${index}`}>
+                          {subjectQueset.name}
+                          <button className='btn'
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRemoveQuesetFromSubject(subject._id, subjectQueset._id);
-                            }}                       
+                            }}
                           >
-                             <FontAwesomeIcon icon={faTrash} style={{ color: 'red' }} />
+                            <FontAwesomeIcon icon={faTrash} style={{ color: 'red' }} />
                           </button>
-                          </Nav.Link>                      
-                        </Nav.Item>
-                      ))
-                    ) : (
-                      <Nav.Item key={subject._id}>
-                        <Nav.Link eventKey={`no-queset-${subject._id}`} disabled>
-                          No quesets available.
                         </Nav.Link>
                       </Nav.Item>
-                    )}
-                  </Nav>
+                    ))
+                  ) : (
+                    <Nav.Item key={subject._id}>
+                      <Nav.Link eventKey={`no-queset-${subject._id}`} disabled>
+                        No quesets available.
+                      </Nav.Link>
+                    </Nav.Item>
+                  )}
+                </Nav>
 
-                  {/* Tab Content */}
-                  <Tab.Content style={{ marginTop: "15px" }} activeKey={activeQuesetIndex}>
-                    {subject.quesets?.map((queset, index) => (
-                      <Tab.Pane
-                        key={queset._id}
-                        eventKey={`${subject._id}-${index}`}
-                        active={activeQuesetIndex === `${subject._id}-${index}`}
-                      >
-                        {queset.questions?.length > 0 ? (
-                          queset.questions.map((question, qIndex) => (
-                            <div key={question._id || qIndex} style={{ background: "#fff", padding: "10px", marginTop: "10px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-                              <h4>Question {qIndex + 1}</h4>
-                              {["questionText1", "questionText2", "questionText3"].map(
-                                (key) =>
-                                  question[key] && (
-                                    <div key={key} dangerouslySetInnerHTML={{ __html: question[key] }} />
-                                  )
-                              )}
-                              {["questionImage1", "questionImage2", "questionImage3"].map(
-                                (key) =>
-                                  question[key] && (
-                                    <div key={key}>
-                                      <img src={question[key]} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
-                                    </div>
-                                  )
-                              )}
-                              <p><strong>Options:</strong></p>
-                              <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
-                                {Object.entries(question.options || {}).map(([key, value]) => (
-                                   <li key={key} className='d-flex'>
-                                   {key.toUpperCase()}. <span dangerouslySetInnerHTML={{ __html: value }} />
-                                 </li>
-                                ))}
-                              </ul>
-                              <p><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
-                            </div>
-                          ))
-                        ) : (
-                          <p style={{ marginTop: "10px", fontStyle: "italic", color: "#666" }}>No questions added yet.</p>
-                        )}
-                      </Tab.Pane>
-                    ))}
-                  </Tab.Content>
-                </div>
-
+                {/* Tab Content */}
+                <Tab.Content style={{ marginTop: "15px" }} activeKey={activeQuesetIndex}>
+                  {subject.quesets?.map((queset, index) => (
+                    <Tab.Pane
+                      key={queset._id}
+                      eventKey={`${subject._id}-${index}`}
+                      active={activeQuesetIndex === `${subject._id}-${index}`}
+                    >
+                      {queset.questions?.length > 0 ? (
+                        queset.questions.map((question, qIndex) => (
+                          <div key={question._id || qIndex} style={{ background: "#fff", padding: "10px", marginTop: "10px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+                            <h4>Question {qIndex + 1}</h4>
+                            {["questionText1", "questionText2", "questionText3"].map(
+                              (key) =>
+                                question[key] && (
+                                  <div key={key} dangerouslySetInnerHTML={{ __html: question[key] }} />
+                                )
+                            )}
+                            {["questionImage1", "questionImage2", "questionImage3"].map(
+                              (key) =>
+                                question[key] && (
+                                  <div key={key}>
+                                    <img src={question[key]} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
+                                  </div>
+                                )
+                            )}
+                            <p><strong>Options:</strong></p>
+                            <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
+                              {Object.entries(question.options || {}).map(([key, value]) => (
+                                <li key={key} className='d-flex'>
+                                  {key.toUpperCase()}. <span dangerouslySetInnerHTML={{ __html: value }} />
+                                </li>
+                              ))}
+                            </ul>
+                            <p><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
+                          </div>
+                        ))
+                      ) : (
+                        <p style={{ marginTop: "10px", fontStyle: "italic", color: "#666" }}>No questions added yet.</p>
+                      )}
+                    </Tab.Pane>
+                  ))}
+                </Tab.Content>
               </div>
-            )}
-          </div>
-        ))
+
+            </div>
+          )}
+        </div>
+      ))
       }
       {successMessage && (
         <div style={{ color: "green", marginTop: "10px" }}>
