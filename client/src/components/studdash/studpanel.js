@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 const StudPanel = () => {
   const navigate = useNavigate();
-  const [activePanel, setActivePanel] = useState('dashboard');
+  const [activePanel, setActivePanel] = useState('book test');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [student, setStudent] = useState({

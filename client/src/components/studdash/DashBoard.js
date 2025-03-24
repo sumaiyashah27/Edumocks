@@ -172,7 +172,7 @@ const DashBoard = () => {
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>SCORE</th>
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>%</th>
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>Grade</th>
-                      <th style={{ padding: "10px", border: "1px solid #ddd" }}>Action</th> {/* New Column */}
+                      {/* <th style={{ padding: "10px", border: "1px solid #ddd" }}>Action</th> New Column */}
                     </tr>
                   </thead>
                   <tbody>
@@ -193,7 +193,7 @@ const DashBoard = () => {
                             {percentage.toFixed(2)}%
                           </td>
                           <td style={{ padding: "10px", border: "1px solid #ddd" }}>{grade}</td>
-                          <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>
+                          {/* <td style={{ padding: "10px", border: "1px solid #ddd", textAlign: "center" }}>
                             <button
                               // onClick={() => downloadPDF(test)} // Call the function to generate PDF
                               className="btn btn-light btn-sm"
@@ -201,7 +201,7 @@ const DashBoard = () => {
                             >
                               <FaDownload size={16} color="#1D1A6D" />
                             </button>
-                          </td>
+                          </td> */}
                         </tr>
                       );
                     })}
