@@ -47,7 +47,7 @@ router.get("/", async (req, res) => {
 
  // Add a new subject
  router.post("/", async (req, res) => {
-  const { name, price, quesets } = req.body; // Now accepting quesets
+  const { name, price, description, quesets } = req.body; // Now accepting quesets
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
@@ -56,6 +56,7 @@ router.get("/", async (req, res) => {
     const newSubject = new Subject({
       name,
       price,
+      description: description || "",
       quesets: quesets || [] // Ensure quesets is saved, default to empty array
     });
     await newSubject.save();
@@ -69,9 +70,9 @@ router.get("/", async (req, res) => {
 // Update a subject by ID
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body; // Only update the name field
+  const { name, description } = req.body; // Only update the name field
     try {
-      const updatedSubject = await Subject.findByIdAndUpdate(id, { name }, { new: true });
+      const updatedSubject = await Subject.findByIdAndUpdate(id, { name, description }, { new: true });
         if (!updatedSubject) {
           return res.status(404).json({ message: "Subject not found" });
         }

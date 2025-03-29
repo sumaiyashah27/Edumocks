@@ -50,7 +50,7 @@ const StudLogin = () => {
         });
   
         // Navigate to the next page
-        navigate('/studpanel');
+        navigate('/studpanel/book-test');
       } else {
         setError('Invalid Email or Password');
       }
@@ -87,7 +87,7 @@ const StudLogin = () => {
         });
     
         // Navigate to TeachPanel page
-        navigate('/studpanel');
+        navigate('/studpanel/dashboard');
       } else {
         setError('Google Login failed or account not registered');
         console.log('Login failed:', response.data.message); // Log failure message

@@ -271,7 +271,7 @@ const QuizEnroll = () => {
                       onChange={() => handleSubjectChange(subject._id)}
                       className="me-2"
                     />
-                    <label htmlFor={subject._id}>{subject.name}</label>
+                    <label className='d-flex' style={{flexWrap: 'wrap', overflow:'hidden'}} htmlFor={subject._id}>{subject.name}</label>
                   </div>
                 ))
               ) : (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faSearch, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faSearch, faMinus, faEdit, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Dropdown, Form } from 'react-bootstrap';
+import { Button, Dropdown, Form, Modal, InputGroup } from 'react-bootstrap';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Course = () => {
   const [courses, setCourses] = useState([]);
@@ -16,13 +17,23 @@ const Course = () => {
   const [loading, setLoading] = useState(false);
   const [modalCourseName, setModalCourseName] = useState('');
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState(false);
   const [newCourseName, setNewCourseName] = useState('');
+  const [newCourseDescription, setNewCourseDescription] = useState('');
   const [expandedCourse, setExpandedCourse] = useState(null);
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newCoursePrice, setNewCoursePrice] = useState(''); // Add this line
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   useEffect(() => {
     fetchCourses();
@@ -77,41 +88,24 @@ const Course = () => {
       toast.warn("Please select both a course and at least one topic.");
       return;
     }
-  
+
     try {
-      // Fetch current course details to check existing subjects
-      const { data: currentCourse } = await axios.get(`/api/course/${selectedCourse}`);
-      const existingSubjectIds = currentCourse.subjects.map(subject => subject._id);
-  
-      // Check if any of the selected subjects are already present
-      const alreadyAddedSubjects = selectedSubject.filter(id => existingSubjectIds.includes(id));
-  
-      if (alreadyAddedSubjects.length > 0) {
-        const alreadyAddedNames = subjectOptions
-          .filter(subject => alreadyAddedSubjects.includes(subject._id))
-          .map(subject => subject.name)
-          .join(", ");
-        toast.warn(`The following topics are already added: ${alreadyAddedNames}`);
-        return;
-      }
-  
-      // Proceed with adding new subjects
+      // Ensure we send an array
       await axios.put(`/api/course/${selectedCourse}/add-subject`, {
-        subjectIds: selectedSubject,
+        subjectIds: selectedSubject, // This must be an array
       });
-  
+
       toast.success("Topics added successfully.");
       handleCourseSelect(selectedCourse);
       closeAddSubjectModal();
-      fetchCourses(); // Refresh UI to show updated data
+      fetchCourses(); // Refresh to ensure UI shows updated data
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Error adding topics to course.");
       fetchCourses();
     }
   };
-  
-  
+
   const selectedSubjectsText = selectedSubject.length > 0
     ? subjectOptions
       .filter((subject) => selectedSubject.includes(subject._id))
@@ -120,13 +114,18 @@ const Course = () => {
     : "Select Topics";
 
   const handleAddCourse = async () => {
-    if (!newCourseName) {
-      toast.warn('Please enter a course name.');
+    if (!newCourseName || !newCourseDescription) {
+      toast.warn('Please enter course name and description.');
       return;
     }
 
     try {
-      const newCourse = { name: newCourseName, price: newCoursePrice };
+      const newCourse = {
+        name: newCourseName,
+        price: newCoursePrice,
+        description: newCourseDescription,
+      };
+      console.log('Sending course data:', newCourse);
       await axios.post('/api/course', newCourse);
       fetchCourses();
       closeAddCourseModal();
@@ -135,7 +134,6 @@ const Course = () => {
       toast.error('Error adding new course.');
     }
   };
-
   const handleDeleteCourse = async (courseId) => {
     try {
       await axios.delete(`/api/course/${courseId}`);
@@ -143,6 +141,27 @@ const Course = () => {
       toast.success('Course deleted successfully.');
     } catch (error) {
       toast.error('Error deleting the course.');
+    }
+  };
+
+  const handleDeleteIconClick = (courseId) => {
+    setSelectedCourseId(courseId);
+    setShowModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.post('/api/course/delete-with-password', {
+        courseId: selectedCourseId,
+        password,
+      });
+
+      setCourses(courses.filter(course => course._id !== selectedCourseId));
+      toast.success('Course deleted successfully');
+      setShowModal(false);
+      setPassword('');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete course');
     }
   };
 
@@ -181,6 +200,7 @@ const Course = () => {
   const closeAddCourseModal = () => {
     setIsAddCourseModalOpen(false);
     setNewCourseName('');
+    setNewCourseDescription('');
   };
 
   const toggleCourseExpand = (courseId) => setExpandedCourse(expandedCourse === courseId ? null : courseId);
@@ -194,6 +214,22 @@ const Course = () => {
       setSelectedSubject([]); // Unselect all
     } else {
       setSelectedSubject(subjectOptions.map((subject) => subject._id)); // Select all
+    }
+  };
+
+  const handleEditCourse = async () => {
+    if (!newCourseName.trim()) {
+      toast.warn('Course name cannot be empty.');
+      return;
+    }
+
+    try {
+      await axios.put(`/api/course/${editingCourse._id}`, { name: newCourseName, description: newCourseDescription });
+      fetchCourses();
+      setIsEditModalOpen(false);
+      toast.success('Course updated successfully.');
+    } catch (error) {
+      toast.error('Error updating course.');
     }
   };
 
@@ -234,24 +270,43 @@ const Course = () => {
       <div>
         {filteredCourses.map((course) => (
           <div key={course._id} className="card mb-3" style={{ padding: '15px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <h5 className='d-flex align-items-center gap-3' style={{ color: '#100B5C' }}> 
-              <FontAwesomeIcon
-                  icon={expandedCourse === course._id ? faMinus : faPlus}
-                  style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
-                  onClick={() => toggleCourseExpand(course._id)}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
+              {/* Left Section: Course Name & Expand Icon */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <h5 className="d-flex align-items-center gap-3" style={{ color: '#100B5C', margin: 0 }}>
+                  <FontAwesomeIcon
+                    icon={expandedCourse === course._id ? faMinus : faPlus}
+                    style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
+                    onClick={() => toggleCourseExpand(course._id)}
+                  />
+                  {course.name} - ${course.price}
+                </h5>
+                <span style={{ color: '#555', fontSize: '14px', marginLeft: '35px' }}>{course.description || ''}</span>
+              </div>
+
+              {/* Right Section: Delete Icon */}
+              <div className='d-flex gap-5'>
+                <FontAwesomeIcon
+                  icon={faEdit}
+                  style={{ color: 'rgb(16, 11, 92)', cursor: 'pointer', fontSize: '20px' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingCourse(course);
+                    setNewCourseName(course.name);
+                    setNewCourseDescription(course.description)
+                    setIsEditModalOpen(true);
+                  }}
                 />
-                {course.name} - ${course.price}</h5>
-              <div>
                 {course.name !== 'CFA LEVEL - 1' && (
                   <FontAwesomeIcon
                     icon={faTrash}
                     style={{ color: '#e74c3c', cursor: 'pointer', fontSize: '20px', marginRight: '10px' }}
-                    onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course._id); }}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteIconClick(course._id); }}
                   />
-                )}              
+                )}
               </div>
             </div>
+
             {expandedCourse === course._id && (
               <div className="d-flex flex-column">
                 <Button
@@ -287,6 +342,36 @@ const Course = () => {
         ))}
       </div>
 
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group controlId="deletePassword">
+            <Form.Label>Enter password to confirm deletion</Form.Label>
+            <InputGroup>
+              <Form.Control
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+              />
+              <Button
+                variant="outline-secondary"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </Button>
+            </InputGroup>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {/* Add Course Modal */}
       <div className={`modal ${isAddCourseModalOpen ? 'show' : ''}`} style={{ display: isAddCourseModalOpen ? 'block' : 'none' }}>
         <div className="modal-dialog">
@@ -308,6 +393,12 @@ const Course = () => {
                 onChange={(e) => setNewCoursePrice(e.target.value)}
                 className="form-control mt-2"
                 placeholder="Enter course price"
+              />
+              <textarea
+                value={newCourseDescription}
+                onChange={(e) => setNewCourseDescription(e.target.value)}
+                className="form-control mt-2"
+                placeholder="Enter course description"
               />
             </div>
             <div className="modal-footer">
@@ -371,6 +462,43 @@ const Course = () => {
           </div>
         </div>
       </div>
+      {isEditModalOpen && (
+        <div className="modal show" style={{ display: 'block' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Edit Course</h5>
+                <span onClick={() => setIsEditModalOpen(false)} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </span>
+              </div>
+              <div className="modal-body">
+                <input
+                  type="text"
+                  value={newCourseName}
+                  onChange={(e) => setNewCourseName(e.target.value)}
+                  className="form-control"
+                  placeholder="Enter new course name"
+                />
+                <textarea
+                  value={newCourseDescription}
+                  onChange={(e) => setNewCourseDescription(e.target.value)}
+                  className="form-control mt-2"
+                  placeholder="Enter course description"
+                />
+              </div>
+              <div className="modal-footer">
+                <button style={{ backgroundColor: 'rgb(16, 11, 92)', borderColor: 'rgb(16, 11, 92)' }} className="btn btn-primary" onClick={handleEditCourse}>
+                  Save Changes
+                </button>
+                <button style={{ backgroundColor: 'rgb(200, 13, 24)', borderColor: 'rgb(200, 13, 24)' }} className="btn btn-secondary" onClick={() => setIsEditModalOpen(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

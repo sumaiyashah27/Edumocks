@@ -259,10 +259,15 @@ router.get('/', async (req, res) => {
 
 // Route to delete a student
 router.delete('/:id', async (req, res) => {
-  const { studentId } = req.params;
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (password !== process.env.DELETE_PASSWORD) {
+    return res.status(403).json({ success: false, message: 'Incorrect password' });
+  }
 
   try {
-    await Student.findByIdAndDelete(studentId);
+    await Student.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: 'Student deleted successfully' });
   } catch (error) {
     console.error('Error deleting student:', error);

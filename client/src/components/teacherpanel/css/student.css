@@ -169,6 +169,8 @@ button.select-topic:hover {
   width: 580px;
 }
 
+.passwordset button {border-left: 1px solid #000;}
+
 /* Responsive Layout for Buttons */
 @media (max-width: 768px) {
   .student-container {

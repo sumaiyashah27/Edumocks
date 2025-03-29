@@ -227,8 +227,8 @@ const Profile = () => {
             <div className="d-flex justify-content-between">
               {isEditing ? (
                 <>
-                  <Button variant="success" onClick={handleSave}>Save</Button>
-                  <Button
+                  <Button style={{backgroundColor:'rgb(16, 11, 92)', border: 'none'}} variant="success" onClick={handleSave}>Save</Button>
+                  <Button style={{backgroundColor:'rgb(200, 13, 24)', border: 'none'}}
                     variant="secondary"
                     onClick={() => setIsEditing(false)}
                   >
@@ -236,7 +236,7 @@ const Profile = () => {
                   </Button>
                 </>
               ) : (
-                <Button
+                <Button style={{backgroundColor:'rgb(16, 11, 92)', border: 'none'}}
                   variant="primary"
                   onClick={() => setIsEditing(true)}
                 >

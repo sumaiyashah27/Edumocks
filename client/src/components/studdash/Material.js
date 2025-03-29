@@ -64,7 +64,7 @@ const VideoSection = () => {
             ))}
         </Row>
         <div className="text-center">
-          <Button variant="primary" onClick={toggleVideos}>
+          <Button style={{backgroundColor:'rgb(16, 11, 92)', border: 'none'}} variant="primary" onClick={toggleVideos}>
             {isAllVisible ? "Show Less" : "Load More"}
           </Button>
         </div>

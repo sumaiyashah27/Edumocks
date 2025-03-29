@@ -120,7 +120,7 @@ const handleStripePayment = async (event) => {
         toast.error('Error sending confirmation email.');
       }
 
-      navigate("/studpanel", { state: { studentId, firstName: studentData.firstname } });
+      navigate("/studpanel/dashboard", { state: { studentId, firstName: studentData.firstname } });
     } else {
       // Proceed with Stripe payment
       console.log("Proceeding with Stripe payment. Amount to charge:", finalPrice);
@@ -167,7 +167,7 @@ const handleStripePayment = async (event) => {
         });
 
         toast.success('Confirmation email sent to the student!');
-        navigate("/studpanel", { state: { studentId, firstName: studentData.firstname } });
+        navigate("/studpanel/dashboard", { state: { studentId, firstName: studentData.firstname } });
       }
     }
   } catch (error) {
@@ -251,7 +251,7 @@ const handleStripePayment = async (event) => {
         });
 
         toast.success('Confirmation email sent to the student!');
-        navigate("/studpanel", {
+        navigate("/studpanel/dashboard", {
           state: { studentId, firstName: studentData.firstname },
         });
 
@@ -300,7 +300,7 @@ const handleStripePayment = async (event) => {
             });
 
             toast.success('Confirmation email sent to the student!');
-            navigate("/studpanel", {
+            navigate("/studpanel/dashboard", {
               state: { studentId, firstName: studentData.firstname },
             });
 

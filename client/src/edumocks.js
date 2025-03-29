@@ -24,11 +24,11 @@ function edumocks({ pageContent }) {
         {pageContent || (
           <>
             <Home />
-            <Course />
             <About />
             <WhyChooseUs />
             <Step />
             <Features />
+            <Course />
             <Video videoId="DzvrSz7CFz0" />
             <Data />
             <Testimonial />

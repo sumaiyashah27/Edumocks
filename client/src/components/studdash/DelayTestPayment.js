@@ -125,7 +125,7 @@ const DelayTestPayment = () => {
 
         setPaymentStatus("success");
         toast.success("Payment successful! Test date and time updated.");
-        navigate("/studpanel", { state: { studentId } });
+        navigate("/studpanel/dashboard", { state: { studentId } });
       }
     } catch (error) {
       console.error("Error during payment:", error);
@@ -190,7 +190,7 @@ const DelayTestPayment = () => {
             testTime: testTimeState,
           });
           toast.success("Payment successful!");
-          navigate("/studpanel", { state: { studentId } });
+          navigate("/studpanel/dashboard", { state: { studentId } });
         },
         prefill: {
           name: "Student",

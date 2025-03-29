@@ -489,7 +489,7 @@ router.get("/completedTests", async (req, res) => {
 // Route to fetch all completed tests
 router.get('/getCompletedTests', async (req, res) => {
   try {
-    const completedTests = await CompletedTest.find()
+    const completedTests = await completedTests.find()
       .populate('studentId', 'firstname lastname') // Populate student details
       .populate('selectedCourse', 'name') // Populate course name
       .populate('selectedSubject', 'name') // Populate subject name

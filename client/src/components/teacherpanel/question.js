@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEdit, faTrash, faTimes, faUpload, faDownload, faSave, faClone } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +8,11 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Form, InputGroup } from "react-bootstrap";
 import { BsSearch } from "react-icons/bs";
+import { addStyles, EditableMathField } from "react-mathquill";
+import { Modal, Button } from "react-bootstrap";
+import "react-quill/dist/quill.snow.css"; // Quill styles
+import "katex/dist/katex.min.css"; // KaTeX for rendering math formulas
+
 
 const Queset = () => {
   const [quesets, setQuesets] = useState([]);
@@ -58,6 +63,19 @@ const Queset = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [filteredQuesets, setFilteredQuesets] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      // ["formula"],
+      ["clean"],
+    ],
+    clipboard: {
+      matchVisual: false,
+    },
+  };
   
   useEffect(() => { fetchQuesets(); }, []);
 
@@ -579,14 +597,7 @@ const Queset = () => {
                                   [`questionText${index}`]: value,
                                 }))
                               }
-                              modules={{
-                                toolbar: [
-                                  [{ header: [1, 2, false] }],
-                                  ["bold", "italic", "underline"],
-                                  [{ list: "ordered" }, { list: "bullet" }],
-                                  ["clean"],
-                                ],
-                              }}
+                              modules={modules}
                             />
                           </div>
                         ) : (
@@ -793,7 +804,7 @@ const Queset = () => {
                       </div>
                     ) : (
                       question.correctAns && (
-                        <p><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
+                        <p className='d-flex gap-2'><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
                       )
                     )}
 
@@ -992,6 +1003,7 @@ const Queset = () => {
           )}
         </div>
       ))}
+
       {/* Upload CSV Modal */}
       {showUploadModal && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000 }}>
@@ -1008,8 +1020,9 @@ const Queset = () => {
           </div>
         </div>
       )}
+
       {showAddQuestionModal && (
-        <Modal isOpen={showAddQuestionModal} onClose={() => setShowAddQuestionModal(false)} contentLabel="Add Question"
+        <Modal1 isOpen={showAddQuestionModal} onClose={() => setShowAddQuestionModal(false)} contentLabel="Add Question"
           style={{
             overlay: { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', },
             content: { position: 'relative', maxWidth: '800px', maxHeight: '80vh', margin: '0 auto', padding: '20px', overflow: 'hidden', borderRadius: '10px', },
@@ -1200,11 +1213,11 @@ const Queset = () => {
               Add Question
             </button>
           </div>
-        </Modal>
+        </Modal1>
       )}
 
       {showEditQuestionModal && (
-        <Modal isOpen={showEditQuestionModal} onClose={() => setShowEditQuestionModal(false)} contentLabel="Edit Question" style={{ overlay: { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', }, content: { position: 'relative', maxWidth: '800px', maxHeight: '80vh', margin: '0 auto', padding: '20px', overflow: 'hidden', borderRadius: '10px', }, }}>
+        <Modal1 isOpen={showEditQuestionModal} onClose={() => setShowEditQuestionModal(false)} contentLabel="Edit Question" style={{ overlay: { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', }, content: { position: 'relative', maxWidth: '800px', maxHeight: '80vh', margin: '0 auto', padding: '20px', overflow: 'hidden', borderRadius: '10px', }, }}>
           <h3>Edit Question</h3>
           {/* Question Fields */}
           <div style={{ maxHeight: 'calc(80vh - 50px)', overflowY: 'auto', paddingRight: '10px', }}>
@@ -1422,13 +1435,13 @@ const Queset = () => {
               Update Question
             </button>
           </div>
-        </Modal>
+        </Modal1>
       )}
     </div>
   );
 };
 
-const Modal = ({ title, children, onClose }) => (
+const Modal1 = ({ title, children, onClose }) => (
   <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
     <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '800px', textAlign: 'center', position: 'relative', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
       <span onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>

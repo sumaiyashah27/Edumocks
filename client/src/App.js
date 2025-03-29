@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate  } from 'react-router-dom';
 import { Elements } from "@stripe/react-stripe-js"; // Import Elements
 import { loadStripe } from "@stripe/stripe-js"; // Import loadStripe
 import Edumocks from './edumocks';  // Landing Page Component
@@ -20,6 +20,21 @@ import Teachforgot from './components/edumocks/js/Teacherforgot';
 import Payment from "./components/studdash/payment";
 import Test from "./components/studdash/test";
 import DelayTestPayment from './components/studdash/DelayTestPayment'; 
+import Dashboard from "./components/teacherpanel/teach-dash";
+import Students from "./components/teacherpanel/student";
+import Courses from "./components/teacherpanel/course";
+import Subjects from "./components/teacherpanel/subject";
+import Images from "./components/teacherpanel/images";
+import Questions from "./components/teacherpanel/question";
+import StudentEnroll from "./components/teacherpanel/studEnroll";
+import StudentTestResults from "./components/teacherpanel/studTestResult";
+import DelayTest from "./components/teacherpanel/delayTest";
+import StuDashboard from './components/studdash/DashBoard';
+import Profile from './components/studdash/Profile';
+import BookTest from './components/studdash/BookTest';
+import ScheduleTest from './components/studdash/ScheduleTest';
+import Material from './components/studdash/Material';
+import SupportStudent from './components/studdash/SupportStudent';
 
 import './App.css';
 // Load Stripe with your publishable key
@@ -45,8 +60,30 @@ const App = () => {
         <Route path="/refund-policy" element={<Edumocks pageContent={<RefundPolicy />} />} />
         <Route path="/contact" element={<Edumocks pageContent={<Contact />} />} />
         {/* ------------------------------------------------------ */}
-        <Route path="/teachpanel" element={<TeachPanel />} />
-        <Route path="/studpanel" element={<StudPanel />} />
+        <Route path="/teachpanel" element={<TeachPanel />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="students" element={<Students />} />
+          <Route path="courses" element={<Courses />} />
+          <Route path="subjects" element={<Subjects />} />
+          <Route path="images" element={<Images />} />
+          <Route path="questions" element={<Questions />} />
+          <Route path="studentenroll" element={<StudentEnroll />} />
+          <Route path="studtestresult" element={<StudentTestResults />} />
+          <Route path="delaytests" element={<DelayTest />} />
+
+          {/* Redirect unknown routes */}
+          <Route path="*" element={<Navigate to="/teachpanel/dashboard" />} />
+        </Route>
+
+        <Route path="/studpanel" element={<StudPanel />}>
+          <Route path="dashboard" element={<StuDashboard />} />
+          <Route path="book-test" element={<BookTest />} />
+          <Route path="schedule-test" element={<ScheduleTest />} />
+          <Route path="material" element={<Material />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="support" element={<SupportStudent />} />
+        </Route>
+        
         {/* Wrap the Payment route with Elements */}
         <Route path="/payment" element={<Elements stripe={stripePromise}><Payment /></Elements>} />
           <Route path="/test/:course/:subject" element={<Test />} />
