@@ -36,6 +36,7 @@ const CourseSection = () => {
   const navigate = useNavigate();
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [filterLevel, setFilterLevel] = useState('all');
 
   const handleBookClick = (course) => {
     setSelectedCourse(course);
@@ -45,25 +46,38 @@ const CourseSection = () => {
   return (
     <section style={{ padding: '50px 0', backgroundColor: '#f4f4f4', textAlign: 'center' }} id="our-courses">
       <p style={{ fontWeight: 'bold', fontSize: '2.5rem', marginBottom: '30px' }}>What We Offer !!</p>
-      <div className="courses-container">
-        {courses.map(course => (
-          <div key={course.id} className="course-card">
-            <div className="course-content">
-              <span className="course-label">COURSE</span>
-              <h3 className="course-title">{course.name}</h3>
-
-              <div className="course-price">
-                <span className="old-price">₹{course.oldPrice}</span>
-                <span className="new-price">₹{course.newPrice}</span>
-              </div>
-
-              <button onClick={() => handleBookClick(course)} className="book-btn">
-                Book Test
-              </button>
-            </div>
-          </div>
-        ))}
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={() => setFilterLevel('all')} className="filter-btn">All</button>
+        <button onClick={() => setFilterLevel('level1')} className="filter-btn">CFA LEVEL 1</button>
+        <button onClick={() => setFilterLevel('level2')} className="filter-btn">CFA LEVEL 2</button>
       </div>
+
+      <div className="courses-container">
+        {courses
+          .filter(course => 
+            filterLevel === 'all' || 
+            (filterLevel === 'level1' && course.name.includes('LEVEL 1')) || 
+            (filterLevel === 'level2' && course.name.includes('LEVEL 2'))
+          )
+          .map(course => (
+            <div key={course.id} className="course-card">
+              <div className="course-content">
+                <span className="course-label">COURSE</span>
+                <h3 className="course-title">{course.name}</h3>
+
+                <div className="course-price">
+                  <span className="old-price">${course.oldPrice}</span>
+                  <span className="new-price">${course.newPrice}</span>
+                </div>
+
+                <button onClick={() => handleBookClick(course)} className="book-btn">
+                  Book Test
+                </button>
+              </div>
+            </div>
+          ))}
+      </div>
+
 
       {showModal && selectedCourse && (
         <div className="modal-overlay">
@@ -82,7 +96,7 @@ const CourseSection = () => {
             />
             <h2>{selectedCourse.name}</h2>
             <span> <strong>About this Course :</strong> <p>{selectedCourse.info}</p></span>
-            <p><strong>Price:</strong> ₹{selectedCourse.newPrice}</p>
+            <p><strong>Price:</strong> ${selectedCourse.newPrice}</p>
             <span><strong>PACKAGE INCLUSIONS:</strong> <p>• Mocks included: Mock 1, Mock 2, Mock 3 and Mock 4• Each mock includes:</p> </span>
             <button style={{ transition: "background-color 0.3s ease, transform 0.3s ease" }} onClick={() => navigate('/login')} className="book-btn">Proceed to Book</button>
             <button style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 25px", fontSize: "1.2rem", border: "none", borderRadius: "8px", cursor: "pointer", marginRight: "10px", transition: "background-color 0.3s ease, transform 0.3s ease" }} onClick={() => setShowModal(false)} className="book-btn">Close</button>
@@ -123,63 +137,63 @@ const CourseSection = () => {
           }
 
           .course-price {
-  margin: 10px 0;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-  font-size: 1.1rem;
-}
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+            font-size: 1.1rem;
+          }
 
-.old-price {
-  text-decoration: line-through;
-  color: #999;
-}
+          .old-price {
+            text-decoration: line-through;
+            color: #999;
+          }
 
-.new-price {
-  color: #e53935;
-  font-weight: bold;
-}
+          .new-price {
+            color: #e53935;
+            font-weight: bold;
+          }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
+          .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+          }
 
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  max-width: 700px;
-  text-align: center;
-}
+          .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 700px;
+            text-align: center;
+          }
 
-.book-btn {
-  margin: 10px;
-  background: #007bff;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+          .book-btn {
+            margin: 10px;
+            background: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          }
 
-.close-btn {
-  background: #ccc;
-  color: black;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+          .close-btn {
+            background: #ccc;
+            color: black;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          }
 
           .course-label {
             font-size: 0.8rem;
@@ -205,6 +219,20 @@ const CourseSection = () => {
 
           .book-btn:hover {
             background-color: #100b59;
+          }
+
+          .filter-btn {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #100b5c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+          }
+
+          .filter-btn:hover {
+            background: #100b59;
           }
 
           /* Responsive adjustments */
