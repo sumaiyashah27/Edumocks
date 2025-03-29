@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
 import { faTachometerAlt, faUser, faBook, faChalkboardTeacher, faBookOpen, faChevronLeft, faChevronRight, faSignOutAlt, faHandsHelping } from '@fortawesome/free-solid-svg-icons';
-import Dashboard from './DashBoard';
-import Profile from './Profile';
-import BookTest from './BookTest';
-import ScheduleTest from './ScheduleTest';
-import Material from './Material';
-import SupportStudent from './SupportStudent';
-import { useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const StudPanel = () => {
   const navigate = useNavigate();
-  const [activePanel, setActivePanel] = useState('book test');
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [student, setStudent] = useState({
@@ -31,16 +25,13 @@ const StudPanel = () => {
 
     const fetchStudentDetails = async () => {
       const studentId = localStorage.getItem('_id');
-      console.log('Fetching student details for ID:', studentId);
 
       if (!studentId) {
         console.error("Student ID not found in localStorage.");
         return;
       }
       try {
-        console.log('Fetching student details for ID:', studentId);
         const response = await axios.get(`/api/student/${studentId}`);
-        console.log('Student data fetched:', response.data);
         setStudent((prev) => ({
           ...prev,
           firstname: response.data.firstname,
@@ -59,12 +50,7 @@ const StudPanel = () => {
     };
 
     fetchStudentDetails();
-  }, [student._id, student.email, navigate]);
-
-  const handlePanelChange = (panel) => {
-    setActivePanel(panel);
-    if (window.innerWidth <= 768) setSidebarOpen(false);
-  };
+  }, [student.email, navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -72,42 +58,22 @@ const StudPanel = () => {
   };
 
   const menuItems = [
-    { name: 'Dashboard', panel: 'dashboard', icon: faTachometerAlt },
-    { name: 'Book Test', panel: 'book test', icon: faUser },
-    { name: 'Schedule Test', panel: 'schedule test', icon: faBook },
-    { name: 'Study Material', panel: 'material', icon: faBookOpen },
-    { name: 'Profile', panel: 'profile', icon: faChalkboardTeacher },
-    { name: 'Support', panel: 'support', icon: faHandsHelping },
+    { name: 'Dashboard', path: '/studpanel/dashboard', icon: faTachometerAlt },
+    { name: 'Book Test', path: '/studpanel/book-test', icon: faUser },
+    { name: 'Schedule Test', path: '/studpanel/schedule-test', icon: faBook },
+    { name: 'Study Material', path: '/studpanel/material', icon: faBookOpen },
+    { name: 'Profile', path: '/studpanel/profile', icon: faChalkboardTeacher },
+    { name: 'Support', path: '/studpanel/support', icon: faHandsHelping },
   ];
-
-  const renderContent = () => {
-    switch (activePanel) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'book test':
-        return <BookTest />;
-      case 'schedule test':
-        return <ScheduleTest />;
-      case 'material':
-        return <Material />;
-      case 'profile':
-        return <Profile />;
-      case 'support':
-        return <SupportStudent />;
-      default:
-        return <h2>Welcome! Please select an option.</h2>;
-    }
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#100b5c' }}>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* Top Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', color: 'white' }}>
-          <div className="row topbar">
-            <h2 style={{ fontSize: '1.7rem', fontWeight: 'bold', color: '#FFF' }}>
-              Welcome, {isLoading ? 'Loading...' : student.firstname}
-            </h2>
-          </div>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: 'bold', color: '#FFF' }}>
+            Welcome, {isLoading ? 'Loading...' : student.firstname}
+          </h2>
           <button
             onClick={handleLogout}
             style={{
@@ -126,26 +92,37 @@ const StudPanel = () => {
             Logout
           </button>
         </div>
+
+        {/* Sidebar & Content */}
         <div style={{ display: 'flex', flex: 1 }}>
-          <div style={{ width: sidebarOpen ? '250px' : '70px', backgroundColor: '#100b5c', padding: '20px', color: 'white', transition: 'width 0.3s ease' }}>
+          {/* Sidebar */}
+          <div style={{ width: sidebarOpen ? '250px' : '100px', backgroundColor: '#100b5c', padding: '20px', color: 'white', transition: 'width 0.3s ease' }}>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ backgroundColor: '#fff', color: '#100b5c', border: 'none', padding: '10px', cursor: 'pointer', marginBottom: '10px', borderRadius: '5px' }}
+              style={{
+                backgroundColor: '#fff',
+                color: '#100b5c',
+                border: 'none',
+                padding: '10px',
+                cursor: 'pointer',
+                marginBottom: '10px',
+                borderRadius: '5px',
+              }}
             >
               <FontAwesomeIcon icon={sidebarOpen ? faChevronLeft : faChevronRight} />
             </button>
             <ul style={{ listStyleType: 'none', padding: 0 }}>
               {menuItems.map((item) => (
-                <li key={item.panel} style={{ marginBottom: '15px' }}>
-                  <button
-                    onClick={() => handlePanelChange(item.panel)}
+                <li key={item.path} style={{ marginBottom: '15px' }}>
+                  <Link
+                    to={item.path}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       padding: '12px',
-                      backgroundColor: activePanel === item.panel ? '#ffdf5c' : '#ECF0F1',
+                      backgroundColor: location.pathname === item.path ? '#ffdf5c' : '#ECF0F1',
                       border: 'none',
-                      color: activePanel === item.panel ? '#100b5c' : '#100b5c',
+                      color: location.pathname === item.path ? '#100b5c' : '#100b5c',
                       textAlign: 'left',
                       borderRadius: '5px',
                       cursor: 'pointer',
@@ -153,6 +130,7 @@ const StudPanel = () => {
                       justifyContent: 'flex-start',
                       width: sidebarOpen ? '100%' : '50px',
                       transition: 'background-color 0.3s ease, color 0.3s ease',
+                      textDecoration: 'none',
                     }}
                   >
                     <FontAwesomeIcon
@@ -160,20 +138,20 @@ const StudPanel = () => {
                       style={{
                         marginRight: '10px',
                         fontSize: '20px',
-                        color: activePanel === item.panel ? '#100b5c' : '#100b5c',
-                        transition: 'transform 0.2s ease',
-                        transform: 'scale(1)',
+                        color: location.pathname === item.path ? '#100b5c' : '#100b5c',
                       }}
                     />
                     {sidebarOpen && item.name}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
+
+          {/* Main Content */}
           <div style={{ flex: 1, padding: '10px', backgroundColor: '#ecf0f1', overflowY: 'auto' }}>
             <div style={{ padding: '10px', margin: '0 auto', maxWidth: '100%', height: 'calc(100vh - 120px)', overflowY: 'auto' }}>
-              {renderContent()}
+              <Outlet /> {/* Renders the selected component based on the route */}
             </div>
           </div>
         </div>

@@ -81,12 +81,16 @@ const ScheduleTest = () => {
         } catch (error) {console.error('Error fetching scheduled tests:', error);
         }
       }
+
+      console.log('scheduledTests',scheduledTests);
       //courses and subjects
       const fetchCoursesAndSubjects = async () => {
         try {
           const courseResponse = await axios.get('/api/course');
           const subjectResponse = await axios.get('/api/subject');
           setCourses(courseResponse.data);
+          console.log('courseResponse',courseResponse.data)
+          console.log('subjectResponse',subjectResponse.data)
           setSubjects(subjectResponse.data);
         } catch (error) {console.error('Error fetching courses and subjects:', error);
         }
@@ -145,6 +149,8 @@ const ScheduleTest = () => {
     const { activeTests } = studentEnrollData ? formatEnrollmentData() : { activeTests: [] };
     //console.log("Active Tests:", activeTests);
     
+    console.log('activeTests',activeTests);
+
     // Define the handleScheduleTest function
     const handleScheduleTest = (course, subject) => {
       setSelectedCourse(course);
@@ -459,12 +465,12 @@ const ScheduleTest = () => {
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap'  }}>
                       {isScheduled ? (
                         <>
-                          <button style={{ fontSize: '1rem', backgroundColor: '#3498db', color: 'white', padding: '10px 10px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = '#2980b9')} onMouseLeave={(e) => (e.target.style.backgroundColor = '#3498db')} onClick={() => handleAttendTest(test.course, test.subject)}><FontAwesomeIcon icon={faEdit} style={{ animation: 'bounce 1s ease-in-out infinite' }} /> Attend Test</button>
-                          <button style={{ fontSize: '1rem', backgroundColor: '#2ecc71', color: 'white', padding: '10px 10px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = '#27ae60')} onMouseLeave={(e) => (e.target.style.backgroundColor = '#2ecc71')} onClick={() => handleDelayTest(test.course, test.subject)}><FontAwesomeIcon icon={faClock} style={{ animation: 'spin 1s linear infinite' }} /> Reschedule Test</button>
+                          <button style={{ fontSize: '1rem', backgroundColor: 'rgb(16, 11, 92)', color: 'white', padding: '10px 10px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = 'rgb(16, 11, 92)')} onMouseLeave={(e) => (e.target.style.backgroundColor = 'rgb(16, 11, 92)')} onClick={() => handleAttendTest(test.course, test.subject)}><FontAwesomeIcon icon={faEdit} style={{ animation: 'bounce 1s ease-in-out infinite' }} /> Attend Test</button>
+                          <button style={{ fontSize: '1rem', backgroundColor: 'rgb(200, 13, 24)', color: 'white', padding: '10px 10px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = 'rgb(200, 13, 24)')} onMouseLeave={(e) => (e.target.style.backgroundColor = 'rgb(200, 13, 24)')} onClick={() => handleDelayTest(test.course, test.subject)}><FontAwesomeIcon icon={faClock} style={{ animation: 'spin 1s linear infinite' }} /> Reschedule Test</button>
                         </>
                       ) : (
                         <>
-                          <button style={{ fontSize: '1rem', backgroundColor: '#f1c40f', color: 'white', padding: '10px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = '#f39c12')} onMouseLeave={(e) => (e.target.style.backgroundColor = '#f1c40f')} onClick={() => handleScheduleTest(test.course, test.subject)}><FontAwesomeIcon icon={faCalendarPlus} style={{ animation: 'pulse 1.5s infinite' }} /> Schedule Test</button>
+                          <button style={{ fontSize: '1rem', backgroundColor: 'rgb(16, 11, 92)', color: 'white', padding: '10px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background-color 0.3s, transform 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }} onMouseEnter={(e) => (e.target.style.backgroundColor = 'rgb(16, 11, 92)')} onMouseLeave={(e) => (e.target.style.backgroundColor = 'rgb(16, 11, 92)')} onClick={() => handleScheduleTest(test.course, test.subject)}><FontAwesomeIcon icon={faCalendarPlus} style={{ animation: 'pulse 1.5s infinite' }} /> Schedule Test</button>
                         </>
                       )}
                     </div>
@@ -484,11 +490,10 @@ const ScheduleTest = () => {
               <p><strong>Test Time:</strong> {selectTest.testTime.split('.')[0]}</p>
               {/* <p><strong>Test Time:</strong> {selectTest.testTime}</p> */}
               <p><strong>Test Date:</strong> {new Date(selectTest.testDate).toLocaleDateString()}</p>
-                
               {!showEnterButton && remainingTime && <p style={{ color: 'red', fontWeight: 'bold' }}>Countdown: {remainingTime}</p>}
               {showEnterButton && (
                 <button onClick={() => handleEnterRoom(selectTest.selectedCourse, selectTest.selectedSubject)} 
-                  style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', marginTop: '20px' }}>
+                  style={{ padding: '10px 20px', backgroundColor: 'rgb(16, 11, 92)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', marginTop: '20px' }}>
                   Enter Room
                 </button>
               )}
@@ -550,7 +555,7 @@ const ScheduleTest = () => {
               </div>
   
               {errorMessage && <div style={{ color: 'red', marginBottom: '15px', fontSize: '1rem' }}>{errorMessage}</div>}
-  
+              <p><strong>NOTE:-</strong> Please ensure you attend the test on time. Rescheduling will incur a charge of $3.</p>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button
                   onClick={handleConfirmSchedule}

@@ -6,11 +6,14 @@ import { Table, Button, Form, Modal, InputGroup } from 'react-bootstrap';
 import Papa from 'papaparse';
 import './css/student.css'; // Add styles
 import { toast, ToastContainer } from "react-toastify";
+import DeleteConfirmationModal from "./modals/DeleteConfirmationModal"
+
 const Student = () => {
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchStudents();
@@ -53,25 +56,25 @@ const Student = () => {
             phone,
             testCode,
           }));
-  
+
           // Validate required fields (firstname, lastname, email)
           const invalidStudents = studentsData.filter(student => !student.firstname || !student.lastname || !student.email);
-  
+
           if (invalidStudents.length > 0) {
             console.log('Invalid students:', invalidStudents);  // Log the invalid students for debugging
             toast.error('Some students have missing required fields: firstname, lastname, or email.');
             return;
           }
-  
+
           // Email format validation (optional)
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           const invalidEmails = studentsData.filter(student => student.email && !emailRegex.test(student.email));
-  
+
           if (invalidEmails.length > 0) {
             toast.warning('Some emails are invalid. Please check the email format.');
             return;
           }
-  
+
           // Send valid data to the backend
           try {
             const response = await fetch('/api/student/bulk', {
@@ -79,7 +82,7 @@ const Student = () => {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(studentsData),
             });
-  
+
             if (response.ok) {
               // Fetch and display updated list of students
               fetchStudents();
@@ -96,7 +99,7 @@ const Student = () => {
       });
     }
   };
-  
+
   const handleDownloadTemplate = () => {
     const template = [
       ["firstname", "lastname", "email", "countryCode", "phone", "testCode"]
@@ -212,7 +215,7 @@ const Student = () => {
                 <td>{student.phone}</td>
                 <td>{student.testCode}</td>
                 <td>
-                  <Button variant="danger" size="sm" onClick={() => handleDelete(student._id)}>
+                  <Button variant="danger" size="sm" onClick={() => setShowModal(true)}>
                     <FaTrash />
                   </Button>
                 </td>
@@ -221,6 +224,13 @@ const Student = () => {
           </tbody>
         </Table>
       </div>
+
+      <DeleteConfirmationModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={fetchStudents}
+        studentId={filteredStudents._id}
+      />
 
       {/* Upload CSV Modal */}
       <Modal show={showUploadModal} onHide={() => setShowUploadModal(false)}>
@@ -232,7 +242,7 @@ const Student = () => {
         </Modal.Body>
         <Modal.Footer className='d-flex justify-content-between'>
           <Button variant="secondary" onClick={handleDownloadTemplate}>
-            <FaDownload /> Students Template
+            <FaDownload /> Bulk Format
           </Button>
           <Button variant="primary" onClick={() => setShowUploadModal(false)}>
             Upload

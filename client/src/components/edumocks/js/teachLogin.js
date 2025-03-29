@@ -40,7 +40,7 @@ const TeacherLogin = () => {
         localStorage.setItem('email', response.data.email);
   
         // Navigate to the next page
-        navigate('/teachpanel');
+        navigate('/teachpanel/dashboard');
       } else {
         setError('Invalid Email or Password');
       }
@@ -83,7 +83,7 @@ const TeacherLogin = () => {
         });
   
         // Navigate to TeachPanel page
-        navigate('/teachpanel');
+        navigate('/teachpanel/dashboard');
       } else {
         setError('Google Login failed or account not registered');
         console.log('Login failed:', response.data.message); // Log failure message

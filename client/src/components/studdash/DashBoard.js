@@ -7,10 +7,10 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { FaDownload } from "react-icons/fa"
 
 const DashBoard = () => {
-  const [courses, setCourses] = useState([]); // All courses with subjects
-  const [subjects, setSubjects] = useState([]); // All subjects
-  const [selectedCourseId, setSelectedCourseId] = useState(''); // Selected course ID
-  const [selectedSubjectId, setSelectedSubjectId] = useState(''); // Selected subject ID
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedSubjectId, setSelectedSubjectId] = useState('');
   const [tests, setTests] = useState([]);
   const [grade, setGrade] = useState('');
   const [status, setStatus] = useState('');
@@ -20,7 +20,9 @@ const DashBoard = () => {
   const [poorScore, setPoorScore] = useState(0);
   const studentId = localStorage.getItem('_id');
   const [rowsToShow, setRowsToShow] = useState(3);
-  console.log(studentId);
+  const [results, setResults] = useState([]);
+
+  console.log('results', results);
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -57,7 +59,7 @@ const DashBoard = () => {
     fetchTests();
   }, [studentId]);
 
-  console.log('tests',tests);
+  console.log('tests', tests);
 
   // Get course name by courseId
   const getCourseName = (courseId) => {
@@ -70,6 +72,18 @@ const DashBoard = () => {
     const subject = subjects.find((subject) => subject._id === subjectId);
     return subject ? subject.name : '';
   };
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const { data } = await axios.get("/api/completed/getCompletedTests");
+        setResults(data);
+      } catch (error) {
+      }
+    };
+
+    fetchResults();
+  }, []);
 
 
   // Handle course selection
@@ -113,6 +127,37 @@ const DashBoard = () => {
   // Calculate if there are more rows to display
   const hasMoreRows = tests.length > rowsToShow;
 
+  useEffect(() => {
+    if (tests.length > 0) {
+      const firstSubjectId = tests[tests.length - 1].selectedSubject; // First subject based on reversed order
+      setSelectedSubjectId(firstSubjectId);
+
+      // Automatically trigger the logic for first subject
+      const subjectTests = tests.filter((test) => test.selectedSubject === firstSubjectId);
+
+      if (subjectTests.length > 0) {
+        const totalScore = subjectTests.reduce((sum, test) => sum + test.score, 0);
+        const totalQuestions = subjectTests.reduce((sum, test) => sum + test.questionSet, 0);
+        const percentage = (totalScore / totalQuestions) * 100;
+        const { grade, status } = getGrade(percentage);
+
+        setGrade(grade);
+        setStatus(status);
+        setGoodScore(percentage);
+        setPoorScore(100 - percentage);
+        setTotalScore(totalScore);
+        setTotalQuestions(totalQuestions);
+      } else {
+        setGrade("N/A");
+        setStatus("No Data");
+        setGoodScore(0);
+        setPoorScore(100);
+        setTotalScore(0);
+        setTotalQuestions(0);
+      }
+    }
+  }, [tests]);
+
   return (
     <div className="container dashboard-container" style={{ height: 'auto' }}>
       {/* Main Content */}
@@ -124,42 +169,6 @@ const DashBoard = () => {
               <div className="row">
                 <div className="col-12 p-3 d-flex justify-content-center">
                   {/* Course Dropdown */}
-                  {/* <div>
-                    <select id="course-dropdown" value={selectedCourseId}
-                      onChange={handleCourseChange}
-                      style={{ width: '100%', padding: '10px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '4px', outline: 'none'
-                      }}
-                    >
-                      <option value="">-- Select Course --</option>
-                      {courses.map((course) => (
-                        <option key={course._id} value={course._id}>
-                          {course.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div> */}
-
-                  {/* Subjects Dropdown */}
-                  {/* {selectedCourse && (
-                    <div style={{ marginLeft: '10px' }}>
-                      <select id="subject-dropdown" value={selectedSubjectId}
-                        onChange={handleSubjectChange}
-                        style={{ width: '100%', padding: '10px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '4px', outline: 'none'}}
-                      >
-                        <option value="">-- Select Subject --</option>
-                        {selectedCourse.subjects.map((subject) => (
-                          <option key={subject._id} value={subject._id}>
-                            {subject.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )} */}
-
-                  {/* Third button */}
-                  {/* <button className="button" style={{ marginLeft: '10px' }}>
-                    Check
-                  </button> */}
                 </div>
               </div>
 
@@ -172,7 +181,8 @@ const DashBoard = () => {
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>SCORE</th>
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>%</th>
                       <th style={{ padding: "10px", border: "1px solid #ddd" }}>Grade</th>
-                      {/* <th style={{ padding: "10px", border: "1px solid #ddd" }}>Action</th> New Column */}
+                      {/* <th style={{ padding: "10px", border: "1px solid #ddd" }}>Action</th>  */}
+                      {/* New Column */}
                     </tr>
                   </thead>
                   <tbody>

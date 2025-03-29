@@ -55,7 +55,7 @@ const TeacherDash = () => {
           <div className="card shadow-lg" style={{ borderRadius: '15px', borderColor: '#C80D18' }}>
             <div className="card-body text-center">
               <FontAwesomeIcon icon={faClock} size="3x" style={{ color: '#100B5C' }} />
-              <h5 className="card-title mt-3" style={{ color: '#C80D18' }}>Rescheduled Tests</h5>
+              <h5 className="card-title mt-3" style={{ color: '#C80D18' }}>Delayed Tests</h5>
               <p className="card-text" style={{ fontSize: '24px', fontWeight: 'bold', color: '#100B5C' }}>
                 {counts.delayTestCount}
               </p>

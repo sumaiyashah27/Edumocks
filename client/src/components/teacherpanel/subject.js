@@ -13,6 +13,7 @@ const Subject = () => {
   const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
   const [showEditSubjectModal, setShowEditSubjectModal] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState('');
+  const [newSubjectDescription, setNewSubjectDescription] = useState('');
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [loading, setLoading] = useState(false);
   const [newSubjectPrice, setNewSubjectPrice] = useState('');
@@ -62,17 +63,16 @@ const Subject = () => {
       return;
     }
     const priceInDollars = parseFloat(newSubjectPrice);
-    if (isNaN(priceInDollars) || priceInDollars < 0) {
+    if (isNaN(priceInDollars) || priceInDollars <= 0) {
       toast.error("Please enter a valid price.");
       return;
     }
     setLoading(true);
     try {
-      await axios.post('/api/subject', { name: newSubjectName, price: priceInDollars.toFixed(2), });
-      toast.success("Topic added successfully!"); 
-
+      await axios.post('/api/subject', { name: newSubjectName, price: priceInDollars.toFixed(2), description: newSubjectDescription });
       setNewSubjectName('');
       setNewSubjectPrice('');
+      setNewSubjectDescription('');
       setShowAddSubjectModal(false);
       fetchSubjects();
     } catch (error) {
@@ -92,7 +92,7 @@ const Subject = () => {
 
     setLoading(true);
     try {
-      await axios.put(`/api/subject/${editingSubject._id}`, { name: editingSubject.name, price: editingSubject.price, });
+      await axios.put(`/api/subject/${editingSubject._id}`, { name: editingSubject.name, price: editingSubject.price, description: editingSubject.description });
       setShowEditSubjectModal(false);
       fetchSubjects();
     } catch (error) {
@@ -246,6 +246,7 @@ const Subject = () => {
         toast.error("An error occurred while copying the subject.");
       });
   };
+  const sanitizeHtml = (html) => html.replace(/<br\s*\/?>/g, "").trim();
 
   return (
     <div>
@@ -284,7 +285,13 @@ const Subject = () => {
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
               <input type="number" value={newSubjectPrice} onChange={(e) => setNewSubjectPrice(e.target.value)} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} min="0" />
             </div>
-            <button onClick={handleAddSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
+            <textarea
+              value={newSubjectDescription}
+              onChange={(e) => setNewSubjectDescription(e.target.value)}
+              className="form-control mt-2"
+              placeholder="Enter Subject description"
+            />
+            <button className='mt-3' onClick={handleAddSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
               <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px', }} />Add Topic
             </button>
           </div>
@@ -304,7 +311,13 @@ const Subject = () => {
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
               <input type="number" value={editingSubject.price} onChange={(e) => setEditingSubject({ ...editingSubject, price: e.target.value })} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} />
             </div>
-            <button onClick={handleUpdateSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
+            <textarea
+              value={editingSubject.description}
+              onChange={(e) => setEditingSubject({ ...editingSubject, description: e.target.value })}
+              className="form-control mt-2"
+              placeholder="Enter Subject description"
+            />
+            <button className='mt-3' onClick={handleUpdateSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
               Update Topic
             </button>
           </div>
@@ -314,42 +327,51 @@ const Subject = () => {
       {/* List of Subjects */}
       {filteredSubjects.map((subject) => (
         <div key={subject._id} onClick={() => toggleSubjectExpansion(subject._id)} style={{ marginBottom: '20px', backgroundColor: '#f1f1f1', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className='d-flex align-items-center gap-3' style={{ fontWeight: 'bold' }}>
-              <button
-                className="pd-0"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevents parent click event
-                  setExpandedSubject(expandedSubject === subject._id ? null : subject._id);
-                }}
-                style={{ background: "transparent", border: "none", cursor: "pointer" }}
-              >
-                <FontAwesomeIcon
-                  icon={expandedSubject === subject._id ? faMinus : faPlus}
-                  style={{
-                    color: "#4CAF50",
-                    cursor: "pointer",
-                    fontSize: "20px",
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            {/* Left Section: Expand Icon, Subject Name, and Description */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div className="d-flex align-items-center gap-3" style={{ fontWeight: 'bold' }}>
+                <button
+                  className="pd-0"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents parent click event
+                    setExpandedSubject(expandedSubject === subject._id ? null : subject._id);
                   }}
-                />
-              </button>
-              {subject.name}</div>
-            <div>
+                  style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                >
+                  <FontAwesomeIcon
+                    icon={expandedSubject === subject._id ? faMinus : faPlus}
+                    style={{
+                      color: "#4CAF50",
+                      cursor: "pointer",
+                      fontSize: "20px",
+                    }}
+                  />
+                </button>
+                {subject.name}
+              </div>
+              <span style={{ color: '#555', fontSize: '14px', marginLeft: '74px' }}>{subject.description || ''}</span>
+            </div>
+
+            {/* Right Section: Action Buttons */}
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={(e) => {
-                e.stopPropagation(); // Prevents toggling on button click
+                e.stopPropagation();
                 handleEditSubject(subject);
               }}
                 style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faEdit} style={{ color: '#333', fontSize: '20px', marginRight: '10px' }} />
+                <FontAwesomeIcon icon={faEdit} style={{ color: '#333', fontSize: '20px' }} />
               </button>
+
               <button onClick={(e) => {
                 e.stopPropagation();
                 handleCopySubject(subject);
               }} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faCopy} style={{ color: '#007bff', cursor: 'pointer', fontSize: '20px', marginLeft: '10px', marginRight: '10px' }} />
+                <FontAwesomeIcon icon={faCopy} style={{ color: '#007bff', cursor: 'pointer', fontSize: '20px' }} />
               </button>
+
               <button onClick={(e) => {
-                e.stopPropagation(); // Prevents toggling on button click
+                e.stopPropagation();
                 handleDeleteSubject(subject._id);
               }}
                 style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>
@@ -357,6 +379,7 @@ const Subject = () => {
               </button>
             </div>
           </div>
+
 
           {expandedSubject === subject._id && (
             <div className='select-queset' style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
@@ -447,7 +470,7 @@ const Subject = () => {
                             {["questionText1", "questionText2", "questionText3"].map(
                               (key) =>
                                 question[key] && (
-                                  <div key={key} dangerouslySetInnerHTML={{ __html: question[key] }} />
+                                  <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(question[key]) }} />
                                 )
                             )}
                             {["questionImage1", "questionImage2", "questionImage3"].map(

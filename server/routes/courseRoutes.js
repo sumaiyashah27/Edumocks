@@ -7,12 +7,31 @@ const router = express.Router();
 // Create a course
 router.post('/', async (req, res) => {
   try {
-    const { name, price } = req.body;
-    const course = new Course({ name, price });
+    const { name, price, description } = req.body;
+    const course = new Course({ name, price, description });
     await course.save();
     res.status(201).json(course);
   } catch (error) {
     res.status(500).json({ message: 'Error creating course', error });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const { name , description} = req.body;
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      { name, description }, // Update only the course name
+      { new: true, runValidators: true } // Return updated document & validate
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    res.status(200).json(updatedCourse);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating course', error });
   }
 });
 
@@ -89,7 +108,7 @@ router.put('/:courseId/remove-subject', async (req, res) => {
 
     // Save updated course
     await course.save();
-    
+
     res.status(200).json({ message: "Subject removed successfully", course });
   } catch (error) {
     res.status(500).json({ message: 'Error removing subject from course', error });
@@ -97,12 +116,15 @@ router.put('/:courseId/remove-subject', async (req, res) => {
 });
 
 // DELETE route to delete a course
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params; // Get the courseId from the URL parameter
+router.post('/delete-with-password', async (req, res) => {
+  const { courseId, password } = req.body;
+
+  if (password !== process.env.DELETE_SECRET_PASSWORD) {
+    return res.status(401).json({ message: 'Invalid password' });
+  }
 
   try {
-    // Attempt to find and delete the course by its ObjectId
-    const deletedCourse = await Course.findByIdAndDelete(id);
+    const deletedCourse = await Course.findByIdAndDelete(courseId);
 
     if (!deletedCourse) {
       return res.status(404).json({ message: 'Course not found' });
@@ -239,6 +261,6 @@ router.get('/api/courses', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error fetching courses' });
   }
-});  
+});
 
 module.exports = router;

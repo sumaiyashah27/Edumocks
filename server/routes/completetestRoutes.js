@@ -1,6 +1,8 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
-const CompletedTest = require('../models/completetest-model'); // Import the CompletedTest model
+const CompletedTest = require('../models/completetest-model'); // Import the model
+const questionModel = require('../models/question-model');
 
 // POST route to save completed test data
 router.post('/saveCompletedTest', async (req, res) => {
@@ -41,10 +43,14 @@ router.post('/saveCompletedTest', async (req, res) => {
 router.get('/getCompletedTests', async (req, res) => {
   try {
     const completedTests = await CompletedTest.find()
-      .populate('studentId', 'firstname lastname')
-      .populate('selectedCourse', 'name')
-      .populate('selectedSubject', 'name');
-    
+      .populate('studentId', 'firstname lastname') // Populate student details
+      .populate('selectedCourse', 'name') // Populate course details
+      .populate('selectedSubject', 'name') // Populate subject details
+      .populate({
+        path: 'studentAnswers.questionId',  // Populate full question details
+        model: 'Question',
+      });
+
     res.status(200).json(completedTests);
   } catch (error) {
     console.error('Error fetching completed test results:', error);

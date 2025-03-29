@@ -3,10 +3,11 @@ import axios from 'axios';
 import { FaPlus, FaTimes, FaImage, FaTrashAlt, FaFolder, FaCopy, FaDownload, FaFolderOpen, FaEdit } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { BsSearch } from 'react-icons/bs';
 
 
 export default function ImageManager() {
@@ -21,6 +22,7 @@ export default function ImageManager() {
   const [openFolders, setOpenFolders] = useState(new Set());
   const [editingImage, setEditingImage] = useState(null);
   const [newImageName, setNewImageName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchFolders();
@@ -92,8 +94,6 @@ export default function ImageManager() {
     }
   };
 
-
-  console.log('images', images);
 
   const selectFolder = (folder) => {
     if (selectedFolder === folder._id) {
@@ -265,7 +265,7 @@ export default function ImageManager() {
 
   const renderFolders = (folders) => {
     return folders.map((folder) => (
-      <div key={folder._id} className="ms-3">
+      <div key={folder._id}>
         {/* Parent Folder */}
         <div
           className="d-flex justify-content-between align-items-center mb-2 p-2 border rounded"
@@ -397,6 +397,10 @@ export default function ImageManager() {
     ));
   };
 
+  const filteredFolders = folders.filter(folder =>
+    folder.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container" style={{ padding: '30px', backgroundColor: '#f4f4f4' }}>
       <ToastContainer />
@@ -418,9 +422,23 @@ export default function ImageManager() {
         </Button>
       </div>
 
+      <div className="mt-3">
+        <InputGroup className="mb-3">
+          <InputGroup.Text>
+            <BsSearch />
+          </InputGroup.Text>
+          <Form.Control
+            type="text"
+            placeholder="Search by Subject Name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </InputGroup>
+      </div>
+
       <div className="mb-3">
         <h3>Folders</h3>
-        {folders.length === 0 ? <p>No folders available.</p> : renderFolders(folders)}
+        {filteredFolders.length === 0 ? <p>No folders found.</p> : renderFolders(filteredFolders)}
       </div>
 
       <Modal show={isFolderModalOpen} onHide={() => setIsFolderModalOpen(false)}>

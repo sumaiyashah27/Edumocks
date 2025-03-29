@@ -8,8 +8,9 @@ const SupportStudent = () => {
     const [studentDetails, setStudentDetails] = useState({
         firstName: '',
         lastName: '',
-        email: '', // Added email field
+        email: '',
     });
+    
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -21,9 +22,8 @@ const SupportStudent = () => {
             return;
         }
 
-        axios.get(`/api/student/${studentId}`)  // Adjust with your API ro ute
-            .then((response) => {
-                // Fetch only the first name, last name, and photo from the backend, not phone or countryCode
+        axios.get(`/api/student/${studentId}`)
+            .then((response) => {         
                 setStudentDetails((prevDetails) => ({
                     ...prevDetails,
                     firstName: response.data.firstname || '',
@@ -42,7 +42,7 @@ const SupportStudent = () => {
             return;
         }
 
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
             await axios.post('/api/support/send-support-message', {
@@ -60,24 +60,6 @@ const SupportStudent = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const getInitialAvatar = () => {
-        const initials = (studentDetails.firstName || '').charAt(0).toUpperCase() + (studentDetails.lastName || '').charAt(0).toUpperCase();
-        return (
-            <div
-                className="initial-avatar rounded-circle d-flex align-items-center justify-content-center"
-                style={{
-                    width: '120px',
-                    height: '120px',
-                    fontSize: '50px',
-                    backgroundColor: '#f0f0f0',
-                    color: '#555',
-                }}
-            >
-                {initials || 'JD'} {/* Default to 'JD' if initials is empty */}
-            </div>
-        );
     };
 
     return (
@@ -142,7 +124,7 @@ const SupportStudent = () => {
                         </Row>
 
                         <div className="d-flex justify-content-center">
-                            <Button variant="success" onClick={handleSendMessage} disabled={loading}>
+                            <Button style={{backgroundColor:'rgb(16, 11, 92)' , border: 'none'}} variant="success" onClick={handleSendMessage} disabled={loading}>
                                 {loading ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2"></span> Sending...
@@ -155,16 +137,6 @@ const SupportStudent = () => {
                     </Form>
                 </Col>
             </Row>
-            <div className="support-guidelines mt-4">
-                <h4>Support Form Guidelines</h4>
-                <ul>
-                    <li><strong>Response Time:</strong> Our support team will respond within 6 to 8 hours. Please be patient while we process your request.</li>
-                    <li><strong>Avoid Duplicate Submissions:</strong> Submitting the form multiple times may cause delays and could mark your email as spam.</li>
-                    <li><strong>Check Your Inbox & Spam Folder:</strong> If you do not receive a response within 8 hours, please check your spam/junk folder before reaching out again.</li>
-                    <li><strong>Provide Accurate Details:</strong> Ensure your email ID and issue description are correct to avoid delays in support resolution.</li>
-                    <li><strong>Urgent Queries:</strong> For urgent issues, contact us directly at <a href="mailto:support@edumocks.com">support@edumocks.com</a>.</li>
-                </ul>
-            </div>
         </Container>
     )
 }
