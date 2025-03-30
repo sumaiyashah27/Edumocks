@@ -179,7 +179,12 @@ const Test = () => {
     setModalOpen(true);
     if (selectedSubject) {
       // Set the timer based on the course name
-      if (courseName === "CFA LEVEL - 1") {
+      // if (courseName === "CFA LEVEL - 1") {
+      //   setTimer(questionSet * 90); // 90 seconds per question
+      // } else if (courseName) {
+      //   setTimer(questionSet * 180); // Default timer (180 seconds per question)
+      // }
+      if (courseName.toUpperCase().includes("LEVEL 1")) {
         setTimer(questionSet * 90); // 90 seconds per question
       } else if (courseName) {
         setTimer(questionSet * 180); // Default timer (180 seconds per question)
