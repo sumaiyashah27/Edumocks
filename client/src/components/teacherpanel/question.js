@@ -474,12 +474,12 @@ const Queset = () => {
 
 
       {showAddQuesetModal && (
-        <Modal title="Add New Queset" onClose={() => setShowAddQuesetModal(false)}>
+        <Modal1 title="Add New Queset" onClose={() => setShowAddQuesetModal(false)}>
           <input type="text" value={newQuesetText} onChange={(e) => setNewQuesetText(e.target.value)} placeholder="Queset Text" style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: '1px solid #100B5C' }} />
           <button onClick={handleAddQueset} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             Add Queset
           </button>
-        </Modal>
+        </Modal1>
       )}
 
       {showEditQuesetModal && editingQueset && (

@@ -63,7 +63,7 @@ const Subject = () => {
       return;
     }
     const priceInDollars = parseFloat(newSubjectPrice);
-    if (isNaN(priceInDollars) || priceInDollars <= 0) {
+    if (isNaN(priceInDollars) || priceInDollars < 0) {
       toast.error("Please enter a valid price.");
       return;
     }

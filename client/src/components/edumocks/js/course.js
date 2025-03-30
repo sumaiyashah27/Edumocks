@@ -97,7 +97,19 @@ const CourseSection = () => {
             <h2>{selectedCourse.name}</h2>
             <span> <strong>About this Course :</strong> <p>{selectedCourse.info}</p></span>
             <p><strong>Price:</strong> ${selectedCourse.newPrice}</p>
-            <span><strong>PACKAGE INCLUSIONS:</strong> <p>• Mocks included: Mock 1, Mock 2, Mock 3 and Mock 4• Each mock includes:</p> </span>
+            <span><strong>Mock Test Features</strong></span>  
+            <p> 
+            <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
+              <li>1️⃣ <strong>Real Exam Simulation</strong> – Experience a test-taking environment similar to the actual CFA exam.</li>
+              <li>2️⃣ <strong>Instant Results & Explanations</strong> – Receive a comparison report of your answers vs. correct answers instantly via email in PDF format.</li>
+              <li>3️⃣ <strong>Designed by Experts</strong> – Crafted by CFA mentors to ensure high-quality, exam-relevant questions.</li>
+              <li>4️⃣ <strong>Accessible Anytime, Anywhere</strong> – Take your mock tests on our 24/7 online platform.</li>
+              <li>5️⃣ <strong>Flexible Test Scheduling</strong> – Choose a test time that suits your study plan.</li>
+              <li>6️⃣ <strong>Easy Rescheduling</strong> – Reschedule your test for just $3 if needed.</li>
+              <li>7️⃣ <strong>Built-in Timer</strong> – Exam screen includes a countdown timer for real-time tracking.</li>
+              <li>8️⃣ <strong>Review Before Submission</strong> – Flag questions and revisit them before finalizing your test.</li>
+            </ul>
+            </p>
             <button style={{ transition: "background-color 0.3s ease, transform 0.3s ease" }} onClick={() => navigate('/login')} className="book-btn">Proceed to Book</button>
             <button style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 25px", fontSize: "1.2rem", border: "none", borderRadius: "8px", cursor: "pointer", marginRight: "10px", transition: "background-color 0.3s ease, transform 0.3s ease" }} onClick={() => setShowModal(false)} className="book-btn">Close</button>
           </div>

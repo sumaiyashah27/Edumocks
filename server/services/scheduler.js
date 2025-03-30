@@ -42,6 +42,9 @@ const sendReminderEmail = async (student, test, reminderType) => {
     - Ensure a stable internet connection.
     - Be in a quiet, distraction-free environment.
 
+    Important Note:
+    ⏳ Rescheduling is available for $3. Please make sure to attend your test on time. If you need to reschedule, you can do so before the test begins.
+
     👉 [Click Here to Start Your Test](https://edumocks.com/)  
 
     If you have any questions, reach out to us.

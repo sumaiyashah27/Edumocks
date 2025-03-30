@@ -67,7 +67,7 @@ const DelayTest = () => {
                     </td>
                     <td>{test.testTime}</td>
                     <td style={{ color: "#8B0000", fontWeight: "bold" }}>
-                      ${test.amount}
+                       ₹{test.amount}
                     </td>
                     <td>{test.paymentId}</td>
                     <td>{test.orderId}</td>
