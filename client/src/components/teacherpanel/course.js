@@ -27,10 +27,12 @@ const Course = () => {
   const [newCoursePrice, setNewCoursePrice] = useState(''); // Add this line
   const [editingCourse, setEditingCourse] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSubjectModal, setSubjectShowModal] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+ 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
@@ -233,6 +235,37 @@ const Course = () => {
     }
   };
 
+  const handleDeleteSubjectClick = (courseId, subjectId) => {
+    setSelectedCourseId(courseId);
+    setSelectedSubjectId(subjectId);
+    setSubjectShowModal(true);
+  };
+
+  const confirmDeleteSubject = async () => {
+    try {
+      await axios.put(`/api/course/${selectedCourseId}/remove-subject`, { subjectId: selectedSubjectId,password  });
+  
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course._id === selectedCourseId
+            ? { ...course, subjects: course.subjects.filter((subject) => subject._id !== selectedSubjectId) }
+            : course
+        )
+      );
+  
+      toast.success('Subject deleted successfully.');
+      setSubjectShowModal(false);
+    } catch (error) {
+      toast.error('Error deleting subject.');
+    }
+  };
+
+  const formatLabel = (name, description) => {
+    if (!description) return name;
+    const cleanDesc = description.replace(/[`'"]/g, "").trim();
+    return `${name} (${cleanDesc})`;
+  };
+
   return (
     <div className="container" style={{ paddingTop: '20px' }}>
       <ToastContainer />
@@ -328,16 +361,16 @@ const Course = () => {
                 </Button>
                 {course.subjects.map((subject) => (
                   <div key={subject._id} className="d-flex justify-content-between">
-                    <span>{subject.name}</span>
+                    <span> {subject.name} {subject.description ? `(${subject.description.replace(/[`'"]/g, '')})` : ''} </span>
                     <FontAwesomeIcon
                       icon={faTrash}
                       style={{ color: '#e74c3c', cursor: 'pointer' }}
-                      onClick={(e) => { e.stopPropagation(); handleDeleteSubject(course._id, subject._id); }}
+                      onClick={(e) => { e.stopPropagation(); handleDeleteSubjectClick(course._id, subject._id); }}
                     />
                   </div>
                 ))}
               </div>
-            )}
+            )}  
           </div>
         ))}
       </div>
@@ -367,6 +400,36 @@ const Course = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showSubjectModal} onHide={() => setSubjectShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group controlId="deletePassword">
+            <Form.Label>Enter password to confirm deletion</Form.Label>
+            <InputGroup>
+              <Form.Control
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+              />
+              <Button
+                variant="outline-secondary"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </Button>
+            </InputGroup>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={confirmDeleteSubject}>
             Delete
           </Button>
         </Modal.Footer>
@@ -444,7 +507,7 @@ const Course = () => {
                       id={`checkbox-${subject._id}`}
                       type="checkbox"
                       className="d-flex align-items-center w-100"
-                      label={subject.name}
+                      label={formatLabel(subject.name, subject.description)}
                       checked={selectedSubject.includes(subject._id)}
                       onChange={() => handleCheckboxChange(subject._id)}
                       style={{ cursor: "pointer" }}

@@ -8,6 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { BsSearch } from 'react-icons/bs';
+import DeleteModal from './modals/DeleteModal';
 
 
 export default function ImageManager() {
@@ -23,6 +24,10 @@ export default function ImageManager() {
   const [editingImage, setEditingImage] = useState(null);
   const [newImageName, setNewImageName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteType, setDeleteType] = useState(""); // "folder" or "image"
+  const [deleteId, setDeleteId] = useState(null);
+  const [folderId, setFolderId] = useState(null);
 
   useEffect(() => {
     fetchFolders();
@@ -70,6 +75,45 @@ export default function ImageManager() {
       fetchFolders();
     } catch (error) {
       console.error('Error deleting folder');
+    }
+  };
+
+  const handleDeleteFolder = (folderId) => {
+    setDeleteId(folderId);
+    setDeleteType("folder");
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteImage = (imageId, folderId) => {
+    setDeleteId(imageId);
+    setFolderId(folderId);
+    setDeleteType("image");
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async (password) => {
+    try {
+      if (deleteType === "folder") {
+        // Delete Folder
+        await axios.delete(`/api/folders/${deleteId}`, {
+          data: { password },
+        });
+        toast.success("Folder deleted successfully.");
+        setShowDeleteModal(false);
+        fetchFolders();
+      } else if (deleteType === "image") {
+        // Delete Image
+        await axios.delete(`/api/folders/images/${deleteId}`, {
+          data: { password, folderId },
+        });
+        toast.success("Image deleted successfully.");
+        setShowDeleteModal(false);
+        fetchFolders();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting");
+    } finally {
+      
     }
   };
 
@@ -295,7 +339,7 @@ export default function ImageManager() {
             <FaTrashAlt
               onClick={(e) => {
                 e.stopPropagation();
-                deleteFolder(folder._id);
+                handleDeleteFolder(folder._id);
               }}
               className="text-danger"
               style={{ cursor: "pointer" }}
@@ -380,7 +424,7 @@ export default function ImageManager() {
                   )}
 
                   {/* Delete Image */}
-                  <Button variant="link" onClick={() => deleteImage(image._id, folder._id)} className="text-danger">
+                  <Button variant="link" onClick={() => handleDeleteImage(image._id, folder._id)} className="text-danger">
                     <FaTrashAlt />
                   </Button>
                 </div>
@@ -396,6 +440,7 @@ export default function ImageManager() {
       </div>
     ));
   };
+
 
   const filteredFolders = folders.filter(folder =>
     folder.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -489,6 +534,13 @@ export default function ImageManager() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+      />
+
     </div>
   );
 }

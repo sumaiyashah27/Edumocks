@@ -84,17 +84,23 @@ router.put("/:id", async (req, res) => {
 });
 // Delete a subject by ID
 router.delete("/:id", async (req, res) => {
-    const { id } = req.params;
-    try {
-        const deletedSubject = await Subject.findByIdAndDelete(id);
-        if (!deletedSubject) {
-            return res.status(404).json({ message: "Subject not found" });
-        }
-        res.status(200).json({ message: "Subject deleted" });
-    } catch (error) {
-        console.error("Error deleting subject:", error);
-        res.status(500).json({ message: "Error deleting subject", error: error.message });
-    }
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(403).json({ message: "Invalid password" });
+  }
+
+  try {
+      const deletedSubject = await Subject.findByIdAndDelete(id);
+      if (!deletedSubject) {
+          return res.status(404).json({ message: "Subject not found" });
+      }
+      res.status(200).json({ message: "Subject deleted" });
+  } catch (error) {
+      console.error("Error deleting subject:", error);
+      res.status(500).json({ message: "Error deleting subject", error: error.message });
+  }
 });
 
 // Route to fetch a subject by ID
@@ -230,29 +236,30 @@ router.post('/:subjectId/add-queset-questions', async (req, res) => {
 
 router.delete('/:subjectId/remove-queset', async (req, res) => {
   const { subjectId } = req.params;
-  const { quesetId } = req.body;
+  const { quesetId, password } = req.body;
+
+  if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(403).json({ error: "Invalid password" });
+  }
 
   try {
-    const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(404).json({ error: 'Subject not found' });
-    }
+      const subject = await Subject.findById(subjectId);
+      if (!subject) {
+          return res.status(404).json({ error: 'Subject not found' });
+      }
 
-    // Remove queset reference from the subject
-    subject.quesets = subject.quesets.filter(q => q._id.toString() !== quesetId);
+      subject.quesets = subject.quesets.filter(q => q._id.toString() !== quesetId);
 
-    // Remove associated questions from the subject
-    const queset = await Queset.findById(quesetId);
-    if (queset) {
-      subject.questions = subject.questions.filter(qId => !queset.questions.includes(qId));
-    }
+      const queset = await Queset.findById(quesetId);
+      if (queset) {
+          subject.questions = subject.questions.filter(qId => !queset.questions.includes(qId));
+      }
 
-    await subject.save();
-
-    res.status(200).json({ message: 'Queset removed successfully' });
+      await subject.save();
+      res.status(200).json({ message: 'Queset removed successfully' });
   } catch (error) {
-    console.error('Error removing queset from subject:', error);
-    res.status(500).json({ error: 'Server error' });
+      console.error('Error removing queset from subject:', error);
+      res.status(500).json({ error: 'Server error' });
   }
 });
 

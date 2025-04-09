@@ -95,8 +95,11 @@ router.put('/:courseId/add-subject', async (req, res) => {
 router.put('/:courseId/remove-subject', async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { subjectId } = req.body;
-
+    const { subjectId, password } = req.body;
+    
+    if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(403).json({ message: 'Invalid password' });
+    }
     // Find the course by ID
     const course = await Course.findById(courseId);
     if (!course) {

@@ -38,19 +38,11 @@ router.post('/send-support-message', async (req, res) => {
             to: email,
             subject: 'Edumocks Support Request Received',
             html: `
-                <h3>Dear ${firstName},</h3>
+                <h3>Hello ${firstName},</h3>
                 <p>Thank you for reaching out to us.</p>
                 <p>Your ticket has been successfully raised, and our team is reviewing your inquiry.</p>
                 <p>We will get back to you within 6-8 hours with a response. We appreciate your patience.</p>
                 <p>If you have any additional details to share, feel free to reply to this email.</p>
-                <p><strong>Support Guidelines:</strong></p>
-                <ul>
-                    <li><strong>Response Time:</strong> Our team will reply within <span class="highlight">6-8 hours</span>. We appreciate your patience while we process your request.</li>
-                    <li><strong>Avoid Duplicate Submissions:</strong> Please do not submit multiple requests, as this may cause delays and mark your email as spam.</li>
-                    <li><strong>Check Your Inbox & Spam Folder:</strong> If you haven’t received a response within <span class="highlight">8 hours</span>, kindly check your spam/junk folder before following up.</li>
-                    <li><strong>Provide Accurate Details:</strong> Ensure your <span class="highlight">email ID and issue description</span> are correct to prevent delays in resolution.</li>
-                    <li><strong>Urgent Queries:</strong> If your issue is urgent, you may also contact us directly at <a href="mailto:support@edumocks.com">support@edumocks.com</a>.</li>
-                </ul>
                 <p>Best Regards,</p>
                 <p>Edumocks Support Team</p>
             `

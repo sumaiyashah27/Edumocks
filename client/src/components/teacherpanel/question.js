@@ -12,6 +12,7 @@ import { addStyles, EditableMathField } from "react-mathquill";
 import { Modal, Button } from "react-bootstrap";
 import "react-quill/dist/quill.snow.css"; // Quill styles
 import "katex/dist/katex.min.css"; // KaTeX for rendering math formulas
+import DeleteModal from './modals/DeleteModal';
 
 
 const Queset = () => {
@@ -63,6 +64,10 @@ const Queset = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [filteredQuesets, setFilteredQuesets] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteType, setDeleteType] = useState(""); // "queset" or "question"
+  const [deleteId, setDeleteId] = useState(null);
+  const [quesetId, setQuesetId] = useState(null); 
 
   const modules = {
     toolbar: [
@@ -130,15 +135,16 @@ const Queset = () => {
     }
   };
 
-  const handleDeleteQueset = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this queset?')) return;
-    try {
-      await axios.delete(`/api/queset/${id}`);
-      fetchQuesets();
-    } catch (error) {
-      toast.error(`Error deleting queset: ${error.message}`);
-    }
-  };
+  // const handleDeleteQueset = async (id) => {
+  //   if (!window.confirm('Are you sure you want to delete this queset?')) return;
+  //   try {
+  //     await axios.delete(`/api/queset/${id}`);
+  //     fetchQuesets();
+  //   } catch (error) {
+  //     toast.error(`Error deleting queset: ${error.message}`);
+  //   }
+  // };
+
   const toggleExpandedQueset = (quesetId) => {
     setExpandedQueset(prev => (prev === quesetId ? null : quesetId));
   };
@@ -290,53 +296,53 @@ const Queset = () => {
     // setShowEditQuestionModal(true); // Show the edit question modal
   };
 
-  const handleDeleteQuestion = async (questionId, currentQuesetId) => {
-    console.log('quesetId:', currentQuesetId);
-    try {
-      console.log("Before calling handleDeleteQuestion: ", { questionId, currentQuesetId });
+  // const handleDeleteQuestion = async (questionId, currentQuesetId) => {
+  //   console.log('quesetId:', currentQuesetId);
+  //   try {
+  //     console.log("Before calling handleDeleteQuestion: ", { questionId, currentQuesetId });
 
-      if (!questionId || !currentQuesetId) {
-        console.error("Missing quesetId or questionId:", { questionId, currentQuesetId });
-        toast.error("Missing queset ID or question ID");
-        return;
-      }
+  //     if (!questionId || !currentQuesetId) {
+  //       console.error("Missing quesetId or questionId:", { questionId, currentQuesetId });
+  //       toast.error("Missing queset ID or question ID");
+  //       return;
+  //     }
 
-      // Confirm deletion
-      const confirmDelete = window.confirm("Are you sure you want to delete this question?");
-      if (!confirmDelete) return;
+  //     // Confirm deletion
+  //     const confirmDelete = window.confirm("Are you sure you want to delete this question?");
+  //     if (!confirmDelete) return;
 
-      console.log("Deleting question with ID:", questionId, "from queset:", currentQuesetId);
+  //     console.log("Deleting question with ID:", questionId, "from queset:", currentQuesetId);
 
-      // API call to delete question
-      const response = await fetch(`/api/queset/${currentQuesetId}/questions/${questionId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  //     // API call to delete question
+  //     const response = await fetch(`/api/queset/${currentQuesetId}/questions/${questionId}`, {
+  //       method: "DELETE",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
 
-      const responseData = await response.json();
+  //     const responseData = await response.json();
 
-      if (response.ok) {
-        // Update state after deletion
-        setQuesets((prevQuesets) =>
-          prevQuesets.map((queset) =>
-            queset._id === currentQuesetId
-              ? { ...queset, questions: queset.questions.filter((q) => q._id !== questionId) }
-              : queset
-          )
-        );
-        fetchQuesets();
-        toast.success("Question deleted successfully!");
-      } else {
-        console.error("Failed to delete question:", responseData);
-        toast.error(responseData.message || "Failed to delete question. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error deleting question:", error);
-      toast.error("An error occurred while deleting the question.");
-    }
-  };
+  //     if (response.ok) {
+  //       // Update state after deletion
+  //       setQuesets((prevQuesets) =>
+  //         prevQuesets.map((queset) =>
+  //           queset._id === currentQuesetId
+  //             ? { ...queset, questions: queset.questions.filter((q) => q._id !== questionId) }
+  //             : queset
+  //         )
+  //       );
+  //       fetchQuesets();
+  //       toast.success("Question deleted successfully!");
+  //     } else {
+  //       console.error("Failed to delete question:", responseData);
+  //       toast.error(responseData.message || "Failed to delete question. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting question:", error);
+  //     toast.error("An error occurred while deleting the question.");
+  //   }
+  // };
 
   const handleUpdateQuestion = async () => {
     if (!currentQuesetId || !editingQuestion?._id) {
@@ -449,13 +455,55 @@ const Queset = () => {
     }
   };
   
-  
+  const handleDeleteQueset = (quesetId) => {
+    setDeleteId(quesetId);
+    setDeleteType("queset");
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteQuestion = (questionId, quesetId) => {
+    setDeleteId(questionId);
+    setQuesetId(quesetId);
+    setDeleteType("question");
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async (password) => {
+    try {
+      if (deleteType === "queset") {
+        // Delete Queset
+        await axios.delete(`/api/queset/${deleteId}`, {
+          data: { password },
+        });
+        toast.success("Queset deleted successfully.");
+        setShowDeleteModal(false);
+      } else if (deleteType === "question") {
+        // Delete Question
+        await axios.delete(`/api/queset/${quesetId}/questions/${deleteId}`, {
+          data: { password },
+        });
+        toast.success("Question deleted successfully.");
+        setShowDeleteModal(false);
+      }
+
+      fetchQuesets();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting");
+    } finally {
+      
+    }
+  };
+
   return (
     <div>
       <ToastContainer />
       <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#100B5C' }}>Queset Details</h2>
 
-      <button onClick={() => setShowAddQuesetModal(true)} style={{ marginBottom: '20px', backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+      <button onClick={() => {
+  console.log("Button Clicked!"); 
+  setShowAddQuesetModal(true);
+}}
+   style={{ marginBottom: '20px', backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
         <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} /> Add Queset
       </button>
       <div className="mt-3">
@@ -483,12 +531,12 @@ const Queset = () => {
       )}
 
       {showEditQuesetModal && editingQueset && (
-        <Modal title="Edit Queset" onClose={() => setShowEditQuesetModal(false)}>
+        <Modal1 title="Edit Queset" onClose={() => setShowEditQuesetModal(false)}>
           <input type="text" value={editingQueset.name} onChange={(e) => setEditingQueset({ ...editingQueset, name: e.target.value })} placeholder="Queset Name" style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: '1px solid #100B5C' }} />
           <button onClick={handleUpdateQueset} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             Update Queset
           </button>
-        </Modal>
+        </Modal1>
       )}
 
       {filteredQuesets.map((queset) => (
@@ -1437,6 +1485,13 @@ const Queset = () => {
           </div>
         </Modal1>
       )}
+
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+      />
+
     </div>
   );
 };

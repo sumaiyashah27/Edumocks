@@ -13,10 +13,10 @@ const courses = [
   { id: 8, name: 'CFA LEVEL 1 | Derivatives', image: '/16.png', oldPrice: 19, newPrice: 9 },
   { id: 9, name: 'CFA LEVEL 1 | Alternative Investments', image: '/17.png', oldPrice: 19, newPrice: 9 },
   { id: 10, name: 'CFA LEVEL 1 | Portfolio Management', image: '/18.png', oldPrice: 19, newPrice: 9 },
-  { id: 11, name: 'CFA LEVEL 1 | Full Mocks Part 1', image: '/3.png', oldPrice: 39, newPrice: 19 },
-  { id: 12, name: 'CFA LEVEL 1 | Full Mocks Part 2', image: '/4.png', oldPrice: 39, newPrice: 19 },
+  // { id: 11, name: 'CFA LEVEL 1 | Full Mocks Part 1', image: '/3.png', oldPrice: 39, newPrice: 19 },
+  // { id: 12, name: 'CFA LEVEL 1 | Full Mocks Part 2', image: '/4.png', oldPrice: 39, newPrice: 19 },
   // { id: 13, name: 'CFA LEVEL 1 | Individual Topics Mocks', oldPrice: 1299, newPrice: 699 },
-  { id: 14, name: 'CFA LEVEL 1 | All Topics + 2 Full Mocks', image: '/7.png', oldPrice: 149, newPrice: 99 },
+  // { id: 14, name: 'CFA LEVEL 1 | All Topics + 2 Full Mocks', image: '/7.png', oldPrice: 149, newPrice: 99 },
   { id: 15, name: 'CFA LEVEL 2 | Quantitative Methods', image: '/10.png', oldPrice: 19, newPrice: 9 },
   { id: 16, name: 'CFA LEVEL 2 | Ethics', image: '/9.png', oldPrice: 19, newPrice: 9 },
   { id: 17, name: 'CFA LEVEL 2 | Economics', image: '/11.png', oldPrice: 19, newPrice: 9 },
@@ -27,9 +27,9 @@ const courses = [
   { id: 22, name: 'CFA LEVEL 2 | Derivatives', image: '/16.png', oldPrice: 19, newPrice: 9 },
   { id: 23, name: 'CFA LEVEL 2 | Alternative Investments', image: '/17.png', oldPrice: 19, newPrice: 9 },
   { id: 24, name: 'CFA LEVEL 2 | Portfolio Management', image: '/18.png', oldPrice: 19, newPrice: 9 },
-  { id: 25, name: 'CFA LEVEL 2 | Full Mocks Part 1', image: '/5.png', oldPrice: 39, newPrice: 19 },
-  { id: 26, name: 'CFA LEVEL 2 | Full Mocks Part 2', image: '/6.png', oldPrice: 39, newPrice: 19 },
-  { id: 27, name: 'CFA LEVEL 2 | All Topics + 2 Full Mocks', image: '/8.png', oldPrice: 149, newPrice: 99 }
+  // { id: 25, name: 'CFA LEVEL 2 | Full Mocks Part 1', image: '/5.png', oldPrice: 39, newPrice: 19 },
+  // { id: 26, name: 'CFA LEVEL 2 | Full Mocks Part 2', image: '/6.png', oldPrice: 39, newPrice: 19 },
+  // { id: 27, name: 'CFA LEVEL 2 | All Topics + 2 Full Mocks', image: '/8.png', oldPrice: 149, newPrice: 99 }
 ];
 
 const CourseSection = () => {
@@ -49,7 +49,7 @@ const CourseSection = () => {
       <div style={{ marginBottom: '20px' }}>
         <button onClick={() => setFilterLevel('all')} className="filter-btn">All</button>
         <button onClick={() => setFilterLevel('level1')} className="filter-btn">CFA LEVEL 1</button>
-        <button onClick={() => setFilterLevel('level2')} className="filter-btn">CFA LEVEL 2</button>
+        <button onClick={() => setFilterLevel('level2')} style={{ backgroundColor: '#C80D18' }} className="filter-btn">CFA LEVEL 2</button>
       </div>
 
       <div className="courses-container">

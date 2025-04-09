@@ -113,7 +113,7 @@
 }
 
 /* Button Style - Default */
-.student-container .controls button {
+.student-container .controls button, .stud-test button {
   background-color: #100B5C;
   color: #FFF;
   border: none;
@@ -128,7 +128,9 @@
   /* Default width */
 }
 
-.student-container .controls button:hover {
+
+
+.student-container .controls button:hover, .stud-test button:hover {
   background-color: #C80D18;
   transform: translateY(-2px);
   /* Slight lift effect on hover */

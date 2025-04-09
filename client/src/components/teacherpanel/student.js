@@ -6,7 +6,8 @@ import { Table, Button, Form, Modal, InputGroup } from 'react-bootstrap';
 import Papa from 'papaparse';
 import './css/student.css'; // Add styles
 import { toast, ToastContainer } from "react-toastify";
-import DeleteConfirmationModal from "./modals/DeleteConfirmationModal"
+import DeleteModal from "./modals/DeleteModal"
+import axios from 'axios';
 
 const Student = () => {
   const [students, setStudents] = useState([]);
@@ -14,6 +15,8 @@ const Student = () => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     fetchStudents();
@@ -33,10 +36,23 @@ const Student = () => {
     setSearchQuery(e.target.value);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this student?')) {
-      await fetch(`/api/student/${id}`, { method: 'DELETE' });
+  const handleDeleteClick = (studentId) => {
+    setDeleteId(studentId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async (password) => {
+    try {
+      await axios.delete(`/api/student/${deleteId}`, {
+        data: { password },
+      });
+      toast.success("Student deleted successfully.");
+      setShowDeleteModal(false);
       fetchStudents();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting student.");
+    } finally {
+      
     }
   };
 
@@ -215,9 +231,9 @@ const Student = () => {
                 <td>{student.phone}</td>
                 <td>{student.testCode}</td>
                 <td>
-                  <Button variant="danger" size="sm" onClick={() => setShowModal(true)}>
-                    <FaTrash />
-                  </Button>
+                <Button variant="danger" size="sm" onClick={() => handleDeleteClick(student._id)}>
+                  <FaTrash />
+                </Button>
                 </td>
               </tr>
             ))}
@@ -225,11 +241,10 @@ const Student = () => {
         </Table>
       </div>
 
-      <DeleteConfirmationModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onConfirm={fetchStudents}
-        studentId={filteredStudents._id}
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
       />
 
       {/* Upload CSV Modal */}
