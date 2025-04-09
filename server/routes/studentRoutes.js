@@ -262,7 +262,7 @@ router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;
 
-  if (password !== process.env.DELETE_PASSWORD) {
+  if (password !== process.env.DELETE_SECRET_PASSWORD) {
     return res.status(403).json({ success: false, message: 'Incorrect password' });
   }
 

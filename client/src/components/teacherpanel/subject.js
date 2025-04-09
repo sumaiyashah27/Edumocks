@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Dropdown, Form, Tab, Nav, InputGroup } from 'react-bootstrap';
 import { BsSearch } from 'react-icons/bs';
 import { FaMinus } from 'react-icons/fa';
+import DeleteModal from './modals/DeleteModal';
 
 const Subject = () => {
   const [subjects, setSubjects] = useState([]);
@@ -27,7 +28,11 @@ const Subject = () => {
   const [activeQuesetIndex, setActiveQuesetIndex] = useState(0);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteType, setDeleteType] = useState(""); // "subject" or "queset"
+  const [deleteId, setDeleteId] = useState(null);
+  const [quesetId, setQuesetId] = useState(null); // Only for queset deletion
+  
   useEffect(() => {
     fetchSubjects();
     fetchQueset();
@@ -63,7 +68,7 @@ const Subject = () => {
       return;
     }
     const priceInDollars = parseFloat(newSubjectPrice);
-    if (isNaN(priceInDollars) || priceInDollars < 0) {
+    if (isNaN(priceInDollars) || priceInDollars <= 0) {
       toast.error("Please enter a valid price.");
       return;
     }
@@ -102,14 +107,43 @@ const Subject = () => {
     }
   };
 
-  const handleDeleteSubject = async (id) => {
-    if (window.confirm('Are you sure you want to delete this Topic?')) {
-      try {
-        await axios.delete(`/api/subject/${id}`);
-        fetchSubjects();
-      } catch (error) {
-        toast.error('Error deleting Topic:', error);
+
+  const handleDeleteSubject = (id) => {
+    setDeleteId(id);
+    setDeleteType("subject");
+    setShowDeleteModal(true);
+  };
+
+  const handleRemoveQuesetFromSubject = (subjectId, quesetId) => {
+    setDeleteId(subjectId);
+    setQuesetId(quesetId);
+    setDeleteType("queset");
+    setShowDeleteModal(true);
+  };
+  
+  const confirmDelete = async (password) => {
+    try {
+      if (deleteType === "subject") {
+        // Delete Subject
+        await axios.delete(`/api/subject/${deleteId}`, {
+          data: { password },
+        });
+        toast.success("Subject deleted successfully");
+        setShowDeleteModal(false);
+      } else if (deleteType === "queset") {
+        // Remove Queset from Subject
+        await axios.delete(`/api/subject/${deleteId}/remove-queset`, {
+          data: { password, quesetId },
+        });
+        toast.success("Queset removed successfully");
+        setShowDeleteModal(false);
       }
+
+      fetchSubjects();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Passowrd wrong");
+    } finally {
+
     }
   };
 
@@ -206,18 +240,18 @@ const Subject = () => {
       });
   };
 
-  const handleRemoveQuesetFromSubject = (subjectId, quesetId) => {
-    axios
-      .delete(`/api/subject/${subjectId}/remove-queset`, { data: { quesetId } })
-      .then((response) => {
-        toast.success("Queset removed successfully!");
-        fetchSubjects(); // Refresh subject data
-      })
-      .catch((error) => {
-        console.error("Error removing queset:", error);
-        toast.error("An error occurred while removing the queset.");
-      });
-  };
+  // const handleRemoveQuesetFromSubject = (subjectId, quesetId) => {
+  //   axios
+  //     .delete(`/api/subject/${subjectId}/remove-queset`, { data: { quesetId } })
+  //     .then((response) => {
+  //       toast.success("Queset removed successfully!");
+  //       fetchSubjects(); // Refresh subject data
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error removing queset:", error);
+  //       toast.error("An error occurred while removing the queset.");
+  //     });
+  // };
 
   console.log(subjects)
 
@@ -380,7 +414,6 @@ const Subject = () => {
             </div>
           </div>
 
-
           {expandedSubject === subject._id && (
             <div className='select-queset' style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', gap: '50px', marginBottom: '20px' }}>
@@ -436,7 +469,7 @@ const Subject = () => {
                         <Nav.Link eventKey={`${subject._id}-${index}`}>
                           {subjectQueset.name}
                           <button className='btn'
-                            onClick={(e) => {
+                            onClick={(e) => { 
                               e.stopPropagation();
                               handleRemoveQuesetFromSubject(subject._id, subjectQueset._id);
                             }}
@@ -505,6 +538,12 @@ const Subject = () => {
         </div>
       ))
       }
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+      />
+
       {successMessage && (
         <div style={{ color: "green", marginTop: "10px" }}>
           {successMessage}

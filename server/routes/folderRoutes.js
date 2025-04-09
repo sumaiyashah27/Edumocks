@@ -94,25 +94,30 @@ router.get('/', async (req, res) => {
   }
 });
 // Delete a folder
-router.delete('/:folderId', async (req, res) => {
+router.delete("/:folderId", async (req, res) => {
   try {
     const { folderId } = req.params;
-    const folder = await Folder.findById(folderId);
+    const { password } = req.body;
 
+    if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    const folder = await Folder.findById(folderId);
     if (!folder) {
-      return res.status(404).json({ message: 'Folder not found' });
+      return res.status(404).json({ message: "Folder not found" });
     }
 
     const folderPath = path.join(uploadFolder, folder.name);
     if (fs.existsSync(folderPath)) {
-      fs.removeSync(folderPath);
+      fs.rmSync(folderPath, { recursive: true, force: true });
     }
 
     await Folder.findByIdAndDelete(folderId);
 
-    res.json({ message: 'Folder deleted successfully' });
+    res.json({ message: "Folder deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting folder' });
+    res.status(500).json({ message: "Error deleting folder" });
   }
 });
 
@@ -150,35 +155,37 @@ router.post('/:folderId/upload-images', upload.array('images', 10), async (req, 
 });
 
 // Delete an image
-router.delete('/images/:imageId', async (req, res) => {
+router.delete("/images/:imageId", async (req, res) => {
   try {
     const { imageId } = req.params;
-    const image = await Image.findById(imageId);
+    const { password, folderId } = req.body;
 
-    if (!image) {
-      return res.status(404).json({ message: 'Image not found' });
+    if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(401).json({ message: "Invalid password" });
     }
 
-    // Remove the image file from the file system
+    const image = await Image.findById(imageId);
+    if (!image) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+
     const imagePath = path.join(uploadFolder, image.location);
     if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath); // Delete the image file
+      fs.unlinkSync(imagePath);
     }
 
-    // Remove the image from the database
     await Image.findByIdAndDelete(imageId);
 
-    // Also remove the image reference from the associated folder
-    const folder = await Folder.findById(image.folder);
+    const folder = await Folder.findById(folderId);
     if (folder) {
-      folder.images.pull(imageId);  // Remove the image from the folder's images array
-      await folder.save();  // Save the updated folder
+      folder.images.pull(imageId);
+      await folder.save();
     }
 
-    res.json({ message: 'Image deleted successfully' });
+    res.json({ message: "Image deleted successfully" });
   } catch (error) {
-    console.error('Error deleting image:', error);
-    res.status(500).json({ message: 'Error deleting image' });
+    console.error("Error deleting image:", error);
+    res.status(500).json({ message: "Error deleting image" });
   }
 });
 

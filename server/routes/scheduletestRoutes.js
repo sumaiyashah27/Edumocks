@@ -64,6 +64,28 @@ router.get('/:studentId', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+
+// GET /api/scheduleTest
+router.get('/', async (req, res) => {
+  try {
+    // Fetch all scheduled tests
+    const scheduledTests = await ScheduleTest.find()
+    .populate({ path: "studentId", select: "firstname lastname" })
+    .populate({ path: "selectedCourse", select: "name" })
+    .populate({ path: "selectedSubject", select: "name" });
+
+
+    if (!scheduledTests || scheduledTests.length === 0) {
+      return res.status(404).json({ message: 'No scheduled tests found.' });
+    }
+
+    res.status(200).json(scheduledTests);
+  } catch (error) {
+    console.error('Error fetching scheduled tests:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 // Fetch scheduled tests for a specific user
 router.get('/scheduleTest/:studentId', async (req, res) => {
   const { studentId } = req.params;

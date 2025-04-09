@@ -76,6 +76,7 @@ const TeachPanel = () => {
               { icon: <FaQuestionCircle />, label: "Questions", section: "questions" },
               { icon: <FaUsers />, label: "Student Enrollment", section: "studentenroll" },
               { icon: <FaPoll />, label: "Student Results", section: "studtestresult" },
+              { icon: <FaHourglassStart />, label: "Scheduled Tests", section: "scheduledtests" },
               { icon: <FaHourglassStart />, label: "Rescheduled Tests", section: "delaytests" },
             ].map(({ icon, label, section }) => (
               <li key={section} style={{ marginBottom: "20px" }}>

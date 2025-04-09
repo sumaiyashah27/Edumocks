@@ -38,7 +38,7 @@ const DeleteConfirmationModal = ({ show, onClose, onConfirm, studentId }) => {
       </Modal.Header>
       <Modal.Body>
         <Form.Group controlId="password">
-          <Form.Label>Enter Password</Form.Label>
+          <Form.Label>Enter password to confirm deletion</Form.Label>
           <InputGroup>
             <Form.Control
               type={showPassword ? 'text' : 'password'}

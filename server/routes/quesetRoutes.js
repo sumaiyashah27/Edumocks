@@ -71,19 +71,26 @@ router.put('/:id', async (req, res) => {
 });  
 
 // DELETE: Delete a queset
-router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-
+router.delete("/:id", async (req, res) => {
   try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (password !== process.env.DELETE_SECRET_PASSWORD) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
     const deletedQueset = await Queset.findByIdAndDelete(id);
     if (!deletedQueset) {
-      return res.status(404).json({ message: 'Queset not found' });
+      return res.status(404).json({ message: "Queset not found" });
     }
-    res.status(200).json({ message: 'Queset deleted' });
+
+    res.status(200).json({ message: "Queset deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting queset', error });
+    res.status(500).json({ message: "Error deleting queset", error });
   }
 });
+
 //=============================================================================================
 //==============================================================================================
 
@@ -151,40 +158,35 @@ router.post('/:quesetId/add', async (req, res) => {
   });
   //delete question
   router.delete("/:quesetId/questions/:questionId", async (req, res) => {
-    const { quesetId, questionId } = req.params;
-
     try {
-        console.log("Received quesetId:", quesetId, "questionId:", questionId);
-
-        const queset = await Queset.findById(quesetId);
-        if (!queset) {
-            console.log("Queset not found in DB!");
-            return res.status(404).json({ message: "Queset not found" });
-        }
-
-        if (!queset.questions || queset.questions.length === 0) {
-            return res.status(404).json({ message: "No questions found in the queset" });
-        }
-
-        console.log("Queset questions:", queset.questions);
-
-        const questionIndex = queset.questions.findIndex(q => q._id.toString() === questionId);
-        if (questionIndex === -1) {
-            return res.status(404).json({ message: "Question not found in the queset" });
-        }
-
-        queset.questions.splice(questionIndex, 1);
-        await queset.save();
-
-        res.status(200).json({ message: "Question deleted successfully" });
+      const { quesetId, questionId } = req.params;
+      const { password } = req.body;
+  
+      if (password !== process.env.DELETE_SECRET_PASSWORD) {
+        return res.status(401).json({ message: "Invalid password" });
+      }
+  
+      const queset = await Queset.findById(quesetId);
+      if (!queset) {
+        return res.status(404).json({ message: "Queset not found" });
+      }
+  
+      const questionIndex = queset.questions.findIndex((q) => q._id.toString() === questionId);
+      if (questionIndex === -1) {
+        return res.status(404).json({ message: "Question not found in the queset" });
+      }
+  
+      queset.questions.splice(questionIndex, 1);
+      await queset.save();
+  
+      res.status(200).json({ message: "Question deleted successfully" });
     } catch (error) {
-        console.error("Error deleting question:", error);
-        res.status(500).json({ message: "Server error" });
+      console.error("Error deleting question:", error);
+      res.status(500).json({ message: "Server error" });
     }
-});
+  });
+  
 
-
- 
   // Update question by ID
   router.put('/:quesetId/questions/:questionId', async (req, res) => {
     const { quesetId, questionId } = req.params;
