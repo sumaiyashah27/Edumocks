@@ -16,7 +16,7 @@ const courses = [
   // { id: 11, name: 'CFA LEVEL 1 | Full Mocks Part 1', image: '/3.png', oldPrice: 39, newPrice: 19 },
   // { id: 12, name: 'CFA LEVEL 1 | Full Mocks Part 2', image: '/4.png', oldPrice: 39, newPrice: 19 },
   // { id: 13, name: 'CFA LEVEL 1 | Individual Topics Mocks', oldPrice: 1299, newPrice: 699 },
-  // { id: 14, name: 'CFA LEVEL 1 | All Topics + 2 Full Mocks', image: '/7.png', oldPrice: 149, newPrice: 99 },
+  { id: 14, name: 'CFA LEVEL 1 | All Topics', image: '/7.png', oldPrice: 149, newPrice: 99 },
   { id: 15, name: 'CFA LEVEL 2 | Quantitative Methods', image: '/10.png', oldPrice: 19, newPrice: 9 },
   { id: 16, name: 'CFA LEVEL 2 | Ethics', image: '/9.png', oldPrice: 19, newPrice: 9 },
   { id: 17, name: 'CFA LEVEL 2 | Economics', image: '/11.png', oldPrice: 19, newPrice: 9 },
@@ -29,7 +29,7 @@ const courses = [
   { id: 24, name: 'CFA LEVEL 2 | Portfolio Management', image: '/18.png', oldPrice: 19, newPrice: 9 },
   // { id: 25, name: 'CFA LEVEL 2 | Full Mocks Part 1', image: '/5.png', oldPrice: 39, newPrice: 19 },
   // { id: 26, name: 'CFA LEVEL 2 | Full Mocks Part 2', image: '/6.png', oldPrice: 39, newPrice: 19 },
-  // { id: 27, name: 'CFA LEVEL 2 | All Topics + 2 Full Mocks', image: '/8.png', oldPrice: 149, newPrice: 99 }
+  { id: 27, name: 'CFA LEVEL 2 | All Topics', image: '/8.png', oldPrice: 149, newPrice: 99 }
 ];
 
 const CourseSection = () => {
@@ -70,7 +70,7 @@ const CourseSection = () => {
                   <span className="new-price">${course.newPrice}</span>
                 </div>
 
-                <button onClick={() => handleBookClick(course)} className="book-btn">
+                <button onClick={() => handleBookClick(course)} className="book-btn"  style={{ backgroundColor: course.name.includes('LEVEL 2') ? '#C80D18' : '#100b5c'}}>
                   Book Test
                 </button>
               </div>
