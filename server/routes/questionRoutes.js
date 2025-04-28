@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Queset = require('../models/queset-model');  // Adjust the path if needed
 const Question = require('../models/question-model'); // Adjust the path if needed
-
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Route to add 100 questions under a Queset
@@ -42,7 +42,7 @@ router.post('/add-questions', async (req, res) => {
 });
 
 // Route to get a Queset with its associated questions
-router.get('/get-queset/:quesetId', async (req, res) => {
+router.get('/get-queset/:quesetId', authMiddleware, async (req, res) => {
   try {
     const { quesetId } = req.params;
 

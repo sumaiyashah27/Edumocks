@@ -34,7 +34,14 @@ const QuizEnroll = () => {
   // Fetch all students from API
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('/api/student');
+      const token = localStorage.getItem('token'); // Get the token
+
+      const response = await axios.get('/api/student', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       console.log("Students Fetched:", response.data); // Debugging
       setStudents(response.data);
     } catch (error) {
@@ -42,6 +49,7 @@ const QuizEnroll = () => {
       toast.error('Error fetching students');
     }
   };
+
 
   // Handle selection of students
   const handleStudentSelection = (selectedOptions) => {
@@ -67,8 +75,13 @@ const QuizEnroll = () => {
 
   // Fetch all courses from API
   const fetchCourses = async () => {
+    const token = localStorage.getItem('token'); // Get the token
     try {
-      const response = await axios.get('/api/course');
+      const response = await axios.get('/api/course', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -83,8 +96,14 @@ const QuizEnroll = () => {
     setSelectedCourse(courseId);
     setSelectedSubjects([]);
 
+    const token = localStorage.getItem('token'); // Get the token
+
     try {
-      const response = await axios.get(`/api/course/${courseId}`);
+      const response = await axios.get(`/api/course/${courseId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       console.log("Subjects fetched:", response.data); // Debugging
       setSubjects(response.data.subjects);
     } catch (error) {
@@ -104,7 +123,12 @@ const QuizEnroll = () => {
   // Fetch all enrollments
   const fetchEnrollments = async () => {
     try {
-      const { data } = await axios.get("/api/studenroll");
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+      const { data } = await axios.get("/api/studenroll", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+        },
+      });
       setEnrollments(data);
       setFilteredEnrollments(data);
     } catch (error) {
@@ -271,7 +295,7 @@ const QuizEnroll = () => {
                       onChange={() => handleSubjectChange(subject._id)}
                       className="me-2"
                     />
-                    <label className='d-flex' style={{flexWrap: 'wrap', overflow:'hidden'}} htmlFor={subject._id}>{subject.name}</label>
+                    <label className='d-flex' style={{ flexWrap: 'wrap', overflow: 'hidden' }} htmlFor={subject._id}>{subject.name}</label>
                   </div>
                 ))
               ) : (
@@ -285,17 +309,17 @@ const QuizEnroll = () => {
       </Modal>
       {/* Enrolled Students Table */}
       <div className='mt-3'>
-      <InputGroup className="mb-3">
-        <InputGroup.Text>
-          <BsSearch />
-        </InputGroup.Text>
-        <Form.Control
-          type="text"
-          placeholder="Search by Student Name, course, Topic, or Payment Status..."
-          value={searchQuery}
-          onChange={handleSearch}
-        />
-      </InputGroup>
+        <InputGroup className="mb-3">
+          <InputGroup.Text>
+            <BsSearch />
+          </InputGroup.Text>
+          <Form.Control
+            type="text"
+            placeholder="Search by Student Name, course, Topic, or Payment Status..."
+            value={searchQuery}
+            onChange={handleSearch}
+          />
+        </InputGroup>
       </div>
 
       <h3 className="text-center mt-4">Enrolled Students</h3>

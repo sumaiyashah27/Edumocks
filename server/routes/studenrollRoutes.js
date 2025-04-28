@@ -4,24 +4,41 @@ const StudentEnroll = require('../models/studenroll-model');
 const Student = require('../models/student-model');
 const Course = require('../models/course-model');
 const Subject = require('../models/subject-model');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // 🟢 GET all enrollments with populated student, course, and subjects
-router.get('/', async (req, res) => {
+// router.get('/',authMiddleware, async (req, res) => {
+//     try {
+//         const enrollments = await StudentEnroll.find()
+//             .populate('studentId', 'firstname lastname') 
+//             .populate('selectedCourse', 'name') 
+//             .populate('selectedSubjects', 'name');
+
+//         res.json(enrollments);
+//     } catch (error) {
+//         console.error("❌ Error fetching enrollments:", error.message);
+//         res.status(500).json({ message: 'Error fetching enrollments' });
+//     }
+// });
+
+router.get('/', authMiddleware, async (req, res) => {
     try {
         const enrollments = await StudentEnroll.find()
             .populate('studentId', 'firstname lastname') 
             .populate('selectedCourse', 'name') 
             .populate('selectedSubjects', 'name');
 
-        res.json(enrollments);
+        const filteredEnrollments = enrollments.filter(enrollment => enrollment.studentId);
+
+        res.json(filteredEnrollments);
     } catch (error) {
-        console.error("❌ Error fetching enrollments:", error.message);
+        console.error("Error fetching enrollments:", error.message);
         res.status(500).json({ message: 'Error fetching enrollments' });
     }
 });
 
 // 🟢 Fetch all students
-router.get('/student', async (req, res) => {
+router.get('/student', authMiddleware, async (req, res) => {
   try {
       const students = await Student.find();
       console.log("Fetched Students:", students); // Debugging
@@ -34,7 +51,7 @@ router.get('/student', async (req, res) => {
 
 
 // 🟢 Fetch all courses
-router.get('/course', async (req, res) => {
+router.get('/course', authMiddleware, async (req, res) => {
     try {
         const courses = await Course.find().populate('subjects'); // Fetch courses with subjects
         res.json(courses);
@@ -44,7 +61,7 @@ router.get('/course', async (req, res) => {
 });
 
 // 🟢 Fetch subjects for a specific course
-router.get('/course/:courseId', async (req, res) => {
+router.get('/course/:courseId', authMiddleware, async (req, res) => {
   try {
     const course = await Course.findById(req.params.courseId).populate('subjects'); 
     if (!course) return res.status(404).json({ message: 'Course not found' });
@@ -103,7 +120,7 @@ router.post('/enroll', async (req, res) => {
 //================================================================
 //-------------------🔴 Update Enrollment Status ----------------
 // Fetch all enrollments for a Student
-router.get("/:studentId", async (req, res) => {
+router.get("/:studentId", authMiddleware, async (req, res) => {
     const { studentId } = req.params;
   
     try {

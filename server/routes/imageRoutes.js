@@ -5,6 +5,7 @@ const path = require('path');
 const Image = require('../models/image-model'); // Ensure this path points to your Image model
 const Folder = require('../models/folder-model');
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Define the folder where images will be stored
 const uploadFolder = path.join(__dirname, '../image'); // Path to the images folder
@@ -62,7 +63,7 @@ router.post('/upload-images', upload.array('images', 100), async (req, res) => {
 
 
 // Route: Get all uploaded images
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const images = await Image.find();
     res.json(images);

@@ -6,6 +6,7 @@ const Subject = require('../models/subject-model');
 const Course = require('../models/course-model');
 const Student = require('../models/student-model') // Assuming this is the Subject model
 const sendEmail = require('../utils/sendEmail');
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/', async (req, res) => {
   try {
@@ -47,7 +48,7 @@ router.post('/', async (req, res) => {
 
 
 // GET /api/scheduleTest/:userId
-router.get('/:studentId', async (req, res) => {
+router.get('/:studentId', authMiddleware,  async (req, res) => {
   const { studentId } = req.params; // Extract userId from URL
 
   try {
@@ -66,7 +67,7 @@ router.get('/:studentId', async (req, res) => {
 });
 
 // GET /api/scheduleTest
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     // Fetch all scheduled tests
     const scheduledTests = await ScheduleTest.find()
@@ -87,7 +88,7 @@ router.get('/', async (req, res) => {
 });
 
 // Fetch scheduled tests for a specific user
-router.get('/scheduleTest/:studentId', async (req, res) => {
+router.get('/scheduleTest/:studentId', authMiddleware, async (req, res) => {
   const { studentId } = req.params;
 
   try {
@@ -102,7 +103,7 @@ router.get('/scheduleTest/:studentId', async (req, res) => {
   }
 });
 // Route to get ScheduleTest by userId, selectedCourse, and selectedSubject
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   const { studentId, selectedCourse, selectedSubject } = req.query;
 
   if (!studentId || !selectedCourse || !selectedSubject) {
@@ -186,7 +187,7 @@ router.post('/updateTestScore', async (req, res) => {
   }
 });
 // Fetch completed tests for a specific user
-router.get('/scheduleTest/:studentId', async (req, res) => {
+router.get('/scheduleTest/:studentId', authMiddleware, async (req, res) => {
   try {
     const studentId = req.params.studentId;
     const completedTests = await ScheduleTest.find({ studentId, testStatus: 'Completed' })
@@ -242,7 +243,7 @@ router.put('/', async (req, res) => {
 });
 
 // Fetch test details for the given user, course, and subject
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   const { studentId, course, subject } = req.query;
   try {
     const testDetails = await ScheduleTest.findOne({
@@ -442,7 +443,7 @@ router.post('/sendReminder1Hour', async (req, res) => {
 });
 
 // Route to get all test schedules for a user
-router.get('/student/:studentId', async (req, res) => {
+router.get('/student/:studentId', authMiddleware, async (req, res) => {
   try {
     const { studentId } = req.params; // Get the userId from the URL params
 
@@ -461,7 +462,7 @@ router.get('/student/:studentId', async (req, res) => {
 });
 
 // Get course by ID
-router.get('/course/:id', async (req, res) => {
+router.get('/course/:id', authMiddleware, async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
         if (!course) {
@@ -475,7 +476,7 @@ router.get('/course/:id', async (req, res) => {
 });
 
 // Get subject by ID
-router.get('/subject/:id', async (req, res) => {
+router.get('/subject/:id', authMiddleware, async (req, res) => {
     try {
         const subject = await Subject.findById(req.params.id);
         if (!subject) {
@@ -489,7 +490,7 @@ router.get('/subject/:id', async (req, res) => {
 });
 
 // Fetch only completed tests with populated student, course, and subject details
-router.get("/completedTests", async (req, res) => {
+router.get("/completedTests", authMiddleware, async (req, res) => {
   console.log("Request query:", req.query);
   try {
     const completedTests = await ScheduleTest.find({ testStatus: "Completed" })
@@ -509,7 +510,7 @@ router.get("/completedTests", async (req, res) => {
 });
 
 // Route to fetch all completed tests
-router.get('/getCompletedTests', async (req, res) => {
+router.get('/getCompletedTests', authMiddleware, async (req, res) => {
   try {
     const completedTests = await completedTests.find()
       .populate('studentId', 'firstname lastname') // Populate student details

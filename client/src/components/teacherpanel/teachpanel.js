@@ -22,8 +22,16 @@ const TeachPanel = () => {
     const lastname = localStorage.getItem("lastname");
     const email = localStorage.getItem("email");
 
-    if (!email) {
-      console.error("User not found. Redirecting to login");
+    // if (!email) {
+    //   console.error("User not found. Redirecting to login");
+    //   navigate("/teachLogin");
+    // } else {
+    //   setTeacher({ _id, teachId, firstname, lastname, email });
+    // }
+    //support@edumocks.com
+
+    if (!email || email !== "sumaiyashaha27@gmail.com") {
+      console.error("Unauthorized access. Redirecting to login");
       navigate("/teachLogin");
     } else {
       setTeacher({ _id, teachId, firstname, lastname, email });

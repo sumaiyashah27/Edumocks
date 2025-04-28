@@ -14,12 +14,14 @@ const Payment = () => {
   const elements = useElements();
   const location = useLocation();
   const navigate = useNavigate();
-  const { studentId,courseId, selectedSubjects, totalPrice } = location.state || {};
+  //const { studentId,courseId, selectedSubjects, totalPrice } = location.state || {};
+  const { courseId, selectedSubjects, totalPrice } = location.state || {};
   const [studentData, setstudentData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState(""); // Coupon code input ke liye
   const [isCouponApplied, setIsCouponApplied] = useState(false); // Track karega agar coupon apply ho gaya hai
   const [finalPrice, setFinalPrice] = useState(totalPrice);
+  const studentId = localStorage.getItem('_id');
 
   // Dynamically load Razorpay script
   useEffect(() => {
@@ -326,18 +328,52 @@ const handleStripePayment = async (event) => {
     }
   };
 
+  // useEffect(() => {
+  //   if (!courseId || !selectedSubjects) {
+  //     toast.warning("Invalid course or subjects data.");
+  //     return;
+  //   }
+  //   axios.get(`/api/course/${courseId}`)
+  //     .then((response) => {
+  //       setSelectedCourse(response.data);
+  //     })
+  //     .catch((error) => console.error("Error fetching course:", error));
+
+  //   axios.get(`/api/student/${studentId}`)
+  //     .then((response) => {
+  //       setstudentData(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching student data:", error);
+  //       toast.error("Error fetching student data.");
+  //     });
+  // }, [courseId, selectedSubjects]);
+
   useEffect(() => {
     if (!courseId || !selectedSubjects) {
       toast.warning("Invalid course or subjects data.");
       return;
     }
-    axios.get(`/api/course/${courseId}`)
+  
+    const token = localStorage.getItem('token'); // Get the token
+  
+    // Fetch course data
+    axios.get(`/api/course/${courseId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then((response) => {
         setSelectedCourse(response.data);
       })
       .catch((error) => console.error("Error fetching course:", error));
-
-    axios.get(`/api/student/${studentId}`)
+  
+    // Fetch student data
+    axios.get(`/api/student/${studentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then((response) => {
         setstudentData(response.data);
       })

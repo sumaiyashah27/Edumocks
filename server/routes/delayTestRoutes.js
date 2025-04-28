@@ -4,6 +4,7 @@ const Subject = require("../models/subject-model");
 const Course = require('../models/course-model');
 const Student = require("../models/student-model");
 const DelayTest = require('../models/delaytest-model'); // Your model for delay test data
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Route to save delay test after successful payment
 router.post('/', async (req, res) => {
@@ -53,7 +54,7 @@ router.post('/', async (req, res) => {
 // });
 
 // Route to get student by ID
-router.get('/:studentId', async (req, res) => {
+router.get('/:studentId', authMiddleware, async (req, res) => {
   try {
     const student = await Student.findById(req.params.studentId).select('firstname lastname email');
     
@@ -68,7 +69,7 @@ router.get('/:studentId', async (req, res) => {
   }
 });
   // Get subject by ID
-router.get('/subject/:subjectId', async (req, res) => {
+router.get('/subject/:subjectId', authMiddleware, async (req, res) => {
   try {
     const subject = await Subject.findById(req.params.subjectId).select('name');
     
@@ -83,7 +84,7 @@ router.get('/subject/:subjectId', async (req, res) => {
   }
 });
   // Get course by ID
-router.get('/course/:courseId', async (req, res) => {
+router.get('/course/:courseId', authMiddleware, async (req, res) => {
   try {
     const course = await Course.findById(req.params.courseId).select('name');
     
@@ -98,7 +99,7 @@ router.get('/course/:courseId', async (req, res) => {
   }
 });
 // Fetch all delayed tests with student, course, and subject details
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const tests = await DelayTest.find()
       .populate({ path: "studentId", select: "firstname lastname" })

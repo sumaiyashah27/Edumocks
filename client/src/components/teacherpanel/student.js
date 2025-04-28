@@ -24,7 +24,9 @@ const Student = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('/api/student');
+      const token = localStorage.getItem('token'); 
+      //const response = await fetch('/api/student');
+      const response = await fetch('/api/student', { headers: { Authorization: `Bearer ${token}` } });
       const data = await response.json();
       setStudents(data);
     } catch (error) {

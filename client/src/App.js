@@ -28,6 +28,7 @@ import Images from "./components/teacherpanel/images";
 import Questions from "./components/teacherpanel/question";
 import StudentEnroll from "./components/teacherpanel/studEnroll";
 import StudentTestResults from "./components/teacherpanel/studTestResult";
+import ScheduleTestTeacher from './components/teacherpanel/ScheduleTestTeacher';
 import DelayTest from "./components/teacherpanel/delayTest";
 import StuDashboard from './components/studdash/DashBoard';
 import Profile from './components/studdash/Profile';
@@ -35,6 +36,7 @@ import BookTest from './components/studdash/BookTest';
 import ScheduleTest from './components/studdash/ScheduleTest';
 import Material from './components/studdash/Material';
 import SupportStudent from './components/studdash/SupportStudent';
+import BookTestView from './components/studdash/BookTestView';
 
 import './App.css';
 // Load Stripe with your publishable key
@@ -68,6 +70,7 @@ const App = () => {
           <Route path="images" element={<Images />} />
           <Route path="questions" element={<Questions />} />
           <Route path="studentenroll" element={<StudentEnroll />} />
+          <Route path="scheduledtests" element={<ScheduleTestTeacher />} />
           <Route path="studtestresult" element={<StudentTestResults />} />
           <Route path="delaytests" element={<DelayTest />} />
 
@@ -83,6 +86,7 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="support" element={<SupportStudent />} />
         </Route>
+        <Route path="book-test-view" element={<BookTestView />} />
         
         {/* Wrap the Payment route with Elements */}
         <Route path="/payment" element={<Elements stripe={stripePromise}><Payment /></Elements>} />

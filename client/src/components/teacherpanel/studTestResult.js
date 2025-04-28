@@ -15,7 +15,12 @@ const StudentTestResult = () => {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const { data } = await axios.get("/api/completed/getCompletedTests");
+        const token = localStorage.getItem('token'); // Get the token from localStorage
+        const { data } = await axios.get("/api/completed/getCompletedTests", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+          },
+        });
         setResults(data);
         setFilteredResults(data);
         setLoading(false);
@@ -24,10 +29,10 @@ const StudentTestResult = () => {
         setLoading(false);
       }
     };
-
+  
     fetchResults();
   }, []);
-
+  
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);

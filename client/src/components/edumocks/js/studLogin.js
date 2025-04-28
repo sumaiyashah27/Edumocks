@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Button, Form, Container, Row, Col, Card } from 'react-bootstrap';
@@ -15,6 +15,8 @@ const StudLogin = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/studpanel/book-test';
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -23,34 +25,26 @@ const StudLogin = () => {
   const handleStudentLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     if (!email || !password) {
       setError('Please provide both email and password');
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await axios.post('/api/student/login', { email, password });
-  
-      console.log('Received response:', response.data);
-  
+
       if (response.data.success) {
-        // Store user data in localStorage or state management
         localStorage.setItem('_id', response.data._id);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('firstname', response.data.firstname);
         localStorage.setItem('lastname', response.data.lastname);
         localStorage.setItem('email', response.data.email);
+        localStorage.setItem('role', 'student');
 
-        console.log('Stored in LocalStorage:', {
-          _id: localStorage.getItem('_id'),
-          firstname: localStorage.getItem('firstname'),
-          lastname: localStorage.getItem('lastname'),
-          email: localStorage.getItem('email'),
-        });
-  
-        // Navigate to the next page
-        navigate('/studpanel/book-test');
+        // 👇 navigate where user originally intended
+        navigate(from, { state: location.state });
       } else {
         setError('Invalid Email or Password');
       }
@@ -75,19 +69,14 @@ const StudLogin = () => {
       if (response.data.success) {
         // Successfully logged in, store user details in localStorage
         localStorage.setItem('_id', response.data._id);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('firstname', response.data.firstname);
         localStorage.setItem('lastname', response.data.lastname);
         localStorage.setItem('email', response.data.email);
-    
-        console.log('Stored in LocalStorage:', {
-          _id: localStorage.getItem('_id'),
-          firstname: localStorage.getItem('firstname'),
-          lastname: localStorage.getItem('lastname'),
-          email: localStorage.getItem('email'),
-        });
+        localStorage.setItem('role', 'student');
     
         // Navigate to TeachPanel page
-        navigate('/studpanel/dashboard');
+        navigate(from, { state: location.state });
       } else {
         setError('Google Login failed or account not registered');
         console.log('Login failed:', response.data.message); // Log failure message

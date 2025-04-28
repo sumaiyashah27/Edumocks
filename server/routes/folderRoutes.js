@@ -6,7 +6,7 @@ const router = express.Router();
 const multer = require('multer');
 const archiver = require('archiver');
 const Image = require('../models/image-model'); 
-
+const authMiddleware = require('../middleware/authMiddleware');
 // Define the folder where images will be stored
 const uploadFolder = path.join(__dirname, '../image'); // Ensure this folder exists
 fs.ensureDirSync(uploadFolder); // Ensure the folder exists
@@ -84,7 +84,7 @@ router.put('/update-image/:imageId', async (req, res) => {
 });
 
 //Fetch Folders Exists
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const folders = await Folder.find();
     res.json(folders);
@@ -190,7 +190,7 @@ router.delete("/images/:imageId", async (req, res) => {
 });
 
 // Fetch images in a folder
-router.get('/:folderId/images', async (req, res) => {
+router.get('/:folderId/images', authMiddleware, async (req, res) => {
   try {
     const { folderId } = req.params;
     const folder = await Folder.findById(folderId).populate('images');
@@ -207,7 +207,7 @@ router.get('/:folderId/images', async (req, res) => {
 });
 
 // Backend route to download all folders as a zip file
-router.get('/download/all', async (req, res) => {
+router.get('/download/all', authMiddleware, async (req, res) => {
   try {
     // Root folder where all folders are stored
     const rootFolderPath = path.join(__dirname, '..', 'image');
@@ -248,7 +248,7 @@ router.get('/download/all', async (req, res) => {
   }
 });
 
-router.get('/download/:folderId', async (req, res) => {
+router.get('/download/:folderId', authMiddleware, async (req, res) => {
   try {
     const { folderId } = req.params;
     const folder = await Folder.findById(folderId);

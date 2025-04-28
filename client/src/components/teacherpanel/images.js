@@ -35,13 +35,19 @@ export default function ImageManager() {
 
   const fetchFolders = async () => {
     try {
-      const response = await axios.get('/api/folders');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/folders', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
       setFolders(organizeFolders(response.data));
     } catch (error) {
       toast.error('Error fetching folders');
     }
   };
-
+  
   const createFolder = async () => {
     if (!newFolderName.trim()) {
       toast.error('Folder name cannot be empty.');
@@ -125,19 +131,24 @@ export default function ImageManager() {
 
   const fetchImages = async (folderId) => {
     try {
-      const response = await axios.get(`/api/folders/${folderId}/images`);
-
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+  
+      const response = await axios.get(`/api/folders/${folderId}/images`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token in the Authorization header
+        },
+      });
+  
       setImages((prev) => ({
         ...prev,
         [folderId]: response.data, // ✅ Store images under folderId
       }));
-
+  
       console.log("Fetched images:", response.data); // ✅ Debugging
     } catch (error) {
       console.error("Error fetching images:", error);
     }
   };
-
 
   const selectFolder = (folder) => {
     if (selectedFolder === folder._id) {
@@ -222,9 +233,14 @@ export default function ImageManager() {
 
   const downloadAllFolders = async () => {
     try {
+      const token = localStorage.getItem('token'); // Get the token from localStorage
       const response = await axios.get('/api/folders/download/all', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token in the Authorization header
+        },
         responseType: 'blob',
       });
+  
       const link = document.createElement('a');
       const url = window.URL.createObjectURL(new Blob([response.data]));
       link.href = url;
@@ -237,18 +253,22 @@ export default function ImageManager() {
       toast.error('Error downloading all folders');
     }
   };
-
+  
   const downloadFolder = async (folderId) => {
     try {
+      const token = localStorage.getItem('token'); // Get the token from localStorage
       const response = await axios.get(`/api/folders/download/${folderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token in the Authorization header
+        },
         responseType: 'blob',
       });
-
+  
       // Extract filename from Content-Disposition header (fallback to folderId)
       const contentDisposition = response.headers['content-disposition'];
       const match = contentDisposition && contentDisposition.match(/filename="(.+)"/);
       const filename = match ? match[1] : `folder_${folderId}.zip`;
-
+  
       const link = document.createElement('a');
       const url = window.URL.createObjectURL(new Blob([response.data]));
       link.href = url;
@@ -261,7 +281,7 @@ export default function ImageManager() {
       toast.error('Folder is empty');
     }
   };
-
+  
   const handleEditClick = (image) => {
     // Extract name without extension
     const nameWithoutExtension = image.name.replace(/\.[^/.]+$/, "");

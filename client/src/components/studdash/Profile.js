@@ -17,28 +17,33 @@ const Profile = () => {
   // Fetch current student details when the component mounts
   useEffect(() => {
     const studentId = localStorage.getItem('_id');
-
+    const token = localStorage.getItem('token'); // Get the token
+  
     if (!studentId) {
-      console.error('student not logged in');
+      console.error('Student not logged in');
       return;
     }
-
-    axios.get(`/api/student/${studentId}`)  // Adjust with your API ro ute
-      .then((response) => {
-        // Fetch only the first name, last name, and photo from the backend, not phone or countryCode
-        setStudentDetails((prevDetails) => ({
-          ...prevDetails,
-          firstName: response.data.firstname || '',
-          lastName: response.data.lastname || '',
-          email: response.data.email || '',
-          countryCode: response.data.countryCode || '',
-          phone: response.data.phone || '',
-        }));
-      })
-      .catch((error) => {
-        console.error('Error fetching student data:', error);
-      });
-  }, []);
+  
+    axios.get(`/api/student/${studentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then((response) => {
+      // Fetch only the required fields from the backend
+      setStudentDetails((prevDetails) => ({
+        ...prevDetails,
+        firstName: response.data.firstname || '',
+        lastName: response.data.lastname || '',
+        email: response.data.email || '',
+        countryCode: response.data.countryCode || '',
+        phone: response.data.phone || '',
+      }));
+    })
+    .catch((error) => {
+      console.error('Error fetching student data:', error);
+    });
+  }, []);  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
