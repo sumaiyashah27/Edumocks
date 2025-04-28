@@ -10,7 +10,6 @@ import { Form, InputGroup } from "react-bootstrap";
 import { BsSearch } from "react-icons/bs";
 import { addStyles, EditableMathField } from "react-mathquill";
 import { Modal, Button } from "react-bootstrap";
-import "react-quill/dist/quill.snow.css"; // Quill styles
 import "katex/dist/katex.min.css"; // KaTeX for rendering math formulas
 import DeleteModal from './modals/DeleteModal';
 
@@ -87,7 +86,12 @@ const Queset = () => {
   const fetchQuesets = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/api/queset");
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+      const { data } = await axios.get("/api/queset", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+        },
+      });
       setQuesets(data);
       setFilteredQuesets(data);
     } catch (error) {
@@ -96,7 +100,7 @@ const Queset = () => {
       setLoading(false);
     }
   };
-
+  
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
@@ -393,11 +397,17 @@ const Queset = () => {
       toast.error("Please select a Queset first.");
       return;
     }
+  
     try {
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+  
       const response = await axios.get(`/api/queset/${currentQuesetId}/download-csv`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+        },
         responseType: 'blob', // Important for handling files
       });
-
+  
       // Create a download link for the CSV file
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -411,7 +421,7 @@ const Queset = () => {
       toast.error("Failed to download CSV. Please try again.");
     }
   };
-
+  
   const handleDuplicateQuestion = async (question, quesetId, index) => {
     if (!quesetId) {
       toast.error("Queset ID is missing! Cannot duplicate.");

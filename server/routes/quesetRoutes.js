@@ -7,9 +7,10 @@ const csv = require('csv-parser');
 const stream = require('stream');
 const { Parser } = require('json2csv'); 
 const upload = multer({ storage: multer.memoryStorage() });
+const authMiddleware = require('../middleware/authMiddleware');
 
 // GET all quesets
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const quesets = await Queset.find().populate('questions').sort({ createdAt: 1 });
 
@@ -147,7 +148,7 @@ router.post('/:quesetId/add', async (req, res) => {
   //========================================================================================
   //========================================================================================
   //add manually by add question button
-  router.get('/:quesetId', async (req, res) => {
+  router.get('/:quesetId', authMiddleware, async (req, res) => {
     try {
       const queset = await Queset.findById(req.params.id).populate('questions');
       if (!queset) return res.status(404).json({ message: 'Queset not found' });
@@ -352,7 +353,7 @@ router.post("/:quesetId/upload", upload.single("file"), async (req, res) => {
 });
 
 //!download
-router.get('/:quesetId/download-csv', async (req, res) => {
+router.get('/:quesetId/download-csv', authMiddleware, async (req, res) => {
   const { quesetId } = req.params; // Get the queset ID from the route parameter
   console.log(quesetId);
   

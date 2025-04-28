@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-
+const authMiddleware = require('../middleware/authMiddleware');
 // Import the models for Student, ScheduleTest, and DelayTest
 const Student = require('../models//student-model'); // Update with correct path
 const ScheduleTest = require('../models/scheduletest-model'); // Update with correct path
 const DelayTest = require('../models/delaytest-model'); // Update with correct path
 
 // Route to get counts of students, scheduled tests, and delayed tests
-router.get('/teacherDashCounts', async (req, res) => {
+router.get('/teacherDashCounts', authMiddleware, async (req, res) => {
   try {
     // Count total number of students
     const studentCount = await Student.countDocuments();

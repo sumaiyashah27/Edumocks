@@ -40,8 +40,14 @@ const ScheduleTest = () => {
     useEffect(() => {
       // Fetch student details
       const fetchStudentDetails = async (studentId) => {
+        const token = localStorage.getItem('token'); // Get the token
         try {
-          const response = await axios.get(`/api/student/${studentId}`);
+          // const response = await axios.get(`/api/student/${studentId}`);
+          const response = await axios.get(`/api/student/${studentId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           const studentData = response.data;
           setStudentName(studentData.firstname);  // Debugging
           setStudentEmail(studentData.email); 
@@ -54,8 +60,14 @@ const ScheduleTest = () => {
 
       const fetchQuizEnrollmentData = async (studentId) => {
         if (!studentId) return;
+        const token = localStorage.getItem('token');
         try {
-          const response = await axios.get(`/api/studenroll/${studentId}`);
+          // const response = await axios.get(`/api/studenroll/${studentId}`);
+          const response = await axios.get(`/api/studenroll/${studentId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           console.log("API Response:", response.data); // Debugging
       
           if (response.data && Array.isArray(response.data.enrollments)) {
@@ -74,7 +86,14 @@ const ScheduleTest = () => {
       //Scheduled tests
       const fetchScheduledTests = async (studentId) => {
         if (!studentId) return;
-        try { const response = await axios.get(`/api/scheduleTest/${studentId}`);
+        const token = localStorage.getItem('token');
+        try { 
+          // const response = await axios.get(`/api/scheduleTest/${studentId}`);
+          const response = await axios.get(`/api/scheduleTest/${studentId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           if (Array.isArray(response.data)) {setScheduledTests(response.data);
           } else {toast.error('Expected an array, but received:', response.data);
           }
@@ -85,9 +104,21 @@ const ScheduleTest = () => {
       console.log('scheduledTests',scheduledTests);
       //courses and subjects
       const fetchCoursesAndSubjects = async () => {
+        const token = localStorage.getItem('token');
         try {
-          const courseResponse = await axios.get('/api/course');
-          const subjectResponse = await axios.get('/api/subject');
+          // const courseResponse = await axios.get('/api/course');
+          // const subjectResponse = await axios.get('/api/subject');
+          const courseResponse = await axios.get('/api/course', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+      
+          const subjectResponse = await axios.get('/api/subject', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           setCourses(courseResponse.data);
           console.log('courseResponse',courseResponse.data)
           console.log('subjectResponse',subjectResponse.data)

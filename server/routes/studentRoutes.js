@@ -1,12 +1,14 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const router = express.Router();
-const Student = require('../models/student-model'); // ✅ CORRECT!
+const Student = require('../models/student-model');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
+const authMiddleware = require('../middleware/authMiddleware');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Use environment variable for client ID
+const jwt = require('jsonwebtoken');
 
 // Create a transporter object using your email provider's settings
 const transporter = nodemailer.createTransport({
@@ -114,8 +116,8 @@ router.post('/signup', [
     });
 
     await newStudent.save();
-     // Send welcome email
-     sendWelcomeEmail(newStudent.email, newStudent.firstname);
+    // Send welcome email
+    sendWelcomeEmail(newStudent.email, newStudent.firstname);
 
     res.status(201).json({ success: true, message: "Signup successful!" });
 
@@ -126,11 +128,79 @@ router.post('/signup', [
 });
 //==================================================================================================//!SECTION
 // Google Login Route
+// router.post('/glogin', async (req, res) => {
+//   // Set COOP and COEP headers for this route
+//   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+//   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+//   const { token } = req.body;
+//   try {
+//     console.log('Received Google Token:', token);
+
+//     // Verify the Google token
+//     const ticket = await client.verifyIdToken({
+//       idToken: token,
+//       audience: process.env.GOOGLE_CLIENT_ID, // Ensure this is your correct Google Client ID
+//     });
+
+//     const payload = ticket.getPayload();
+//     console.log('Google Token Payload:', payload);
+
+//     // Check if the user exists in the database using the email
+//     let student = await Student.findOne({ email: payload.email });
+
+//     if (student) {
+//       // If Google ID is present, just log the user in
+//       if (student.googleId) {
+//         console.log('User found with existing Google ID');
+//         return res.status(200).json({
+//           success: true,
+//           message: 'Login successful!',
+//           _id: student._id,
+//           firstname: student.firstname,
+//           lastname: student.lastname,
+//           email: student.email,
+//         });
+//       } else {
+//         // If Google ID is missing, update it now
+//         student.googleId = payload.sub; // Update Google ID with the new value from payload
+//         await student.save();
+//         console.log('Google ID updated for existing user');
+
+//         // ✅ Generate a JWT token
+//         const token = jwt.sign(
+//           { _id: student._id, email: student.email }, // payload
+//           process.env.JWT_SECRET,                    // secret key
+//           { expiresIn: '1h' }                        // token expiry
+//         );
+
+//         return res.status(200).json({
+//           success: true,
+//           message: 'Login successful with Google ID update!',
+//           token,
+//           _id: student._id,
+//           firstname: student.firstname,
+//           lastname: student.lastname,
+//           email: student.email,
+//         });
+//       }
+
+//     } else {
+//       // If no user is found, the user needs to be registered
+//       console.log('User not found in database, need to register');
+//       return res.status(400).json({ success: false, message: 'User not registered with Google' });
+//     }
+
+//   } catch (error) {
+//     console.error('Error during Google login:', error);
+//     res.status(500).json({ success: false, message: 'Google login failed. Please try again.' });
+//   }
+// });
 router.post('/glogin', async (req, res) => {
   // Set COOP and COEP headers for this route
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
-  
+
   const { token } = req.body;
   try {
     console.log('Received Google Token:', token);
@@ -148,32 +218,32 @@ router.post('/glogin', async (req, res) => {
     let student = await Student.findOne({ email: payload.email });
 
     if (student) {
-      // If Google ID is present, just log the user in
-      if (student.googleId) {
-        console.log('User found with existing Google ID');
-        return res.status(200).json({
-          success: true,
-          message: 'Login successful!',
-          _id: student._id, 
-          firstname: student.firstname,
-          lastname: student.lastname,
-          email: student.email,
-        });
-      } else {
+      // ✅ Always generate a JWT token
+      const jwtToken = jwt.sign(
+        { _id: student._id, email: student.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      if (!student.googleId) {
         // If Google ID is missing, update it now
         student.googleId = payload.sub; // Update Google ID with the new value from payload
         await student.save();
         console.log('Google ID updated for existing user');
-        
-        return res.status(200).json({
-          success: true,
-          message: 'Login successful with Google ID update!',
-          _id: student._id, 
-          firstname: student.firstname,
-          lastname: student.lastname,
-          email: student.email,
-        });
+      } else {
+        console.log('User found with existing Google ID');
       }
+
+      // ✅ Always return the token and user details
+      return res.status(200).json({
+        success: true,
+        message: 'Login successful!',
+        token: jwtToken,
+        _id: student._id,
+        firstname: student.firstname,
+        lastname: student.lastname,
+        email: student.email,
+      });
 
     } else {
       // If no user is found, the user needs to be registered
@@ -191,28 +261,33 @@ router.post('/glogin', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // Input validation
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Please provide both email and password' });
   }
 
   try {
-    // Find the student by email
     const student = await Student.findOne({ email });
     if (!student) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Compare the entered password with the stored hashed password
     const isMatch = await bcrypt.compare(password, student.password);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Send user details to the frontend
+    // ✅ Generate a JWT token
+    const token = jwt.sign(
+      { _id: student._id, email: student.email },
+      process.env.JWT_SECRET,                    // secret key
+      { expiresIn: '24h' }                        // token expiry
+    );
+
+    // ✅ Send token with response
     res.status(200).json({
       success: true,
       message: 'Login successful!',
+      token,
       _id: student._id,
       firstname: student.firstname,
       lastname: student.lastname,
@@ -247,7 +322,7 @@ router.post('/bulk', async (req, res) => {
 });
 
 // Route to fetch all students
-router.get('/', async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const students = await Student.find();
     res.status(200).json(students);
@@ -277,7 +352,7 @@ router.delete('/:id', async (req, res) => {
 //------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------
 // Route to fetch student by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   const { id } = req.params;
   console.log('route student details for ID:', id);
   try {

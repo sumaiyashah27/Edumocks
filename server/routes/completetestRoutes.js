@@ -3,6 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const CompletedTest = require('../models/completetest-model'); // Import the model
 const questionModel = require('../models/question-model');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // POST route to save completed test data
 router.post('/saveCompletedTest', async (req, res) => {
@@ -40,7 +41,7 @@ router.post('/saveCompletedTest', async (req, res) => {
 });
 
 // GET route to retrieve all completed test results
-router.get('/getCompletedTests', async (req, res) => {
+router.get('/getCompletedTests', authMiddleware , async (req, res) => {
   try {
     const completedTests = await CompletedTest.find()
       .populate('studentId', 'firstname lastname') // Populate student details

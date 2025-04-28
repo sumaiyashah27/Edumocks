@@ -10,7 +10,12 @@ const DelayTest = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data } = await axios.get("/api/delayTest");
+        const token = localStorage.getItem('token');
+        const { data } = await axios.get("/api/delayTest", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setTests(data);
         setLoading(false);
       } catch (error) {
@@ -18,10 +23,10 @@ const DelayTest = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
-
+  
   return (
     <Container>
       <h2 className="text-center my-4" style={{ color: "#100B5C" }}>

@@ -6,6 +6,7 @@ const Course = require("../models/course-model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const Razorpay = require('razorpay');
 const nodemailer = require("nodemailer");
+const authMiddleware = require('../middleware/authMiddleware');
 require('dotenv').config();
 
 const razorpayInstance = new Razorpay({
@@ -84,7 +85,7 @@ router.post("/", async (req, res) => {
 });
 
 // Fetch course with its subjects based on courseId
-router.get("/api/course/:courseId", async (req, res) => {
+router.get("/api/course/:courseId", authMiddleware, async (req, res) => {
   const { courseId } = req.params;
 
   try {
@@ -101,7 +102,7 @@ router.get("/api/course/:courseId", async (req, res) => {
 });
 
 // Route to get student details by studentId
-router.get("/api/student/:studentId", async (req, res) => {
+router.get("/api/student/:studentId", authMiddleware, async (req, res) => {
   const { studentId } = req.params;
 
   try {

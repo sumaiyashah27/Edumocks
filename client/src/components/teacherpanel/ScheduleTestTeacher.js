@@ -10,7 +10,12 @@ const ScheduleTestTeacher = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data } = await axios.get("/api/scheduleTest");
+                const token = localStorage.getItem('token');
+                const { data } = await axios.get("/api/scheduleTest", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 setTests(data);
                 setLoading(false);
             } catch (error) {
@@ -18,10 +23,10 @@ const ScheduleTestTeacher = () => {
                 setLoading(false);
             }
         };
-
+    
         fetchData();
     }, []);
-
+    
     console.log('tests', tests);
 
     return (
@@ -54,7 +59,12 @@ const ScheduleTestTeacher = () => {
                         <tbody>
                             {tests.length > 0 ? (
                                 tests
-                                    .filter(test => test.testStatus === "Scheduled") // ✅ filter only Scheduled
+                                    .filter(
+                                        (test) =>
+                                            test.testStatus === "Scheduled" &&
+                                            test.studentId &&
+                                            test.studentId.firstname !== "N/A"
+                                    )
                                     .map((test, index) => (
                                         <tr key={test._id}>
                                             <td>{index + 1}</td>

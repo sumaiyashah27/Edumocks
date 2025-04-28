@@ -44,8 +44,14 @@ const Course = () => {
 
   const fetchCourses = async () => {
     setLoading(true);
+    const token = localStorage.getItem('token'); // Get the token
+  
     try {
-      const { data } = await axios.get('/api/course');
+      const { data } = await axios.get('/api/course', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setCourses(data);
     } catch (error) {
       toast.error('Error fetching courses.');
@@ -53,15 +59,22 @@ const Course = () => {
       setLoading(false);
     }
   };
-
+  
   const fetchSubjects = async () => {
+    const token = localStorage.getItem('token'); // Get the token
+  
     try {
-      const { data } = await axios.get('/api/subject');
+      const { data } = await axios.get('/api/subject', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setSubjectOptions(data);
     } catch (error) {
       toast.error('Error fetching Topics.');
     }
   };
+  
 
   // Handle checkbox selection
   const handleCheckboxChange = (subjectId) => {
@@ -76,7 +89,12 @@ const Course = () => {
     setSelectedCourse(courseId);
     setLoading(true);
     try {
-      const { data } = await axios.get(`/api/course/${courseId}`);
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get(`/api/course/${courseId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setCourseDetails(data);
     } catch (error) {
       toast.error('Failed to fetch course details. Please try again later.');
@@ -84,6 +102,7 @@ const Course = () => {
       setLoading(false);
     }
   };
+  
 
   const handleAddSubjectToCourse = async () => {
     if (!selectedCourse || selectedSubject.length === 0) {
@@ -361,7 +380,13 @@ const Course = () => {
                 </Button>
                 {course.subjects.map((subject) => (
                   <div key={subject._id} className="d-flex justify-content-between">
-                    <span> {subject.name} {subject.description ? `(${subject.description.replace(/[`'"]/g, '')})` : ''} </span>
+                    <span>
+                      <strong>{subject.name}</strong>
+                      <div
+                        dangerouslySetInnerHTML={{ __html: subject.description }}
+                        style={{ marginTop: "4px" }}
+                      />
+                    </span>
                     <FontAwesomeIcon
                       icon={faTrash}
                       style={{ color: '#e74c3c', cursor: 'pointer' }}
@@ -507,7 +532,7 @@ const Course = () => {
                       id={`checkbox-${subject._id}`}
                       type="checkbox"
                       className="d-flex align-items-center w-100"
-                      label={formatLabel(subject.name, subject.description)}
+                      label={formatLabel(subject.name, subject.subtitle)}
                       checked={selectedSubject.includes(subject._id)}
                       onChange={() => handleCheckboxChange(subject._id)}
                       style={{ cursor: "pointer" }}

@@ -8,12 +8,15 @@ import { Dropdown, Form, Tab, Nav, InputGroup } from 'react-bootstrap';
 import { BsSearch } from 'react-icons/bs';
 import { FaMinus } from 'react-icons/fa';
 import DeleteModal from './modals/DeleteModal';
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const Subject = () => {
   const [subjects, setSubjects] = useState([]);
   const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
   const [showEditSubjectModal, setShowEditSubjectModal] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState('');
+  const [newSubjectSubtitle, setNewSubjectSubtitle] = useState('');
   const [newSubjectDescription, setNewSubjectDescription] = useState('');
   const [expandedSubject, setExpandedSubject] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -32,7 +35,7 @@ const Subject = () => {
   const [deleteType, setDeleteType] = useState(""); // "subject" or "queset"
   const [deleteId, setDeleteId] = useState(null);
   const [quesetId, setQuesetId] = useState(null); // Only for queset deletion
-  
+
   useEffect(() => {
     fetchSubjects();
     fetchQueset();
@@ -41,7 +44,12 @@ const Subject = () => {
   const fetchSubjects = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/api/subject");
+      const token = localStorage.getItem('token'); // Get the token from localStorage
+      const { data } = await axios.get("/api/subject", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+        },
+      });
       setSubjects(data);
       setFilteredSubjects(data);
     } catch (error) {
@@ -67,25 +75,36 @@ const Subject = () => {
       toast.error("Please enter a Topic name.");
       return;
     }
+
     const priceInDollars = parseFloat(newSubjectPrice);
     if (isNaN(priceInDollars) || priceInDollars <= 0) {
       toast.error("Please enter a valid price.");
       return;
     }
+
     setLoading(true);
     try {
-      await axios.post('/api/subject', { name: newSubjectName, price: priceInDollars.toFixed(2), description: newSubjectDescription });
+      await axios.post('/api/subject', {
+        name: newSubjectName,
+        price: priceInDollars.toFixed(2),
+        subtitle: newSubjectSubtitle, // ✅ added
+        description: newSubjectDescription, // from ReactQuill
+      });
+
+      // Clear form
       setNewSubjectName('');
       setNewSubjectPrice('');
+      setNewSubjectSubtitle(''); // ✅ clear subtitle
       setNewSubjectDescription('');
       setShowAddSubjectModal(false);
       fetchSubjects();
     } catch (error) {
-      toast.error('Error adding Topic:', error);
+      toast.error('Error adding Topic');
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleEditSubject = (subject) => {
     setEditingSubject(subject);
@@ -97,11 +116,17 @@ const Subject = () => {
 
     setLoading(true);
     try {
-      await axios.put(`/api/subject/${editingSubject._id}`, { name: editingSubject.name, price: editingSubject.price, description: editingSubject.description });
+      await axios.put(`/api/subject/${editingSubject._id}`, {
+        name: editingSubject.name,
+        price: editingSubject.price,
+        subtitle: editingSubject.subtitle,
+        description: editingSubject.description,
+      });
+
       setShowEditSubjectModal(false);
       fetchSubjects();
     } catch (error) {
-      toast.error('Error updating Topic:', error);
+      toast.error('Error updating Topic');
     } finally {
       setLoading(false);
     }
@@ -120,7 +145,7 @@ const Subject = () => {
     setDeleteType("queset");
     setShowDeleteModal(true);
   };
-  
+
   const confirmDelete = async (password) => {
     try {
       if (deleteType === "subject") {
@@ -189,8 +214,13 @@ const Subject = () => {
 
   // Fetch quesets from backend
   const fetchQueset = () => {
-    setLoading(true); // Start loader
-    axios.get("/api/queset")
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    axios.get("/api/queset", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((response) => {
         console.log("Fetched subjects:", response.data);
         setQuesets(response.data);
@@ -309,7 +339,7 @@ const Subject = () => {
       {/* Add Subject Modal */}
       {showAddSubjectModal && (
         <div style={{ display: 'flex', zIndex: 999, justifyContent: 'center', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '400px', textAlign: 'center', position: 'relative' }}>
+          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '500px', textAlign: 'center', position: 'relative' }}>
             <span onClick={() => setShowAddSubjectModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>
               <FontAwesomeIcon icon={faTimes} />
             </span>
@@ -319,11 +349,22 @@ const Subject = () => {
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
               <input type="number" value={newSubjectPrice} onChange={(e) => setNewSubjectPrice(e.target.value)} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} min="0" />
             </div>
-            <textarea
-              value={newSubjectDescription}
-              onChange={(e) => setNewSubjectDescription(e.target.value)}
-              className="form-control mt-2"
-              placeholder="Enter Subject description"
+            <input
+              className="form-control mb-2"
+              type="text"
+              placeholder="Enter subtitle"
+              value={editingSubject ? editingSubject.subtitle : newSubjectSubtitle}
+              onChange={(e) => editingSubject
+                ? setEditingSubject({ ...editingSubject, subtitle: e.target.value })
+                : setNewSubjectSubtitle(e.target.value)}
+            />
+
+            <ReactQuill
+              theme="snow"
+              value={editingSubject ? editingSubject.description : newSubjectDescription}
+              onChange={(val) => editingSubject
+                ? setEditingSubject({ ...editingSubject, description: val })
+                : setNewSubjectDescription(val)}
             />
             <button className='mt-3' onClick={handleAddSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
               <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px', }} />Add Topic
@@ -335,7 +376,7 @@ const Subject = () => {
       {/* Edit Subject Modal */}
       {showEditSubjectModal && (
         <div style={{ display: 'flex', zIndex: 999, justifyContent: 'center', alignItems: 'center', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '400px', textAlign: 'center', position: 'relative' }}>
+          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '850px', textAlign: 'center', position: 'relative' }}>
             <span onClick={() => setShowEditSubjectModal(false)} style={{ position: 'absolute', top: '10px', right: '10px', cursor: 'pointer', fontSize: '20px' }}>
               <FontAwesomeIcon icon={faTimes} />
             </span>
@@ -345,11 +386,22 @@ const Subject = () => {
               <FontAwesomeIcon icon={faDollarSign} style={{ position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)', fontSize: '16px', color: '#888' }} />
               <input type="number" value={editingSubject.price} onChange={(e) => setEditingSubject({ ...editingSubject, price: e.target.value })} placeholder="Topic Price" style={{ width: '100%', padding: '10px 10px 10px 30px', margin: '0', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }} />
             </div>
-            <textarea
-              value={editingSubject.description}
-              onChange={(e) => setEditingSubject({ ...editingSubject, description: e.target.value })}
-              className="form-control mt-2"
-              placeholder="Enter Subject description"
+            <input
+              className="form-control mb-2"
+              type="text"
+              placeholder="Enter subtitle"
+              value={editingSubject ? editingSubject.subtitle : newSubjectSubtitle}
+              onChange={(e) => editingSubject
+                ? setEditingSubject({ ...editingSubject, subtitle: e.target.value })
+                : setNewSubjectSubtitle(e.target.value)}
+            />
+
+            <ReactQuill
+              theme="snow"
+              value={editingSubject ? editingSubject.description : newSubjectDescription}
+              onChange={(val) => editingSubject
+                ? setEditingSubject({ ...editingSubject, description: val })
+                : setNewSubjectDescription(val)}
             />
             <button className='mt-3' onClick={handleUpdateSubject} style={{ backgroundColor: '#100B5C', color: 'white', padding: '10px 12px', fontSize: '14px', borderRadius: '8px', cursor: 'pointer' }}>
               Update Topic
@@ -384,7 +436,7 @@ const Subject = () => {
                 </button>
                 {subject.name}
               </div>
-              <span style={{ color: '#555', fontSize: '14px', marginLeft: '74px' }}>{subject.description || ''}</span>
+              <span style={{ color: '#555', fontSize: '14px', marginLeft: '74px' }}>{subject.subtitle || ''}</span>
             </div>
 
             {/* Right Section: Action Buttons */}
@@ -415,125 +467,127 @@ const Subject = () => {
           </div>
 
           {expandedSubject === subject._id && (
-            <div className='select-queset' style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', gap: '50px', marginBottom: '20px' }}>
-                {/* Checkboxes to select Quesets */}
-                <Dropdown show={showDropdown} onToggle={(isOpen) => setShowDropdown(isOpen)}>
-                  <Dropdown.Toggle variant="light" className="text-left d-flex align-items-center justify-content-between select-topic" onClick={() => setShowDropdown(!showDropdown)}>
-                    {selectedQuesetsText}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu
-                    className="topic-dropdown w-100"
-                    style={{ maxHeight: "200px", overflowY: "auto", padding: "10px" }}
+            <>
+            <div
+              style={{ color: '#555', fontSize: '14px', marginLeft: '74px' }}
+              dangerouslySetInnerHTML={{ __html: subject.description || '' }} />
+              
+              <div className='select-queset' style={{ marginTop: '10px' }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: 'flex', gap: '50px', marginBottom: '20px' }}>
+                  {/* Checkboxes to select Quesets */}
+                  <Dropdown show={showDropdown} onToggle={(isOpen) => setShowDropdown(isOpen)}>
+                    <Dropdown.Toggle variant="light" className="text-left d-flex align-items-center justify-content-between select-topic" onClick={() => setShowDropdown(!showDropdown)}>
+                      {selectedQuesetsText}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu
+                      className="topic-dropdown w-100"
+                      style={{ maxHeight: "200px", overflowY: "auto", padding: "10px" }}
+                    >
+                      {quesets.map((queset) => (
+                        <Form.Check
+                          key={queset._id}
+                          id={`checkbox-${queset._id}`}
+                          type="checkbox"
+                          className="d-flex align-items-center"
+                          label={queset.name}
+                          checked={selectedQueset.includes(queset._id)}
+                          onChange={() => handleCheckboxChange(queset._id)}
+                          style={{ cursor: "pointer" }} />
+                      ))}
+                    </Dropdown.Menu>
+                  </Dropdown>
+
+                  {/* Button to add selected quesets */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentSubjectId(subject._id);
+                      handleAddQuesetToSubject(subject._id);
+                    } }
+                    style={{
+                      padding: '5px 12px',
+                      backgroundColor: '#4CAF50',
+                      color: 'white',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                    }}
                   >
-                    {quesets.map((queset) => (
-                      <Form.Check
-                        key={queset._id}
-                        id={`checkbox-${queset._id}`}
-                        type="checkbox"
-                        className="d-flex align-items-center"
-                        label={queset.name}
-                        checked={selectedQueset.includes(queset._id)}
-                        onChange={() => handleCheckboxChange(queset._id)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
+                    Add Queset
+                  </button>
+                </div>
 
-                {/* Button to add selected quesets */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentSubjectId(subject._id);
-                    handleAddQuesetToSubject(subject._id);
-                  }}
-                  style={{
-                    padding: '5px 12px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Add Queset
-                </button>
-              </div>
-
-              <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: "10px" }}>
-                {/* Tabs Navigation */}
-                <Nav variant="tabs" activeKey={activeQuesetIndex} onSelect={(selectedKey) => setActiveQuesetIndex(selectedKey)}>
-                  {subject.quesets?.length > 0 ? (
-                    subject.quesets.map((subjectQueset, index) => (
-                      <Nav.Item key={subjectQueset._id} style={{ display: 'flex', alignItems: 'center' }}>
-                        <Nav.Link eventKey={`${subject._id}-${index}`}>
-                          {subjectQueset.name}
-                          <button className='btn'
-                            onClick={(e) => { 
-                              e.stopPropagation();
-                              handleRemoveQuesetFromSubject(subject._id, subjectQueset._id);
-                            }}
-                          >
-                            <FontAwesomeIcon icon={faTrash} style={{ color: 'red' }} />
-                          </button>
+                <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: "10px" }}>
+                  {/* Tabs Navigation */}
+                  <Nav variant="tabs" activeKey={activeQuesetIndex} onSelect={(selectedKey) => setActiveQuesetIndex(selectedKey)}>
+                    {subject.quesets?.length > 0 ? (
+                      subject.quesets.map((subjectQueset, index) => (
+                        <Nav.Item key={subjectQueset._id} style={{ display: 'flex', alignItems: 'center' }}>
+                          <Nav.Link eventKey={`${subject._id}-${index}`}>
+                            {subjectQueset.name}
+                            <button className='btn'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveQuesetFromSubject(subject._id, subjectQueset._id);
+                              } }
+                            >
+                              <FontAwesomeIcon icon={faTrash} style={{ color: 'red' }} />
+                            </button>
+                          </Nav.Link>
+                        </Nav.Item>
+                      ))
+                    ) : (
+                      <Nav.Item key={subject._id}>
+                        <Nav.Link eventKey={`no-queset-${subject._id}`} disabled>
+                          No quesets available.
                         </Nav.Link>
                       </Nav.Item>
-                    ))
-                  ) : (
-                    <Nav.Item key={subject._id}>
-                      <Nav.Link eventKey={`no-queset-${subject._id}`} disabled>
-                        No quesets available.
-                      </Nav.Link>
-                    </Nav.Item>
-                  )}
-                </Nav>
+                    )}
+                  </Nav>
 
-                {/* Tab Content */}
-                <Tab.Content style={{ marginTop: "15px" }} activeKey={activeQuesetIndex}>
-                  {subject.quesets?.map((queset, index) => (
-                    <Tab.Pane
-                      key={queset._id}
-                      eventKey={`${subject._id}-${index}`}
-                      active={activeQuesetIndex === `${subject._id}-${index}`}
-                    >
-                      {queset.questions?.length > 0 ? (
-                        queset.questions.map((question, qIndex) => (
-                          <div key={question._id || qIndex} style={{ background: "#fff", padding: "10px", marginTop: "10px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-                            <h4>Question {qIndex + 1}</h4>
-                            {["questionText1", "questionText2", "questionText3"].map(
-                              (key) =>
-                                question[key] && (
+                  {/* Tab Content */}
+                  <Tab.Content style={{ marginTop: "15px" }} activeKey={activeQuesetIndex}>
+                    {subject.quesets?.map((queset, index) => (
+                      <Tab.Pane
+                        key={queset._id}
+                        eventKey={`${subject._id}-${index}`}
+                        active={activeQuesetIndex === `${subject._id}-${index}`}
+                      >
+                        {queset.questions?.length > 0 ? (
+                          queset.questions.map((question, qIndex) => (
+                            <div key={question._id || qIndex} style={{ background: "#fff", padding: "10px", marginTop: "10px", borderRadius: "5px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+                              <h4>Question {qIndex + 1}</h4>
+                              {["questionText1", "questionText2", "questionText3"].map(
+                                (key) => question[key] && (
                                   <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(question[key]) }} />
                                 )
-                            )}
-                            {["questionImage1", "questionImage2", "questionImage3"].map(
-                              (key) =>
-                                question[key] && (
+                              )}
+                              {["questionImage1", "questionImage2", "questionImage3"].map(
+                                (key) => question[key] && (
                                   <div key={key}>
                                     <img src={question[key]} style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "10px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }} />
                                   </div>
                                 )
-                            )}
-                            <p><strong>Options:</strong></p>
-                            <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
-                              {Object.entries(question.options || {}).map(([key, value]) => (
-                                <li key={key} className='d-flex'>
-                                  {key.toUpperCase()}. <span dangerouslySetInnerHTML={{ __html: value }} />
-                                </li>
-                              ))}
-                            </ul>
-                            <p><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
-                          </div>
-                        ))
-                      ) : (
-                        <p style={{ marginTop: "10px", fontStyle: "italic", color: "#666" }}>No questions added yet.</p>
-                      )}
-                    </Tab.Pane>
-                  ))}
-                </Tab.Content>
-              </div>
+                              )}
+                              <p><strong>Options:</strong></p>
+                              <ul style={{ listStyleType: "none", paddingLeft: "10px" }}>
+                                {Object.entries(question.options || {}).map(([key, value]) => (
+                                  <li key={key} className='d-flex'>
+                                    {key.toUpperCase()}. <span dangerouslySetInnerHTML={{ __html: value }} />
+                                  </li>
+                                ))}
+                              </ul>
+                              <p><strong>Correct Answer:</strong> <span dangerouslySetInnerHTML={{ __html: question.correctAns }} /></p>
+                            </div>
+                          ))
+                        ) : (
+                          <p style={{ marginTop: "10px", fontStyle: "italic", color: "#666" }}>No questions added yet.</p>
+                        )}
+                      </Tab.Pane>
+                    ))}
+                  </Tab.Content>
+                </div>
 
-            </div>
+              </div></>
           )}
         </div>
       ))

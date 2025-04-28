@@ -13,7 +13,9 @@ const TeacherDash = () => {
 
   // Fetch counts from the server
   useEffect(() => {
-    axios.get('/api/teachdash/teacherDashCounts') // Updated API endpoint to match the server route
+    const token = localStorage.getItem('token');
+    //axios.get('/api/teachdash/teacherDashCounts') // Updated API endpoint to match the server route
+    axios.get('/api/teachdash/teacherDashCounts', { headers: { Authorization: `Bearer ${token}` }})
       .then(response => {
         setCounts(response.data);  // Set the counts from the response
       })

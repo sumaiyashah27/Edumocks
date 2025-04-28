@@ -16,13 +16,15 @@ const SupportStudent = () => {
 
     useEffect(() => {
         const studentId = localStorage.getItem('_id');
+        const token = localStorage.getItem('token');
 
         if (!studentId) {
             console.error('student not logged in');
             return;
         }
 
-        axios.get(`/api/student/${studentId}`)
+        // axios.get(`/api/student/${studentId}`) 
+        axios.get(`/api/student/${studentId}`, {  headers: {  Authorization: `Bearer ${token}`  }  })
             .then((response) => {         
                 setStudentDetails((prevDetails) => ({
                     ...prevDetails,

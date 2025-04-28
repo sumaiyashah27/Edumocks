@@ -7,6 +7,7 @@ const { body, validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Use environment variable for client ID
+const jwt = require('jsonwebtoken');
 
 // Create a transporter object using your email provider's settings
 const transporter = nodemailer.createTransport({
@@ -125,49 +126,101 @@ router.post('/signup', [
 });
 //==================================================================================================//!SECTION
 // Google Login Route
-router.post('/glogin', async (req, res) => {
-    // Set COOP and COEP headers for this route
-    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+// router.post('/glogin', async (req, res) => {
+//     // Set COOP and COEP headers for this route
+//     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+//     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
     
-    const { token } = req.body;
-    try {
-      console.log('Received Google Token:', token);
+//     const { token } = req.body;
+//     try {
+//       console.log('Received Google Token:', token);
   
-      // Verify Google token
-      const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: process.env.GOOGLE_CLIENT_ID, // Ensure this is your correct Google Client ID
-      });
+//       // Verify Google token
+//       const ticket = await client.verifyIdToken({
+//         idToken: token,
+//         audience: process.env.GOOGLE_CLIENT_ID, // Ensure this is your correct Google Client ID
+//       });
   
-      const payload = ticket.getPayload();
-      console.log('Google Token Payload:', payload);
+//       const payload = ticket.getPayload();
+//       console.log('Google Token Payload:', payload);
   
-      // Check if the user exists in the database using the email
-      let teacher = await Teacher.findOne({ email: payload.email });
-      if (!teacher) {
-        console.log('User not found in database');
-        return res.status(400).json({ success: false, message: 'User not registered with Google' });
-      }
+//       // Check if the user exists in the database using the email
+//       let teacher = await Teacher.findOne({ email: payload.email });
+//       if (!teacher) {
+//         console.log('User not found in database');
+//         return res.status(400).json({ success: false, message: 'User not registered with Google' });
+//       }
   
-      console.log('User found:', teacher);
+//       console.log('User found:', teacher);
       
-      // Respond with the teacher details
-      res.status(200).json({
-        success: true,
-        message: 'Login successful!',
-        _id: teacher._id, 
-        teachId: teacher.teachId,
-        firstname: teacher.firstname,
-        lastname: teacher.lastname,
-        email: teacher.email
-      });
+//       // Respond with the teacher details
+//       res.status(200).json({
+//         success: true,
+//         message: 'Login successful!',
+//         _id: teacher._id, 
+//         teachId: teacher.teachId,
+//         firstname: teacher.firstname,
+//         lastname: teacher.lastname,
+//         email: teacher.email
+//       });
   
-    } catch (error) {
-      console.error('Error during Google login:', error);
-      res.status(500).json({ success: false, message: 'Google login failed. Please try again.' });
+//     } catch (error) {
+//       console.error('Error during Google login:', error);
+//       res.status(500).json({ success: false, message: 'Google login failed. Please try again.' });
+//     }
+//   });
+
+router.post('/glogin', async (req, res) => {
+  // Set COOP and COEP headers for this route
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+  const { token } = req.body;
+  try {
+    console.log('Received Google Token:', token);
+
+    // Verify Google token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log('Google Token Payload:', payload);
+
+    // Check if the user exists in the database using the email
+    let teacher = await Teacher.findOne({ email: payload.email });
+    if (!teacher) {
+      console.log('User not found in database');
+      return res.status(400).json({ success: false, message: 'User not registered with Google' });
     }
-  });
+
+    console.log('User found:', teacher);
+
+    // ✅ Always generate a JWT token
+    const jwtToken = jwt.sign(
+      { _id: teacher._id, email: teacher.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // ✅ Respond with the teacher details and token
+    res.status(200).json({
+      success: true,
+      message: 'Login successful!',
+      token: jwtToken, // return token also
+      _id: teacher._id,
+      teachId: teacher.teachId,
+      firstname: teacher.firstname,
+      lastname: teacher.lastname,
+      email: teacher.email,
+    });
+
+  } catch (error) {
+    console.error('Error during Google login:', error);
+    res.status(500).json({ success: false, message: 'Google login failed. Please try again.' });
+  }
+});
   // Login Route
   router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -177,6 +230,7 @@ router.post('/glogin', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide both email and password' });
     }
   
+    
     try {
       // Find the teacher by email
       const teacher = await Teacher.findOne({ email });
@@ -189,12 +243,20 @@ router.post('/glogin', async (req, res) => {
       if (!isMatch) {
         return res.status(400).json({ success: false, message: 'Invalid credentials' });
       }
+
+      // ✅ Generate a JWT token
+      const token = jwt.sign(
+        { _id: teacher._id, email: teacher.email }, // payload
+        process.env.JWT_SECRET,                    // secret key
+        { expiresIn: '24h' }                        // token expiry
+      );
   
       // Send user details to the frontend
       res.status(200).json({
         success: true,
         message: 'Login successful!',
         _id: teacher._id, 
+        token, 
         teachId: teacher.teachId,
         firstname: teacher.firstname,
         lastname: teacher.lastname,

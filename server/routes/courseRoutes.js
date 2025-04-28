@@ -3,7 +3,7 @@ const Course = require('../models/course-model');
 const Subject = require('../models/subject-model');
 // const QuizEnroll = require('../models/quizenroll-model');
 const router = express.Router();
-
+const authMiddleware = require('../middleware/authMiddleware');
 // Create a course
 router.post('/', async (req, res) => {
   try {
@@ -140,7 +140,7 @@ router.post('/delete-with-password', async (req, res) => {
   }
 });
 // Get a course's subjects, chapters, and questions (with detailed population)
-router.get('/:courseId', async (req, res) => {
+router.get('/:courseId', authMiddleware, async (req, res) => {
   try {
     const { courseId } = req.params;
 
@@ -164,7 +164,7 @@ router.get('/:courseId', async (req, res) => {
 });
 
 // Example of an Express route for fetching subjects based on courseId
-router.get('/api/subjects', (req, res) => {
+router.get('/api/subjects', authMiddleware, (req, res) => {
   const { courseId } = req.query;
 
   // Assuming you have a Subject model and each subject has a reference to the course
@@ -174,7 +174,7 @@ router.get('/api/subjects', (req, res) => {
 });
 
 // Route to fetch all courses
-router.get("/", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const courses = await Course.find(); // Adjust based on your database model
     res.status(200).json(courses);
@@ -184,7 +184,7 @@ router.get("/", async (req, res) => {
   }
 });
 // Express.js route handler to fetch courses for a given user
-router.get('/courses', async (req, res) => {
+router.get('/courses', authMiddleware, async (req, res) => {
   try {
     const userMongoId = req.query.userId; // MongoDB userId from query parameters
     if (!userMongoId) {
@@ -209,7 +209,7 @@ router.get('/courses', async (req, res) => {
 });
 
 // Route for fetching quiz enrollments for a user
-router.get('/quizenroll', async (req, res) => {
+router.get('/quizenroll',authMiddleware, async (req, res) => {
   try {
     const { userId } = req.query;  // Get the userId from query params
 
@@ -234,7 +234,7 @@ router.get('/quizenroll', async (req, res) => {
 });
 
 // Backend Route to fetch course by ObjectId or name (for flexibility)
-router.get('/api/courses/:id', async (req, res) => {
+router.get('/api/courses/:id',authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     let course;

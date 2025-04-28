@@ -35,6 +35,7 @@ const TeacherLogin = () => {
         // Store user data in localStorage or state management
         localStorage.setItem('_id', response.data._id);
         localStorage.setItem('teachId', response.data.teachId);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('firstname', response.data.firstname);
         localStorage.setItem('lastname', response.data.lastname);
         localStorage.setItem('email', response.data.email);
@@ -56,6 +57,44 @@ const TeacherLogin = () => {
     setPasswordVisible(!passwordVisible);
   };
 
+  // const handleGoogleLoginSuccess = async (credentialResponse) => {
+  //   const token = credentialResponse.credential; // Google token
+  
+  //   console.log('Sending Google Token to backend:', token); // Log token being sent
+  
+  //   try {
+  //     const response = await axios.post('/api/teacher/glogin', { token });
+  
+  //     console.log('Backend Response:', response.data); // Log the response from the backend
+  
+  //     if (response.data.success) {
+  //       // Successfully logged in, store user details in localStorage
+  //       localStorage.setItem('_id', response.data._id);
+  //       localStorage.setItem('teachId', response.data.teachId);
+  //       localStorage.setItem('firstname', response.data.firstname);
+  //       localStorage.setItem('lastname', response.data.lastname);
+  //       localStorage.setItem('email', response.data.email);
+  
+  //       console.log('Stored in LocalStorage:', {
+  //         _id: localStorage.getItem('_id'),
+  //         teachId: localStorage.getItem('teachId'),
+  //         firstname: localStorage.getItem('firstname'),
+  //         lastname: localStorage.getItem('lastname'),
+  //         email: localStorage.getItem('email'),
+  //       });
+  
+  //       // Navigate to TeachPanel page
+  //       navigate('/teachpanel/dashboard');
+  //     } else {
+  //       setError('Google Login failed or account not registered');
+  //       console.log('Login failed:', response.data.message); // Log failure message
+  //     }
+  //   } catch (error) {
+  //     console.error('Google Login Error:', error); // Log any error from the backend
+  //     setError('Google Login failed. Please try again.');
+  //   }
+  // };
+
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     const token = credentialResponse.credential; // Google token
   
@@ -66,10 +105,13 @@ const TeacherLogin = () => {
   
       console.log('Backend Response:', response.data); // Log the response from the backend
   
+      console.log('response.data',response.data);
+
       if (response.data.success) {
         // Successfully logged in, store user details in localStorage
         localStorage.setItem('_id', response.data._id);
         localStorage.setItem('teachId', response.data.teachId);
+        localStorage.setItem('token', response.data.token);
         localStorage.setItem('firstname', response.data.firstname);
         localStorage.setItem('lastname', response.data.lastname);
         localStorage.setItem('email', response.data.email);

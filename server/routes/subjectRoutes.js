@@ -3,6 +3,7 @@ const Question = require('../models/question-model'); // Initialize the router
 const Subject = require("../models/subject-model");
 const Queset = require("../models/queset-model");
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Get all subjects with questions
 router.get("/", async (req, res) => {
@@ -47,17 +48,19 @@ router.get("/", async (req, res) => {
 
  // Add a new subject
  router.post("/", async (req, res) => {
-  const { name, price, description, quesets } = req.body; // Now accepting quesets
+  const { name, price, subtitle, description, quesets } = req.body;
 
   if (!name || !price) {
     return res.status(400).json({ message: "Name and price are required" });
   }
+
   try {
     const newSubject = new Subject({
       name,
       price,
+      subtitle: subtitle || "",
       description: description || "",
-      quesets: quesets || [] // Ensure quesets is saved, default to empty array
+      quesets: quesets || []
     });
     await newSubject.save();
     res.status(201).json(newSubject);
@@ -67,21 +70,28 @@ router.get("/", async (req, res) => {
   }
 });
 
+
 // Update a subject by ID
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body; // Only update the name field
-    try {
-      const updatedSubject = await Subject.findByIdAndUpdate(id, { name, description }, { new: true });
-        if (!updatedSubject) {
-          return res.status(404).json({ message: "Subject not found" });
-        }
-        res.status(200).json(updatedSubject);
-    } catch (error) {
-        console.error("Error updating subject:", error);
-        res.status(500).json({ message: "Error updating subject", error: error.message });
+  const { name, subtitle, description } = req.body;
+
+  try {
+    const updatedSubject = await Subject.findByIdAndUpdate(
+      id,
+      { name, subtitle, description },
+      { new: true }
+    );
+    if (!updatedSubject) {
+      return res.status(404).json({ message: "Subject not found" });
     }
+    res.status(200).json(updatedSubject);
+  } catch (error) {
+    console.error("Error updating subject:", error);
+    res.status(500).json({ message: "Error updating subject", error: error.message });
+  }
 });
+
 // Delete a subject by ID
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
@@ -104,7 +114,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // Route to fetch a subject by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", authMiddleware, async (req, res) => {
     console.log("Subject ID:", req.params.id); // Debugging
     try { const subject = await Subject.findById(req.params.id);
       if (!subject) return res.status(404).json({ message: "Subject not found" });
@@ -116,7 +126,7 @@ router.get("/:id", async (req, res) => {
   });
 
 // Example of returning an array of questions
-router.get("/questions", async (req, res) => {
+router.get("/questions", authMiddleware, async (req, res) => {
   const subjectId = req.query.subjectId;
 
   try {
@@ -139,7 +149,7 @@ router.get("/questions", async (req, res) => {
   }
 });
 
-router.get('/:subjectId/questions', async (req, res) => {
+router.get('/:subjectId/questions', authMiddleware, async (req, res) => {
   const { subjectId } = req.params;
 
   try {
