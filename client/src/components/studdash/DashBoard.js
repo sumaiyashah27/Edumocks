@@ -26,7 +26,13 @@ const DashBoard = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('/api/course'); // Backend endpoint
+        const token = localStorage.getItem('token');
+        // const response = await axios.get('/api/course'); // Backend endpoint
+        const response = await axios.get('/api/course', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setCourses(response.data);
       } catch (error) {
         console.error('Error fetching courses:', error);
@@ -35,8 +41,14 @@ const DashBoard = () => {
 
     const fetchSubjects = async () => {
       try {
+        const token = localStorage.getItem('token'); // Get the token
         // Fetch subjects for the specific course ID
-        const response = await axios.get(`/api/subject`);
+        // const response = await axios.get(`/api/subject`);
+        const response = await axios.get(`/api/subject`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setSubjects(response.data); // Update the `subjects` state with the fetched data
       } catch (error) {
         console.error('Error fetching Topics:', error);
@@ -46,7 +58,13 @@ const DashBoard = () => {
 
     const fetchTests = async () => {
       try {
-        const response = await axios.get(`/api/scheduleTest/${studentId}`); // Fetch tests for the user
+        const token = localStorage.getItem('token');
+        // const response = await axios.get(`/api/scheduleTest/${studentId}`); // Fetch tests for the user
+        const response = await axios.get(`/api/scheduleTest/${studentId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const completedTests = response.data.filter(test => test.testStatus === 'Completed'); // Filter completed tests
         setTests(completedTests); // Set tests to state
       } catch (error) {
@@ -75,8 +93,14 @@ const DashBoard = () => {
 
   useEffect(() => {
     const fetchResults = async () => {
+      const token = localStorage.getItem('token'); // Get the token
       try {
-        const { data } = await axios.get("/api/completed/getCompletedTests");
+        // const { data } = await axios.get("/api/completed/getCompletedTests");
+        const { data } = await axios.get("/api/completed/getCompletedTests", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setResults(data);
       } catch (error) {
       }

@@ -88,9 +88,11 @@ const Test = () => {
 
   // Fetch course name
   const fetchCourseName = useCallback(() => {
+    const token = localStorage.getItem('token');
     if (selectedCourse) {
       console.log(`Fetching course name for ID: ${selectedCourse}`);
-      axios.get(`/api/course/${selectedCourse}`)
+      // axios.get(`/api/course/${selectedCourse}`)
+      axios.get(`/api/course/${selectedCourse}`, {headers: { Authorization: `Bearer ${token}` }})
         .then((response) => {
           console.log("Course Data:", response.data);
           setCourseName(response.data.name);
@@ -105,9 +107,11 @@ const Test = () => {
 
   // Fetch subject name
   const fetchSubjectName = useCallback(() => {
+    const token = localStorage.getItem('token');
     if (selectedSubject) {
       console.log(`Fetching subject name for ID: ${selectedSubject}`);
-      axios.get(`/api/subject/${selectedSubject}`)
+      // axios.get(`/api/subject/${selectedSubject}`)
+      axios.get(`/api/subject/${selectedSubject}`, { headers: { Authorization: `Bearer ${token}` } })
         .then((response) => {
           console.log("Subject Data:", response.data);
           setSubjectName(response.data.name);
@@ -122,11 +126,17 @@ const Test = () => {
 
   // Fetch question set for the test (used when the page loads)
   const fetchQuestionSet = useCallback(() => {
+    const token = localStorage.getItem('token');
     if (studentId && selectedCourse && selectedSubject) {
       setLoading(true);
-      axios.get(`/api/scheduleTest?studentId=${studentId}&selectedCourse=${selectedCourse}&selectedSubject=${selectedSubject}`)
+      // axios.get(`/api/scheduleTest?studentId=${studentId}&selectedCourse=${selectedCourse}&selectedSubject=${selectedSubject}`)
+      axios.get(`/api/scheduleTest?studentId=${studentId}&selectedCourse=${selectedCourse}&selectedSubject=${selectedSubject}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
         .then((response) => {
-          const fetchedQuestionSet = response.data.questionSet;
+          const fetchedQuestionSet = response.data[0].questionSet;
           setQuestionSet(fetchedQuestionSet);
           //setQuestionSet(response.data.questionSet);
           fetchCourseName();
@@ -139,12 +149,19 @@ const Test = () => {
         });
     }
   }, [studentId, selectedCourse, selectedSubject]);
+ 
 
   // Fetch quiz question set for the selected subject (triggered when entering the room)
   const fetchQuizQuestionSet = useCallback(() => {
+    const token = localStorage.getItem('token');
     if (selectedSubject) {
       setLoading(true);
-      axios.get(`/api/subject/${selectedSubject}/questions`)
+      // axios.get(`/api/subject/${selectedSubject}/questions`)
+      axios.get(`/api/subject/${selectedSubject}/questions`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
         .then((response) => {
           setQuizQuestionSet(response.data.slice(0, questionSet));
           setQuestionsFetched(true);
@@ -162,6 +179,7 @@ const Test = () => {
         });
     }
   }, [selectedSubject, questionSet]);
+  
 
   // Automatically start the exam once the data is ready
   useEffect(() => {
@@ -229,21 +247,6 @@ const Test = () => {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
-
-  // Prevent page reload during the test
-  // useEffect(() => {
-  //   const handleBeforeUnload = (e) => {
-  //     const message = "Reloading the page is prohibited during the test!";
-  //     e.returnValue = message;
-  //     return message;
-  //   };
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, []);
-
-
 
   const handleGoToQuestion = (questionIndex) => {
     setCurrentQuestionIndex(questionIndex - 1); // Convert to 0-based index
@@ -803,6 +806,12 @@ const Test = () => {
       .catch((error) => {
         console.error('Error sending email:', error);
       });
+  
+      localStorage.removeItem('selectedOptions');
+      localStorage.removeItem('currentQuestionIndex');
+      localStorage.removeItem('selectedCourse');
+      localStorage.removeItem('selectedSubject');
+      localStorage.removeItem('quizTimer');
   
     navigate('/studpanel/dashboard');
   }, [selectedOptions, correctAnswers, generatePDF, studentEmail, studentId, selectedCourse, selectedSubject]);

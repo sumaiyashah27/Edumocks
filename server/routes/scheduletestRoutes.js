@@ -524,4 +524,6 @@ router.get('/getCompletedTests', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch completed tests' });
   }
 });
+
+
 module.exports = router;
