@@ -81,7 +81,6 @@ const ScheduleTest = () => {
           setStudentEnrollData([]); // Prevent undefined state
         }
       };
-          
       
       //Scheduled tests
       const fetchScheduledTests = async (studentId) => {
@@ -437,7 +436,9 @@ const ScheduleTest = () => {
             studentName, 
             studentEmail, 
             selectedCourse: course, 
-            selectedSubject: subject },
+            selectedSubject: subject,
+            questionSet: selectTest.questionSet
+         },
         });
       }
       console.log("Navigating with data:", {
@@ -445,7 +446,8 @@ const ScheduleTest = () => {
         studentName,
         studentEmail,
         selectedCourse: course,
-        selectedSubject: subject
+        selectedSubject: subject,
+        questionSet: selectTest.questionSet
       });
       // navigate(`/test/${course}/${subject}`, {
       //   state: { studentId, studentName, studentEmail, selectedCourse: course, selectedSubject: subject },

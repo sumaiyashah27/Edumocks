@@ -23,25 +23,59 @@ const StudPanel = () => {
       return;
     }
 
+    // const fetchStudentDetails = async () => {
+    //   const studentId = localStorage.getItem('_id');
+
+    //   if (!studentId) {
+    //     console.error("Student ID not found in localStorage.");
+    //     return;
+    //   }
+    //   try {
+    //     const response = await axios.get(`/api/student/${studentId}`);
+    //     setStudent((prev) => ({
+    //       ...prev,
+    //       firstname: response.data.firstname,
+    //       lastname: response.data.lastname,
+    //       email: response.data.email,
+    //     }));
+    //     localStorage.setItem('_id', response.data._id);
+    //     localStorage.setItem('firstname', response.data.firstname);
+    //     localStorage.setItem('lastname', response.data.lastname);
+    //     localStorage.setItem('email', response.data.email);
+    //   } catch (error) {
+    //     console.error('Error fetching student details:', error.response || error.message);
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
     const fetchStudentDetails = async () => {
       const studentId = localStorage.getItem('_id');
-
+      const token = localStorage.getItem('token');
+    
       if (!studentId) {
         console.error("Student ID not found in localStorage.");
         return;
       }
+    
       try {
-        const response = await axios.get(`/api/student/${studentId}`);
+        const response = await axios.get(`/api/student/${studentId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+    
         setStudent((prev) => ({
           ...prev,
           firstname: response.data.firstname,
           lastname: response.data.lastname,
           email: response.data.email,
         }));
+    
         localStorage.setItem('_id', response.data._id);
         localStorage.setItem('firstname', response.data.firstname);
         localStorage.setItem('lastname', response.data.lastname);
         localStorage.setItem('email', response.data.email);
+    
       } catch (error) {
         console.error('Error fetching student details:', error.response || error.message);
       } finally {
