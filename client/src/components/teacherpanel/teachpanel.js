@@ -30,7 +30,7 @@ const TeachPanel = () => {
     // }
     //support@edumocks.com
 
-    if (!email || email !== "support@edumocks.com") {
+    if (!email || email !== "sumaiyashaha27@gmail.com") {
       console.error("Unauthorized access. Redirecting to login");
       navigate("/teachLogin");
     } else {
@@ -46,7 +46,7 @@ const TeachPanel = () => {
   const handleToggleSidebar = () => {
     setIsSidebarClosed(!isSidebarClosed);
   };
-
+  
   return (
     <Container fluid style={{ padding: 0, overflowX: "hidden" }}>
       <Row style={{ margin: 0 }}>
@@ -55,20 +55,7 @@ const TeachPanel = () => {
           xs={12}
           md={3}
           lg={2}
-          style={{
-            backgroundColor: "#100B5C",
-            padding: "20px",
-            position: "fixed",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            width: isSidebarClosed ? "80px" : "250px",
-            height: "100%",
-            boxShadow: "2px 0px 10px rgba(0, 0, 0, 0.1)",
-            zIndex: 1000,
-            transition: "width 0.3s ease",
-            overflowY: "auto",
-          }}
+          style={{backgroundColor: "#100B5C",padding: "20px",position: "fixed",top: 0,bottom: 0,left: 0,width: isSidebarClosed ? "80px" : "250px",height: "100%",boxShadow: "2px 0px 10px rgba(0, 0, 0, 0.1)",zIndex: 1000, transition: "width 0.3s ease", overflowY: "auto", }}
         >
           <div style={{ textAlign: "center", fontSize: "1.3rem", fontWeight: "bold", marginBottom: "20px", color: "#FFF" }}>
             {!isSidebarClosed && `Welcome, ${teacher.firstname}`}
