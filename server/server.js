@@ -93,3 +93,18 @@ connectDB().then(() => {
 }).catch((error) => {
   console.error("Error connecting to MongoDB:", error);
 });
+
+// At the end of server.js
+
+// if (require.main === module) {
+//   // Only start server if run directly, not during tests
+//   connectDB().then(() => {
+//     app.listen(PORT, '0.0.0.0', () => {
+//       console.log(`Server is now running on port ${PORT}`);
+//     });
+//   }).catch((error) => {
+//     console.error("Error connecting to MongoDB:", error);
+//   });
+// } else {
+//   module.exports = app; // Export app for testing
+// }

@@ -92,7 +92,7 @@ const Test = () => {
     if (selectedCourse) {
       console.log(`Fetching course name for ID: ${selectedCourse}`);
       // axios.get(`/api/course/${selectedCourse}`)
-      axios.get(`/api/course/${selectedCourse}`, {headers: { Authorization: `Bearer ${token}` }})
+      axios.get(`/api/course/${selectedCourse}`, { headers: { Authorization: `Bearer ${token}` } })
         .then((response) => {
           console.log("Course Data:", response.data);
           setCourseName(response.data.name);
@@ -130,12 +130,18 @@ const Test = () => {
     if (studentId && selectedCourse && selectedSubject) {
       setLoading(true);
       // axios.get(`/api/scheduleTest?studentId=${studentId}&selectedCourse=${selectedCourse}&selectedSubject=${selectedSubject}`)
-      axios.get(`/api/scheduleTest?studentId=${studentId}&selectedCourse=${selectedCourse}&selectedSubject=${selectedSubject}`, {
+      axios.get(`/api/scheduleTest`, {
+        params: {
+          studentId,
+          selectedCourse,
+          selectedSubject
+        },
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
         .then((response) => {
+          console.log('response', response);
           const fetchedQuestionSet = response.data[0].questionSet;
           setQuestionSet(fetchedQuestionSet);
           //setQuestionSet(response.data.questionSet);
@@ -149,7 +155,8 @@ const Test = () => {
         });
     }
   }, [studentId, selectedCourse, selectedSubject]);
- 
+
+  console.log('questionSet', questionSet);
 
   // Fetch quiz question set for the selected subject (triggered when entering the room)
   const fetchQuizQuestionSet = useCallback(() => {
@@ -179,7 +186,7 @@ const Test = () => {
         });
     }
   }, [selectedSubject, questionSet]);
-  
+
 
   // Automatically start the exam once the data is ready
   useEffect(() => {
@@ -247,6 +254,21 @@ const Test = () => {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
+
+  // Prevent page reload during the test
+  // useEffect(() => {
+  //   const handleBeforeUnload = (e) => {
+  //     const message = "Reloading the page is prohibited during the test!";
+  //     e.returnValue = message;
+  //     return message;
+  //   };
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, []);
+
+
 
   const handleGoToQuestion = (questionIndex) => {
     setCurrentQuestionIndex(questionIndex - 1); // Convert to 0-based index
@@ -395,67 +417,67 @@ const Test = () => {
     drawPageBorder();
 
     // Add Logo
-  const logo = "/edulog-2.png";
-  const logoWidth = 90;
-  const logoHeight = 30;
-  const logoX = pageMargin;
-  const logoY = pageMargin;
-  doc.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
+    const logo = "/edulog-2.png";
+    const logoWidth = 90;
+    const logoHeight = 30;
+    const logoX = pageMargin;
+    const logoY = pageMargin;
+    doc.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
 
-  yPosition = logoY + logoHeight + 5; // Place it below the logo
+    yPosition = logoY + logoHeight + 5; // Place it below the logo
 
-  // Box settings
-  const boxX = pageMargin;
-  const boxY = yPosition;
-  const boxWidth = pageWidth;
-  const boxHeight = 20; // Adjust based on content height
-  const cellPadding = 3;
-  
-  // Draw a box (background border)
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.2);
-  doc.rect(boxX, boxY, boxWidth, boxHeight);
-  
-  // Set text
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "normal");
-  
-  const labelX1 = boxX + cellPadding;
-  const labelX2 = boxX + boxWidth / 2 + cellPadding; // 2nd column
-  let labelY = boxY + 8;
-  
-  // Left Column
-  doc.text(`Student Name: ${studentName}`, labelX1, labelY);
-  labelY += 8;
-  doc.text(`Student Email: ${studentEmail}`, labelX1, labelY);
-  
-  // Reset Y for right column
-  labelY = boxY + 8;
-  doc.text(`Course: ${courseName}`, labelX2, labelY);
-  labelY += 8;
-  doc.text(`Subject: ${subjectName}`, labelX2, labelY);
-  
-  // Update yPosition after box
-  yPosition = boxY + boxHeight + 10;
+    // Box settings
+    const boxX = pageMargin;
+    const boxY = yPosition;
+    const boxWidth = pageWidth;
+    const boxHeight = 20; // Adjust based on content height
+    const cellPadding = 3;
 
-  // ✅ Now add the Test Results title AFTER the Basic Info Section
-  doc.setFontSize(14);
-  doc.setTextColor(0, 123, 255);
-  const titleX = (pageWidth - doc.getTextWidth("Test Results")) / 2;
-  doc.text("Test Results", titleX, yPosition);
-  yPosition += 20;
+    // Draw a box (background border)
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.2);
+    doc.rect(boxX, boxY, boxWidth, boxHeight);
 
-  // ✅ Finally, Add Watermark
-  const addWatermark = () => {
-    const watermark = logo;
-    const watermarkWidth = 100;
-    const watermarkHeight = 50;
-    const watermarkX = (doc.internal.pageSize.width - watermarkWidth) / 2;
-    const watermarkY = (doc.internal.pageSize.height - watermarkHeight) / 2;
-    doc.setGState(new doc.GState({ opacity: 0.2 }));
-    doc.addImage(watermark, "PNG", watermarkX, watermarkY, watermarkWidth, watermarkHeight);
-    doc.setGState(new doc.GState({ opacity: 1 }));
-  };
+    // Set text
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+
+    const labelX1 = boxX + cellPadding;
+    const labelX2 = boxX + boxWidth / 2 + cellPadding; // 2nd column
+    let labelY = boxY + 8;
+
+    // Left Column
+    doc.text(`Student Name: ${studentName}`, labelX1, labelY);
+    labelY += 8;
+    doc.text(`Student Email: ${studentEmail}`, labelX1, labelY);
+
+    // Reset Y for right column
+    labelY = boxY + 8;
+    doc.text(`Course: ${courseName}`, labelX2, labelY);
+    labelY += 8;
+    doc.text(`Subject: ${subjectName}`, labelX2, labelY);
+
+    // Update yPosition after box
+    yPosition = boxY + boxHeight + 10;
+
+    // ✅ Now add the Test Results title AFTER the Basic Info Section
+    doc.setFontSize(14);
+    doc.setTextColor(0, 123, 255);
+    const titleX = (pageWidth - doc.getTextWidth("Test Results")) / 2;
+    doc.text("Test Results", titleX, yPosition);
+    yPosition += 20;
+
+    // ✅ Finally, Add Watermark
+    const addWatermark = () => {
+      const watermark = logo;
+      const watermarkWidth = 100;
+      const watermarkHeight = 50;
+      const watermarkX = (doc.internal.pageSize.width - watermarkWidth) / 2;
+      const watermarkY = (doc.internal.pageSize.height - watermarkHeight) / 2;
+      doc.setGState(new doc.GState({ opacity: 0.2 }));
+      doc.addImage(watermark, "PNG", watermarkX, watermarkY, watermarkWidth, watermarkHeight);
+      doc.setGState(new doc.GState({ opacity: 1 }));
+    };
 
     // Loop through all questions
     quizquestionSet.forEach((question, index) => {
@@ -473,7 +495,7 @@ const Test = () => {
       doc.setFont("helvetica", "normal"); // Revert font to normal
       yPosition += 10;
       doc.setTextColor(0, 0, 0);
-      
+
       // Add Question Fields
       const questionFields = [
         { text: question.questionText1, image: question.questionImage1, table: question.questionTable1 },
@@ -482,21 +504,21 @@ const Test = () => {
       ];
 
       const extractTextFromHTML = (html) => {
-        if (!html) return ""; 
-      
+        if (!html) return "";
+
         const div = document.createElement("div");
         div.innerHTML = html;
-      
+
         div.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
-      
-        return div.innerText.trim(); 
+
+        return div.innerText.trim();
       };
-      
+
       questionFields.forEach(({ text, image, table }) => {
         if (text) {
           const textContent = extractTextFromHTML(text);
           const lines = doc.splitTextToSize(textContent, pageWidth - 2 * pageMargin);
-        
+
           lines.forEach(line => {
             if (yPosition > pageHeight - 10) {
               doc.addPage();
@@ -505,7 +527,7 @@ const Test = () => {
               yPosition = pageMargin + 10;
             }
             doc.text(line, pageMargin + textPadding, yPosition);
-            yPosition += 10; 
+            yPosition += 10;
           });
         }
 
@@ -569,9 +591,9 @@ const Test = () => {
 
           const safeTableHeight = isNaN(tableHeight) ? 0 : tableHeight;
           const safeTableWidth = isNaN(tableWidth) ? 0 : tableWidth;
-          
+
           doc.rect(pageMargin + tableMargin, yPosition - safeTableHeight, safeTableWidth, safeTableHeight);
-          
+
           // Add extra space below the table before the next field
           const tableSpace = 10; // Adjust this value to your liking
           yPosition += tableSpace;
@@ -583,39 +605,39 @@ const Test = () => {
       doc.setFont("helvetica", "normal");
       yPosition += 10;
       doc.setFontSize(14);
-      
+
       Object.entries(question.options).forEach(([key, value]) => {
         if (['a', 'b', 'c', 'd'].includes(key) && !value) {
           return;
         }
-      
+
         // Convert HTML to plain text
         const div = document.createElement("div");
         div.innerHTML = value;
         const plainText = div.innerText || div.textContent;
-      
+
         const optionKey = `${key.toUpperCase()}: `;
         const optionValue = plainText;
-      
+
         const textX = pageMargin + textPadding;
         const textY = yPosition;
-      
+
         if (yPosition > pageHeight - 10) {
           doc.addPage();
           drawPageBorder();
           addWatermark();
           yPosition = pageMargin + 10;
         }
-      
+
         // Bold for the option key (A:, B:, C:, D:)
         doc.setFont("helvetica", "bold");
         doc.text(optionKey, textX, textY);
-      
+
         // Normal font for the option value
         const optionKeyWidth = doc.getTextWidth(optionKey);
         doc.setFont("helvetica", "normal");
         doc.text(optionValue, textX + optionKeyWidth, textY);
-      
+
         yPosition += 10; // Move to the next line
       });
 
@@ -642,14 +664,14 @@ const Test = () => {
       yPosition += 10;
 
       doc.setTextColor(0, 0, 0);
-  
+
       const explanationFields = [
         { text: question.answerDescriptionText1, image: question.answerDescriptionImage1, table: question.answerDescriptionTable1 },
         { text: question.answerDescriptionText2, image: question.answerDescriptionImage2, table: question.answerDescriptionTable2 },
         { text: question.answerDescriptionText3, image: question.answerDescriptionImage3, table: question.answerDescriptionTable3 },
       ];
 
-      if (explanationFields.some(({ text }) => text)) { 
+      if (explanationFields.some(({ text }) => text)) {
         // Only add "Explanation" if there's at least one non-empty text
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
@@ -657,7 +679,7 @@ const Test = () => {
         yPosition += 10;
       }
       doc.setFont("helvetica", "normal");
-         explanationFields.forEach(({ text, image, table }) => {
+      explanationFields.forEach(({ text, image, table }) => {
         // Text Handling
         if (text) {
           const textPadding = 5;
@@ -763,7 +785,7 @@ const Test = () => {
     );
     setScore(calculatedScore);
     setShowResults(true);
-  
+
     // Update test status
     axios.post('/api/scheduleTest/updateTestStatus', {
       studentId,
@@ -772,7 +794,7 @@ const Test = () => {
       score: calculatedScore,
       testStatus: "Completed",
     });
-  
+
     // Save test results in CompletedTest collection
     axios.post('/api/completed/saveCompletedTest', {
       studentId,
@@ -788,16 +810,16 @@ const Test = () => {
         isCorrect: selectedOptions[questionId] === correctAnswers[questionId],
       })),
     });
-  
+
     // Generate PDF for the results
     const pdfBlob = generatePDF(); // Ensure this returns a valid Blob
-    
+
     const formData = new FormData();
     formData.append('studentEmail', studentEmail);
     formData.append('pdf', pdfBlob, 'quiz-results.pdf'); // Ensure the filename is set
-  
+
     console.log('Student Email:', studentEmail);
-  
+
     // Send the email with the PDF attachment
     axios.post('/api/studResults/sendQuizResults', formData)
       .then((response) => {
@@ -806,13 +828,13 @@ const Test = () => {
       .catch((error) => {
         console.error('Error sending email:', error);
       });
-  
-      localStorage.removeItem('selectedOptions');
-      localStorage.removeItem('currentQuestionIndex');
-      localStorage.removeItem('selectedCourse');
-      localStorage.removeItem('selectedSubject');
-      localStorage.removeItem('quizTimer');
-  
+
+    localStorage.removeItem('selectedOptions');
+    localStorage.removeItem('currentQuestionIndex');
+    localStorage.removeItem('selectedCourse');
+    localStorage.removeItem('selectedSubject');
+    localStorage.removeItem('quizTimer');
+
     navigate('/studpanel/dashboard');
   }, [selectedOptions, correctAnswers, generatePDF, studentEmail, studentId, selectedCourse, selectedSubject]);
 
@@ -913,12 +935,12 @@ const Test = () => {
               <div className="question-panel" style={{ flex: '3', backgroundColor: '#fff', padding: '20px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', height: '100%', overflowY: 'auto', fontSize: '16px' }}>
                 {/* Question Text */}
                 {quizquestionSet?.length > 0 && currentQuestionIndex < quizquestionSet?.length && (
-                  <><h4 style={{fontSize:"1.25rem"}} className='mb-4'>{`Q${currentQuestionIndex + 1} :`}
+                  <><h4 style={{ fontSize: "1.25rem" }} className='mb-4'>{`Q${currentQuestionIndex + 1} :`}
                   </h4>
-                  <h5
-                    dangerouslySetInnerHTML={{
-                      __html: ` ${quizquestionSet[currentQuestionIndex]?.questionText1}`,
-                    }} /></>
+                    <h5
+                      dangerouslySetInnerHTML={{
+                        __html: ` ${quizquestionSet[currentQuestionIndex]?.questionText1}`,
+                      }} /></>
                 )}
                 {/* Question Image */}
                 {quizquestionSet?.length > 0 && currentQuestionIndex < quizquestionSet?.length && quizquestionSet[currentQuestionIndex] && (
@@ -965,7 +987,7 @@ const Test = () => {
 
                     {/* Question Text 2 */}
                     {quizquestionSet[currentQuestionIndex]?.questionText2 && (
-                      <h5  className='mt-3 mb-3' style={{ color: '#333', fontSize: '1.25rem' }} dangerouslySetInnerHTML={{ __html: quizquestionSet[currentQuestionIndex]?.questionText2 }} />
+                      <h5 className='mt-3 mb-3' style={{ color: '#333', fontSize: '1.25rem' }} dangerouslySetInnerHTML={{ __html: quizquestionSet[currentQuestionIndex]?.questionText2 }} />
                     )}
 
                     {/* Question Image 2 */}

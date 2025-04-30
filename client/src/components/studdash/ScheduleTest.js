@@ -436,9 +436,7 @@ const ScheduleTest = () => {
             studentName, 
             studentEmail, 
             selectedCourse: course, 
-            selectedSubject: subject,
-            questionSet: selectTest.questionSet
-         },
+            selectedSubject: subject },
         });
       }
       console.log("Navigating with data:", {
@@ -446,8 +444,7 @@ const ScheduleTest = () => {
         studentName,
         studentEmail,
         selectedCourse: course,
-        selectedSubject: subject,
-        questionSet: selectTest.questionSet
+        selectedSubject: subject
       });
       // navigate(`/test/${course}/${subject}`, {
       //   state: { studentId, studentName, studentEmail, selectedCourse: course, selectedSubject: subject },

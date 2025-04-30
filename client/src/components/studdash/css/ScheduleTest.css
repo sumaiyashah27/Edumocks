@@ -52,3 +52,14 @@
   background-color: #aaa;
   cursor: not-allowed;
 }
+
+.book-now-new .popup-footer {
+  text-align: center;
+  box-sizing: border-box;
+  filter: drop-shadow(rgba(0, 0, 0, 0.1) 0px 2px 4px);
+  height: 100%;
+  background: rgb(255, 255, 255);
+  margin: 0px 0px 0px 1rem;
+  padding: 20px;
+  border-radius: 8px;
+}

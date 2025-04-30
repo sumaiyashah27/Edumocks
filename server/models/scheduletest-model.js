@@ -19,6 +19,7 @@ const scheduleTestSchema = new mongoose.Schema({
   },
   questionSet: {
     type: Number, // The number of questions (30, 90, or 120)
+    ref: 'QuestionSet',
     required: true,
   },
   testDate: {

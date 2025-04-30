@@ -69,12 +69,19 @@ router.get('/:studentId', authMiddleware,  async (req, res) => {
 // GET /api/scheduleTest
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    // Fetch all scheduled tests
-    const scheduledTests = await ScheduleTest.find()
-    .populate({ path: "studentId", select: "firstname lastname" })
-    .populate({ path: "selectedCourse", select: "name" })
-    .populate({ path: "selectedSubject", select: "name" });
+    const { studentId, selectedCourse, selectedSubject } = req.query;
 
+    // Build dynamic filter
+    const filter = {};
+    if (studentId) filter.studentId = studentId;
+    if (selectedCourse) filter.selectedCourse = selectedCourse;
+    if (selectedSubject) filter.selectedSubject = selectedSubject;
+
+    const scheduledTests = await ScheduleTest.find(filter)
+      .sort({ createdAt: -1 })
+      .populate({ path: "studentId", select: "firstname lastname" })
+      .populate({ path: "selectedCourse", select: "name" })
+      .populate({ path: "selectedSubject", select: "name" });
 
     if (!scheduledTests || scheduledTests.length === 0) {
       return res.status(404).json({ message: 'No scheduled tests found.' });
