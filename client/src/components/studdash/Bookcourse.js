@@ -35,11 +35,25 @@ const Bookcourse = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // const handleBookTest = (course) => {
+  //   setSelectedCourse(course);
+  //   axios.get(`/api/subjects?courseId=${course._id}`)
+  //     .then((response) => setSubjects(response.data))
+  //     .catch((error) => console.error("Error fetching subjects:", error));
+  // };
+
   const handleBookTest = (course) => {
-    setSelectedCourse(course);
-    axios.get(`/api/subjects?courseId=${course._id}`)
-      .then((response) => setSubjects(response.data))
-      .catch((error) => console.error("Error fetching subjects:", error));
+    axios.get(`/api/subject?courseId=${course._id}`)
+      .then((response) => {
+        const courseWithSubjects = { ...course, subjects: response.data };
+        const url = `/book-test-view`;
+
+        sessionStorage.setItem("selectedCourse", JSON.stringify(course));
+        window.open("/book-test-view", "_blank");
+      })
+      .catch((error) => {
+        console.error("Error fetching Topics:", error);
+      });
   };
 
   const handleCheckboxChange = (subject) => {
