@@ -210,6 +210,7 @@ const handleStripePayment = async (event) => {
     }
   };
   
+  
   // Handle Razorpay payment
   const handleRazorpayPayment = async () => {
     if (typeof window.Razorpay === "undefined") {
@@ -279,6 +280,18 @@ const handleStripePayment = async (event) => {
         description: "Test Payment",
         handler: async function (response) {
           try {
+            
+            console.log("📤 Sending Razorpay enrollment data to backend:", JSON.stringify({
+              enrollments: [{
+                studentId: studentData._id,
+                selectedCourse: courseId,
+                selectedSubjects: selectedSubjects.map((subject) => subject._id),
+                paymentStatus: "success",
+                paymentId: response.razorpay_payment_id,
+                amount: finalPrice,
+                orderId: response.razorpay_order_id,
+              }]
+            }, null, 2));
             await axios.post("/api/studenroll/enroll", {
               enrollments: [{
                 studentId: studentData._id,
@@ -287,7 +300,7 @@ const handleStripePayment = async (event) => {
                 paymentStatus: "success",
                 paymentId: response.razorpay_payment_id,
                 amount: finalPrice, // Use finalPrice instead of totalPrice
-                orderId: response.razorpay_order_id,
+                orderId: "done with razorpay acc",
               }]
             });
 
@@ -385,7 +398,7 @@ const handleStripePayment = async (event) => {
 
  
   const convertCurrency = (amount, fromCurrency, toCurrency) => {
-    const usdToInrRate = 2.65; // Example conversion rate (USD to INR)
+    const usdToInrRate = 86.65; // Example conversion rate (USD to INR)
     const inrToUsdRate = 1 / usdToInrRate; // Reverse conversion rate
   
     if (fromCurrency === "USD" && toCurrency === "INR") {
