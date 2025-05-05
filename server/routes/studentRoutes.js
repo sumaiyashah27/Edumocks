@@ -221,8 +221,7 @@ router.post('/glogin', async (req, res) => {
       // ✅ Always generate a JWT token
       const jwtToken = jwt.sign(
         { _id: student._id, email: student.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        process.env.JWT_SECRET
       );
 
       if (!student.googleId) {
@@ -279,8 +278,7 @@ router.post('/login', async (req, res) => {
     // ✅ Generate a JWT token
     const token = jwt.sign(
       { _id: student._id, email: student.email },
-      process.env.JWT_SECRET,                    // secret key
-      { expiresIn: '24h' }                        // token expiry
+      process.env.JWT_SECRET
     );
 
     // ✅ Send token with response

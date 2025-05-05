@@ -30,7 +30,7 @@ const TeachPanel = () => {
     // }
     //support@edumocks.com
 
-    if (!email || email !== "support@edumocks.com") {
+    if (!email || email !== "sumaiyashaha27@gmail.com") {
       console.error("Unauthorized access. Redirecting to login");
       navigate("/teachLogin");
     } else {

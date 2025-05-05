@@ -50,13 +50,39 @@ const BookTest = ({ onScheduleTest }) => {
   }, []);
 
 
+  // const handleBookTest = (course) => {
+  //   const token = localStorage.getItem("token"); // or sessionStorage.getItem("token")
+  //   if (!token) {
+  //     console.error("No token found");
+  //     return;
+  //   }
+
+  //   axios.get(`/api/subject?courseId=${course._id}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }
+  //   })
+  //     .then((response) => {
+  //       const courseWithSubjects = { ...course, subjects: response.data };
+  //       const url = `/book-test-view`;
+
+  //       const tab = window.open(url, "_blank");
+  //       if (tab) {
+  //         sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching Topics:", error);
+  //     });
+  // };
+
   const handleBookTest = (course) => {
-    const token = localStorage.getItem("token"); // or sessionStorage.getItem("token")
+    const token = localStorage.getItem("token");
     if (!token) {
       console.error("No token found");
       return;
     }
-
+  
     axios.get(`/api/subject?courseId=${course._id}`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -64,20 +90,15 @@ const BookTest = ({ onScheduleTest }) => {
     })
       .then((response) => {
         const courseWithSubjects = { ...course, subjects: response.data };
-        const url = `/book-test-view`;
-
-        const tab = window.open(url, "_blank");
-        if (tab) {
-          sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
-        }
+        sessionStorage.setItem("selectedCourse", JSON.stringify(course));
+        navigate("/book-test-view");
       })
       .catch((error) => {
         console.error("Error fetching Topics:", error);
       });
   };
-
-
-
+  
+  
   useEffect(() => {
     if (selectedCourse && selectedCourse.subjects) {
       setSelectedSubjects(selectedCourse.subjects); // Select all subjects in the selected course

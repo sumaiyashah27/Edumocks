@@ -44,19 +44,34 @@ const BookYourTest = ({ onScheduleTest }) => {
   }, []);
 
 
+  // const handleBookTest = (course) => {
+  //   axios.get(`/api/subject?courseId=${course._id}`)
+  //     .then((response) => {
+  //       const courseWithSubjects = { ...course, subjects: response.data };
+  //       const url = `/book-test-view`;
+
+  //       sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
+  //       window.open("/book-test-view", "_blank");
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching Topics:", error);
+  //     });
+  // };
+  
   const handleBookTest = (course) => {
     axios.get(`/api/subject?courseId=${course._id}`)
       .then((response) => {
         const courseWithSubjects = { ...course, subjects: response.data };
         const url = `/book-test-view`;
 
-        sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
+        sessionStorage.setItem("selectedCourse", JSON.stringify(course));
         window.open("/book-test-view", "_blank");
       })
       .catch((error) => {
         console.error("Error fetching Topics:", error);
       });
   };
+  
 
   useEffect(() => {
     if (selectedCourse && selectedCourse.subjects) {

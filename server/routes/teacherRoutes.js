@@ -200,8 +200,7 @@ router.post('/glogin', async (req, res) => {
     // ✅ Always generate a JWT token
     const jwtToken = jwt.sign(
       { _id: teacher._id, email: teacher.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      process.env.JWT_SECRET
     );
 
     // ✅ Respond with the teacher details and token
@@ -246,9 +245,8 @@ router.post('/glogin', async (req, res) => {
 
       // ✅ Generate a JWT token
       const token = jwt.sign(
-        { _id: teacher._id, email: teacher.email }, // payload
-        process.env.JWT_SECRET,                    // secret key
-        { expiresIn: '24h' }                        // token expiry
+        { _id: teacher._id, email: teacher.email },
+        process.env.JWT_SECRET
       );
   
       // Send user details to the frontend
