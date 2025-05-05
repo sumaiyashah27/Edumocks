@@ -385,7 +385,7 @@ const handleStripePayment = async (event) => {
 
  
   const convertCurrency = (amount, fromCurrency, toCurrency) => {
-    const usdToInrRate = 86.65; // Example conversion rate (USD to INR)
+    const usdToInrRate = 2.65; // Example conversion rate (USD to INR)
     const inrToUsdRate = 1 / usdToInrRate; // Reverse conversion rate
   
     if (fromCurrency === "USD" && toCurrency === "INR") {
