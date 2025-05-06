@@ -18,10 +18,10 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { name , description} = req.body;
+    const { name ,price, description} = req.body;
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,
-      { name, description }, // Update only the course name
+      { name, description, price}, // Update only the course name
       { new: true, runValidators: true } // Return updated document & validate
     );
 

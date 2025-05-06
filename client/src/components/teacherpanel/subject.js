@@ -125,6 +125,7 @@ const Subject = () => {
 
       setShowEditSubjectModal(false);
       fetchSubjects();
+      toast.success('Topic updated successfully');
     } catch (error) {
       toast.error('Error updating Topic');
     } finally {
