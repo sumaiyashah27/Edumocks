@@ -245,7 +245,7 @@ const Course = () => {
     }
 
     try {
-      await axios.put(`/api/course/${editingCourse._id}`, { name: newCourseName, description: newCourseDescription });
+      await axios.put(`/api/course/${editingCourse._id}`, { name: newCourseName,price: newCoursePrice, description: newCourseDescription });
       fetchCourses();
       setIsEditModalOpen(false);
       toast.success('Course updated successfully.');
@@ -346,6 +346,7 @@ const Course = () => {
                     setEditingCourse(course);
                     setNewCourseName(course.name);
                     setNewCourseDescription(course.description)
+                    setNewCoursePrice(course.price)
                     setIsEditModalOpen(true);
                   }}
                 />
@@ -567,6 +568,13 @@ const Course = () => {
                   onChange={(e) => setNewCourseName(e.target.value)}
                   className="form-control"
                   placeholder="Enter new course name"
+                />
+                <input
+                  type="number"
+                  value={newCoursePrice}
+                  onChange={(e) => setNewCoursePrice(e.target.value)}
+                  className="form-control mt-2"
+                  placeholder="Enter course price"
                 />
                 <textarea
                   value={newCourseDescription}

@@ -74,12 +74,12 @@ router.get("/", async (req, res) => {
 // Update a subject by ID
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, subtitle, description } = req.body;
+  const { name, subtitle, description, price } = req.body;
 
   try {
     const updatedSubject = await Subject.findByIdAndUpdate(
       id,
-      { name, subtitle, description },
+      { name, subtitle, description, price},
       { new: true }
     );
     if (!updatedSubject) {
