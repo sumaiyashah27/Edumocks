@@ -5,7 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { toast, ToastContainer } from "react-toastify"; // Import toast and ToastContainer
 import "react-toastify/dist/ReactToastify.css"; // Import styles
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-const stripePromise = loadStripe("pk_live_51OycdmERHQrnMM9imLJNMrKj0ce8aiM5Id3f3Fysv3blGmFeJukWIZ1yvf3j8VJ0WUCOaMgfyJyXcUkJyjDTesNn00y5Rdqcwh");
+const stripePromise = loadStripe("pk_live_51RMu2NJPPiGk7fZMSIPMB0WZoMDtxGxGpwNi5lJn0QUwLzx6Yd0Umm5gwmCcuKSpQc5NpebxElr2iQA2b41qmC8X00gDyY5Son");
 
 const Payment = () => {
   const [paymentStatus, setPaymentStatus] = useState(null);
@@ -273,7 +273,7 @@ const handleStripePayment = async (event) => {
           : finalPrice;
 
       const options = {
-        key: "rzp_live_DwM6A80CoAIf8E", // Razorpay live key
+        key: "rzp_live_JJkQjWOq28xTOp", // Razorpay live key
         amount: paymentAmount * 100,
         currency: "INR",
         name: "EduMocks",

@@ -40,7 +40,7 @@ import BookTestView from './components/studdash/BookTestView';
 
 import './App.css';
 // Load Stripe with your publishable key
-const stripePromise = loadStripe("pk_live_51OycdmERHQrnMM9imLJNMrKj0ce8aiM5Id3f3Fysv3blGmFeJukWIZ1yvf3j8VJ0WUCOaMgfyJyXcUkJyjDTesNn00y5Rdqcwh");
+const stripePromise = loadStripe("pk_live_51RMu2NJPPiGk7fZMSIPMB0WZoMDtxGxGpwNi5lJn0QUwLzx6Yd0Umm5gwmCcuKSpQc5NpebxElr2iQA2b41qmC8X00gDyY5Son");
 
 const App = () => {
   return (
