@@ -6,7 +6,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { toast, ToastContainer } from "react-toastify";
 
 // Load Stripe with your public key
-const stripePromise = loadStripe("pk_live_51OycdmERHQrnMM9imLJNMrKj0ce8aiM5Id3f3Fysv3blGmFeJukWIZ1yvf3j8VJ0WUCOaMgfyJyXcUkJyjDTesNn00y5Rdqcwh");
+const stripePromise = loadStripe("pk_live_51RMu2NJPPiGk7fZMSIPMB0WZoMDtxGxGpwNi5lJn0QUwLzx6Yd0Umm5gwmCcuKSpQc5NpebxElr2iQA2b41qmC8X00gDyY5Son");
 const DelayTestPayment = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -165,7 +165,7 @@ const DelayTestPayment = () => {
       });
   
       const options = {
-        key: "rzp_live_DwM6A80CoAIf8E",
+        key: "rzp_live_JJkQjWOq28xTOp",
         amount: data.order.amount, // Ensure INR is always used
         currency: "INR",
         order_id: data.order.id,

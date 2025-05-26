@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { FaPhoneAlt, FaEnvelope } from 'react-icons/fa';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { FaPhoneAlt, FaEnvelopeOpenText } from 'react-icons/fa';
+import { Container, Row, Col, Form, Alert } from 'react-bootstrap';
 import '../css/contact.css';
 
 const Contact = () => {
@@ -10,82 +10,109 @@ const Contact = () => {
     message: '',
   });
 
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form Submitted:', formData);
+
+    // Show success message
+    setSuccess(true);
+
+    // Clear form fields
+    setFormData({
+      name: '',
+      email: '',
+      message: '',
+    });
+
+    // Hide message after 5 seconds
+    setTimeout(() => setSuccess(false), 5000);
   };
 
   return (
     <div className="contact-container">
-      <div className="contact-header text-center">
-        <h1 style={{color: '#100b5c', fontWeight: 600}}>Contact Us</h1>
-        <p>We'd love to hear from you! Reach out with any questions or feedback.</p>
-      </div>
-
       <Container>
-        <Row>
-          {/* First Column (Phone and Email) */}
-          <Col xs={12} md={6} className="contact-info">
-            <div className="contact-info-item">
-              <FaPhoneAlt className="contact-icon" />
-              <h3>Phone</h3>
-              <p>+91 7057621416</p>
-            </div>
+        <div className="text-center mb-5">
+          <h1 className="contact-title">Contact Us</h1>
+          <p className="contact-subtitle">
+            <strong>This Company is under EDUINVEST ACADEMY</strong><br />
+            We’d love to hear from you! Whether you have a question about our services,
+            need support, or want to explore how we can work together — our team is ready to help.
+          </p>
+        </div>
 
-            <div className="contact-info-item">
-              <FaEnvelope className="contact-icon" />
-              <h3>Email</h3>
-              <p>support@edumocks.com</p>
+        <Row>
+          <Col xs={12} md={6} className="mb-4">
+            <div className="contact-card h-100">
+              <h4 className="section-title"><FaPhoneAlt className="section-icon" /> Get in Touch</h4>
+              <div className="info-item mt-4">
+                <h5>Phone</h5>
+                <p>+91 7057621416</p>
+              </div>
+              <div className="info-item mt-4">
+                <h5>Email</h5>
+                <p>support@edumocks.com</p>
+              </div>
             </div>
           </Col>
 
-          {/* Second Column (Form) */}
-          <Col xs={12} md={6} className="contact-form">
-            <h2>Send Us a Message</h2>
-            <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="name">
-                <Form.Control
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+          <Col xs={12} md={6}>
+            <div className="contact-card h-100">
+              <h4 className="section-title"><FaEnvelopeOpenText className="section-icon" /> Send Us a Message</h4>
+              <p className="text-muted mb-4">Have a specific inquiry? Fill out the form below and we’ll get back to you within 24 hours.</p>
 
-              <Form.Group controlId="email">
-                <Form.Control
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+              {success && (
+                <Alert variant="success">
+                  ✅ Thank you! Your message has been sent successfully.
+                </Alert>
+              )}
 
-              <Form.Group controlId="message">
-                <Form.Control
-                  as="textarea"
-                  name="message"
-                  placeholder="Your Message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                />
-              </Form.Group>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="name" className="mb-3">
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    placeholder="Your Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
 
-              <button type="submit" className="mt-3">Send Message</button>
-            </Form>
+                <Form.Group controlId="email" className="mb-3">
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    placeholder="Your Email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group controlId="message" className="mb-3">
+                  <Form.Control
+                    as="textarea"
+                    name="message"
+                    rows={4}
+                    placeholder="Your Message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+
+                <button type="submit" className="btn custom-btn w-100">
+                  Send Message
+                </button>
+              </Form>
+            </div>
           </Col>
         </Row>
       </Container>
