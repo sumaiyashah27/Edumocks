@@ -36,6 +36,7 @@ const ScheduleTest = () => {
     console.log('Timezone:', now.zoneName);
   
     console.log('Student ID:', studentId);
+
     // Fetch student details, quiz enrollment data, and scheduled tests
     useEffect(() => {
       // Fetch student details
@@ -125,6 +126,7 @@ const ScheduleTest = () => {
         } catch (error) {console.error('Error fetching courses and subjects:', error);
         }
       };
+      fetchCoursesAndSubjects();
       if (studentId) {
         fetchStudentDetails(studentId);
         fetchQuizEnrollmentData(studentId); 
@@ -343,13 +345,15 @@ const ScheduleTest = () => {
     };  
   
     const getCourseName = (courseId) => {
-      const course = courses.find(c => c._id === courseId);
-      return course ? course.name : 'Unknown Course';
+      // const course = courses.find(c => c._id === courseId);
+      const course = courses.find(c => c._id.trim() === courseId.trim());
+      return course ? course.name : 'Course';
     };
   
     const getSubjectName = (subjectId) => {
-      const subject = subjects.find(s => s._id === subjectId);
-      return subject ? subject.name : 'Unknown Subject';
+      // const subject = subjects.find(s => s._id === subjectId);
+      const subject = subjects.find(s => s._id.trim() === subjectId.trim());
+      return subject ? subject.name : 'Subject';
     };
   ;
   
