@@ -23,23 +23,63 @@ const DelayTestPayment = () => {
   const [currency, setCurrency] = useState("USD"); 
 
   // Fetch student, course, and subject data on component mount
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       await axios.get(`/api/student/${studentId}`);
+  //       const courseResponse = await axios.get('/api/course');
+  //       const subjectResponse = await axios.get('/api/subject');
+  //       setCourses(courseResponse.data);
+  //       setSubjects(subjectResponse.data);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //       toast.error("Failed to load data. Please try again.");
+  //     } finally {
+  //       setIsLoading(false); // Hide loading spinner after data is fetched
+  //     }
+  //   };
+  //   fetchData();
+  // }, [studentId, selectedCourse, selectedSubject]);
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await axios.get(`/api/student/${studentId}`);
-        const courseResponse = await axios.get('/api/course');
-        const subjectResponse = await axios.get('/api/subject');
-        setCourses(courseResponse.data);
-        setSubjects(subjectResponse.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load data. Please try again.");
-      } finally {
-        setIsLoading(false); // Hide loading spinner after data is fetched
-      }
-    };
-    fetchData();
-  }, [studentId, selectedCourse, selectedSubject]);
+  const fetchData = async () => {
+    const token = localStorage.getItem('token'); // Get the token
+
+    try {
+      // Fetch student details with token
+      await axios.get(`/api/student/${studentId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Fetch courses with token
+      const courseResponse = await axios.get('/api/course', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Fetch subjects with token
+      const subjectResponse = await axios.get('/api/subject', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Set data to state
+      setCourses(courseResponse.data);
+      setSubjects(subjectResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data. Please try again.");
+    } finally {
+      setIsLoading(false); // Hide loading spinner after data is fetched
+    }
+  };
+
+  fetchData();
+}, [studentId, selectedCourse, selectedSubject]);
+
   // Dynamically load Razorpay script
     useEffect(() => {
       if (typeof window.Razorpay === "undefined") {
