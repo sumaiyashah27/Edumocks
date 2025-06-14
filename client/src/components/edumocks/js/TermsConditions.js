@@ -41,7 +41,7 @@ const TermsConditions = () => {
             </p>
 
             <p>
-              These Terms and Conditions are governed by and construed in accordance with the laws of [Your Country]. Any legal action or proceeding arising from your use of the services shall be subject to the exclusive jurisdiction of the courts located in mumbai, India.
+              These Terms and Conditions are governed by and construed in accordance with the laws of India. Any legal action or proceeding arising from your use of the services shall be subject to the exclusive jurisdiction of the courts located in mumbai, India.
             </p>
 
             <p>
