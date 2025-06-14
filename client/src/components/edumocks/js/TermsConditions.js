@@ -41,7 +41,7 @@ const TermsConditions = () => {
             </p>
 
             <p>
-              These Terms and Conditions are governed by and construed in accordance with the laws of [Your Country]. Any legal action or proceeding arising from your use of the services shall be subject to the exclusive jurisdiction of the courts located in [Your City, Country].
+              These Terms and Conditions are governed by and construed in accordance with the laws of [Your Country]. Any legal action or proceeding arising from your use of the services shall be subject to the exclusive jurisdiction of the courts located in mumbai, India.
             </p>
 
             <p>
@@ -49,7 +49,7 @@ const TermsConditions = () => {
             </p>
 
             <p>
-              If you have any questions or concerns regarding these Terms and Conditions, please feel free to reach out to us via email at <strong>support@edumocks.com</strong> or call us at <strong>+91 7057621416</strong>.
+              If you have any questions or concerns regarding these Terms and Conditions, please feel free to reach out to us via email at <strong>support@edumocks.com</strong>.
             </p>
           </Col>
         </Row>

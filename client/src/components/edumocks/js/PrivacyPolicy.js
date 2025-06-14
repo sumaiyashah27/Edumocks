@@ -114,7 +114,7 @@ const PrivacyPolicy = () => {
             <section id="contact-us" className="section">
               <h2>Contact Us</h2>
               <p>
-                If you have any questions about this Privacy Policy or the way we handle your information, feel free to reach out to us at <a href="mailto:contact@edumocks.com">contact@edumocks.com</a>.
+                If you have any questions about this Privacy Policy or the way we handle your information, feel free to reach out to us at <a href="mailto:support@edumocks.com">support@edumocks.com</a>.
               </p>
             </section>
           </div>
