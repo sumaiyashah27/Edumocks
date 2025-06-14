@@ -299,7 +299,7 @@ const ScheduleTest = () => {
       setSelectedTest(test); // Store the test to be delayed
       setDelayModalOpen(true); // Open the delay modal
     };
-    const delayAmount = 3;
+    const delayAmount = 1;
     const handlePayDelay = () => {
       if (!testDate || !testTime) {
         setError(true); // Sets error state to true
@@ -589,7 +589,7 @@ const ScheduleTest = () => {
               </div>
   
               {errorMessage && <div style={{ color: 'red', marginBottom: '15px', fontSize: '1rem' }}>{errorMessage}</div>}
-              <p><strong style={{ color: "red" }}>NOTE:-</strong> Please ensure you attend the test on time. Rescheduling will incur a charge of $3.</p>
+              <p><strong style={{ color: "red" }}>NOTE:-</strong> Please ensure you attend the test on time. Rescheduling will incur a charge of $1.</p>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button
                   onClick={handleConfirmSchedule}
@@ -634,7 +634,7 @@ const ScheduleTest = () => {
               </div>
   
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button onClick={handlePayDelay} style={{ fontSize: '1.1rem', backgroundColor: '#28a745', color: 'white', padding: '12px 20px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', width: '100%', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>Pay $3 Confirm</button>
+                <button onClick={handlePayDelay} style={{ fontSize: '1.1rem', backgroundColor: '#28a745', color: 'white', padding: '12px 20px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', width: '100%', transition: 'transform 0.3s ease' }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>Pay $1 Confirm</button>
               </div>
             </div>
           </div>
