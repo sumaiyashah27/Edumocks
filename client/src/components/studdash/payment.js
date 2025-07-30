@@ -46,7 +46,7 @@ const Payment = () => {
         return;
       }
   
-      if (couponCode === "FREE100") { 
+      if (couponCode === "CFA2MOCK") { 
         setFinalPrice(0);
         toast.success("Coupon applied! Payment amount is now $0.");
       } else if (couponCode === "99%OFF") {
@@ -66,7 +66,7 @@ const Payment = () => {
   };
   
   // const validateCoupon = () => {
-  //   if (couponCode === "FREE100") { 
+  //   if (couponCode === "CFA2MOCK") { 
   //     setIsCouponApplied(true);
   //     setFinalPrice(0);
   //     toast.success("Coupon applied! Payment amount is now $0.");
