@@ -388,393 +388,527 @@ const Test = () => {
   }, []);
 
   const generatePDF = useCallback(() => {
-    const doc = new jsPDF('p', 'mm', 'a4'); // Set A4 size
-    const pageMargin = 7; // Page margin from edges
-    const pageWidth = doc.internal.pageSize.width - 2 * pageMargin;
-    const pageHeight = doc.internal.pageSize.height - 2 * pageMargin;
-    const tableMargin = 10; // Table margin
-    const textPadding = 5;
-    let yPosition = pageMargin + tableMargin; // Start position for content
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(14);
+  const doc = new jsPDF('p', 'mm', 'a4');
 
-    // Draw Page Border
-    const drawPageBorder = () => {
-      doc.setDrawColor(16, 11, 92); // RGB for #100B5C
-      doc.rect(pageMargin, pageMargin, pageWidth, pageHeight); // Draw rectangle
+  if (!doc.autoTable) {
+    console.error("jsPDF-AutoTable plugin is not loaded.");
+    return;
+  }
 
-      // Add Student Name on the left
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Name: ${studentName}`, pageMargin + 0, pageMargin - 1)
+  // --- STYLE ---
+  const COLORS = {
+    PRIMARY: '#101D42',
+    ACCENT: '#FCA311',
+    TEXT_DARK: '#141414',
+    TEXT_MUTED: '#6c757d',
+    TEXT_LIGHT: '#FFFFFF',
+    BACKGROUND: '#F8F9FA',
+    BORDER: '#DEE2E6',
+    CORRECT: '#28a745',
+    CORRECT_BG: '#eaf6ec',
+    INCORRECT: '#dc3545',
+    INCORRECT_BG: '#fdecea',
+  };
 
-      // Add Student Email on the right
-      const emailText = `Email: ${studentEmail}`;
-      const emailX = doc.internal.pageSize.width - pageMargin - doc.getTextWidth(emailText);
-      doc.text(emailText, emailX, pageMargin - 1);
+  const FONTS = {
+    TITLE: { size: 18, style: 'bold' },
+    H2: { size: 13, style: 'bold' }, // slightly smaller H2 to save space
+    H3: { size: 11, style: 'bold' },
+    BODY: { size: 9.5, style: 'normal' }, // slightly smaller body
+    LABEL: { size: 8.5, style: 'bold' },
+  };
+
+  // --- LAYOUT (tighter) ---
+  const PAGE_MARGIN = 14;
+  const PAGE_WIDTH = doc.internal.pageSize.width;
+  const PAGE_HEIGHT = doc.internal.pageSize.height;
+  const CONTENT_WIDTH = PAGE_WIDTH - 2 * PAGE_MARGIN;
+  const FOOTER_HEIGHT = 11;
+  const USABLE_HEIGHT = PAGE_HEIGHT - PAGE_MARGIN - FOOTER_HEIGHT;
+  let yPosition = 0;
+  let pageCount = 1;
+
+  // --- HELPERS ---
+  const getPlainText = (html) => {
+    if (html === null || typeof html === 'undefined') return "";
+    try {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = String(html);
+      return (tempDiv.textContent || tempDiv.innerText || '').replace(/\u00A0/g, ' ').trim();
+    } catch (e) {
+      return String(html).trim();
+    }
+  };
+
+  // Fonts helpers to avoid inheritance issues after page breaks
+  const setBody = () => {
+    doc.setFont('helvetica', FONTS.BODY.style);
+    doc.setFontSize(FONTS.BODY.size);
+    doc.setTextColor(COLORS.TEXT_DARK);
+  };
+  const setH2 = () => {
+    doc.setFont('helvetica', FONTS.H2.style);
+    doc.setFontSize(FONTS.H2.size);
+    doc.setTextColor(COLORS.PRIMARY);
+  };
+  const setLabel = () => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(FONTS.LABEL.size);
+    doc.setTextColor(COLORS.TEXT_DARK);
+  };
+
+  const imageTypeFromDataURI = (str) => {
+    if (typeof str !== 'string') return null;
+    if (str.startsWith('data:image/png')) return 'PNG';
+    if (str.startsWith('data:image/jpeg') || str.startsWith('data:image/jpg')) return 'JPEG';
+    return null;
+  };
+
+  // Tighter vertical spacing
+  const LINE_HEIGHT = 4.0; // reduced from 4.5
+  const IMAGE_RENDER_HEIGHT = 44; // slightly smaller images
+  const CARD_PADDING_TOP = 8; // reduced
+  const CARD_PADDING_BOTTOM = 6; // reduced
+  const SECTION_GAP = 4; // smaller gap between sections
+
+  // --- CORE DRAW HELPERS ---
+  const drawFooter = () => {
+    const pageNumText = `Page ${pageCount}`;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(FONTS.LABEL.size);
+    doc.setTextColor(COLORS.TEXT_MUTED);
+    doc.text(pageNumText, PAGE_WIDTH - PAGE_MARGIN, PAGE_HEIGHT - 7, { align: 'right' });
+    doc.text("Edumocks Test Report", PAGE_MARGIN, PAGE_HEIGHT - 7);
+  };
+
+  const drawHeader = () => {
+    try {
+      doc.addImage("/edulog-2.png", "PNG", PAGE_MARGIN, 8, 36, 18);
+    } catch (e) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(FONTS.TITLE.size);
+      doc.setTextColor(COLORS.PRIMARY);
+      doc.text("Edumocks", PAGE_MARGIN, 20);
+    }
+
+    doc.setFont('helvetica', FONTS.TITLE.style);
+    doc.setFontSize(FONTS.TITLE.size);
+    doc.setTextColor(COLORS.PRIMARY);
+    doc.text("Test Result Summary", PAGE_WIDTH - PAGE_MARGIN, 20, { align: 'right' });
+
+    doc.setDrawColor(COLORS.BORDER);
+    doc.setLineWidth(0.45);
+    doc.line(PAGE_MARGIN, 32, PAGE_WIDTH - PAGE_MARGIN, 32);
+
+    // reset yPosition and set body font
+    yPosition = 38;
+    setBody();
+  };
+
+  const addWatermark = () => {
+    try { if (doc.GState) doc.setGState(new doc.GState({ opacity: 0.04 })); } catch (e) {}
+    try {
+      doc.addImage("/edulog-2.png", "PNG", (PAGE_WIDTH - 100) / 2, (PAGE_HEIGHT - 50) / 2, 100, 50);
+    } catch (e) { /* ignore */ }
+    try { if (doc.GState) doc.setGState(new doc.GState({ opacity: 1 })); } catch (e) {}
+  };
+
+  const newPage = () => {
+    drawFooter();
+    doc.addPage();
+    pageCount++;
+    addWatermark();
+    drawHeader(); // drawHeader resets font/position
+  };
+
+  // Tables: conservative estimate and break before drawing
+  const drawTable = (tableData) => {
+    if (!tableData) return yPosition;
+    let body = null;
+    let head = null;
+    if (Array.isArray(tableData)) {
+      body = tableData;
+    } else if (Array.isArray(tableData?.data)) {
+      body = tableData.data;
+      head = tableData.head || tableData.columns || null;
+    } else if (Array.isArray(tableData?.body)) {
+      body = tableData.body;
+      head = tableData.head || null;
+    } else {
+      return yPosition;
+    }
+    if (!Array.isArray(body) || body.length === 0) return yPosition;
+
+    const approxRowHeight = 7.0; // smaller estimate
+    const estimatedHeight = (head ? 1 : 0) * approxRowHeight + body.length * approxRowHeight + 8;
+    if (yPosition + estimatedHeight > USABLE_HEIGHT) newPage();
+
+    const atOptions = {
+      startY: yPosition,
+      theme: 'grid',
+      styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2, textColor: COLORS.TEXT_DARK },
+      margin: { left: PAGE_MARGIN + 5, right: PAGE_MARGIN + 5 },
     };
-    drawPageBorder();
 
-    // Add Logo
-    const logo = "/edulog-2.png";
-    const logoWidth = 90;
-    const logoHeight = 30;
-    const logoX = pageMargin;
-    const logoY = pageMargin;
-    doc.addImage(logo, "PNG", logoX, logoY, logoWidth, logoHeight);
-
-    yPosition = logoY + logoHeight + 5; // Place it below the logo
-
-    // Box settings
-    const boxX = pageMargin;
-    const boxY = yPosition;
-    const boxWidth = pageWidth;
-    const boxHeight = 20; // Adjust based on content height
-    const cellPadding = 3;
-
-    // Draw a box (background border)
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.2);
-    doc.rect(boxX, boxY, boxWidth, boxHeight);
-
-    // Set text
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-
-    const labelX1 = boxX + cellPadding;
-    const labelX2 = boxX + boxWidth / 2 + cellPadding; // 2nd column
-    let labelY = boxY + 8;
-
-    // Left Column
-    doc.text(`Student Name: ${studentName}`, labelX1, labelY);
-    labelY += 8;
-    doc.text(`Student Email: ${studentEmail}`, labelX1, labelY);
-
-    // Reset Y for right column
-    labelY = boxY + 8;
-    doc.text(`Course: ${courseName}`, labelX2, labelY);
-    labelY += 8;
-    doc.text(`Subject: ${subjectName}`, labelX2, labelY);
-
-    // Update yPosition after box
-    yPosition = boxY + boxHeight + 10;
-
-    // ✅ Now add the Test Results title AFTER the Basic Info Section
-    doc.setFontSize(14);
-    doc.setTextColor(0, 123, 255);
-    const titleX = (pageWidth - doc.getTextWidth("Test Results")) / 2;
-    doc.text("Test Results", titleX, yPosition);
-    yPosition += 20;
-
-    // ✅ Finally, Add Watermark
-    const addWatermark = () => {
-      const watermark = logo;
-      const watermarkWidth = 100;
-      const watermarkHeight = 50;
-      const watermarkX = (doc.internal.pageSize.width - watermarkWidth) / 2;
-      const watermarkY = (doc.internal.pageSize.height - watermarkHeight) / 2;
-      doc.setGState(new doc.GState({ opacity: 0.2 }));
-      doc.addImage(watermark, "PNG", watermarkX, watermarkY, watermarkWidth, watermarkHeight);
-      doc.setGState(new doc.GState({ opacity: 1 }));
-    };
-
-    // Loop through all questions
-    quizquestionSet.forEach((question, index) => {
-      if (yPosition > pageHeight - 20) {
-        doc.addPage();
-        drawPageBorder();
-        addWatermark();
-        yPosition = pageMargin + 10;
+    if (head) {
+      atOptions.head = Array.isArray(head[0]) ? head : [head];
+      atOptions.body = body;
+    } else {
+      if (body.length > 0 && typeof body[0] === 'object' && !Array.isArray(body[0])) {
+        atOptions.head = [Object.keys(body[0])];
+        atOptions.body = body.map(r => Object.values(r));
+      } else {
+        atOptions.body = body;
       }
+    }
 
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold"); // Set font to bold
-      doc.setTextColor(0, 103, 168);
-      doc.text(`Question ${index + 1}:`, pageMargin + textPadding, yPosition);
-      doc.setFont("helvetica", "normal"); // Revert font to normal
-      yPosition += 10;
-      doc.setTextColor(0, 0, 0);
+    doc.autoTable(atOptions);
+    yPosition = doc.autoTable.previous.finalY + 4; // smaller post-table gap
+    setBody();
+    return yPosition;
+  };
 
-      // Add Question Fields
-      const questionFields = [
-        { text: question.questionText1, image: question.questionImage1, table: question.questionTable1 },
-        { text: question.questionText2, image: question.questionImage2, table: question.questionTable2 },
-        { text: question.questionText3, image: question.questionImage3, table: question.questionTable3 },
-      ];
+  // Text block drawing with page-break check (tighter spacing)
+  const drawTextBlock = (rawText, x, currentY, width, fontSize = FONTS.BODY.size, style = FONTS.BODY.style) => {
+    const plain = getPlainText(rawText);
+    if (!plain) return currentY;
+    doc.setFont('helvetica', style);
+    doc.setFontSize(fontSize);
+    doc.setTextColor(COLORS.TEXT_DARK);
 
-      const extractTextFromHTML = (html) => {
-        if (!html) return "";
+    const split = doc.splitTextToSize(plain, width);
+    const needed = split.length * LINE_HEIGHT + 2; // smaller buffer
+    if (yPosition + needed > USABLE_HEIGHT) {
+      newPage();
+      currentY = yPosition;
+    }
+    doc.text(split, x, currentY);
+    currentY += split.length * LINE_HEIGHT + 2; // smaller increment
+    yPosition = currentY;
+    setBody();
+    return currentY;
+  };
 
-        const div = document.createElement("div");
-        div.innerHTML = html;
+  const drawImageBlock = (imgStr, x, currentY, width, height = IMAGE_RENDER_HEIGHT) => {
+    if (!imgStr) return currentY;
+    const fmt = imageTypeFromDataURI(imgStr) || 'JPEG';
+    if (yPosition + height + 4 > USABLE_HEIGHT) { // smaller buffer
+      newPage();
+      currentY = yPosition;
+    }
+    try {
+      doc.addImage(imgStr, fmt, x, currentY, width, height);
+      currentY += height + 4;
+      yPosition = currentY;
+    } catch (e) {
+      console.error('Error adding image block:', e);
+    }
+    setBody();
+    return currentY;
+  };
 
-        div.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+  // --- BUILD PDF ---
+  addWatermark();
+  drawHeader();
 
-        return div.innerText.trim();
-      };
+  // Student/Test Info box (tighter layout)
+  const drawStudentInfoBox = () => {
+    const col1X = PAGE_MARGIN;
+    const col2X = PAGE_WIDTH / 2;
 
-      questionFields.forEach(({ text, image, table }) => {
-        if (text) {
-          const textContent = extractTextFromHTML(text);
-          const lines = doc.splitTextToSize(textContent, pageWidth - 2 * pageMargin);
+    doc.setFont('helvetica', FONTS.H3.style);
+    doc.setFontSize(FONTS.H3.size);
+    doc.setTextColor(COLORS.PRIMARY);
+    doc.text("Student Details", col1X, yPosition);
+    doc.text("Test Details", col2X, yPosition);
+    yPosition += 6;
 
-          lines.forEach(line => {
-            if (yPosition > pageHeight - 10) {
-              doc.addPage();
-              drawPageBorder();
-              addWatermark();
-              yPosition = pageMargin + 10;
-            }
-            doc.text(line, pageMargin + textPadding, yPosition);
-            yPosition += 10;
-          });
-        }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(FONTS.BODY.size);
+    doc.setTextColor(COLORS.TEXT_MUTED);
+    doc.text("Name:", col1X, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLORS.TEXT_DARK);
+    doc.text(studentName || 'N/A', col1X + 20, yPosition);
 
-        // Image Handling
-        if (image) {
-          const imgWidth = doc.internal.pageSize.width * 0.8;
-          const imgHeight = doc.internal.pageSize.width * 0.3;
-          const imgX = (doc.internal.pageSize.width - imgWidth) / 2;
-          const imageType = image.includes('.png') ? 'PNG' : 'JPEG';
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLORS.TEXT_MUTED);
+    doc.text("Course:", col2X, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLORS.TEXT_DARK);
+    doc.text(courseName || 'N/A', col2X + 22, yPosition);
+    yPosition += 6;
 
-          if (yPosition + imgHeight > pageHeight - 10) {
-            doc.addPage();
-            drawPageBorder();
-            addWatermark();
-            yPosition = pageMargin + 10;
-          }
-          doc.addImage(image, imageType, imgX, yPosition, imgWidth, imgHeight);
-          yPosition += imgHeight + 10;
-        }
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLORS.TEXT_MUTED);
+    doc.text("Email:", col1X, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLORS.TEXT_DARK);
+    doc.text(studentEmail || 'N/A', col1X + 20, yPosition);
 
-        // Table Handling
-        if (table && table.data) {
-          const cellWidth = 40;
-          const cellHeight = 10;
-          const rowHeights = table.data.map(row => {
-            return row.reduce((maxHeight, cell) => {
-              const lines = doc.splitTextToSize(String(cell), cellWidth - 4);
-              const dynamicHeight = Math.max(lines?.length * 7, cellHeight);
-              return Math.max(maxHeight, dynamicHeight);
-            }, cellHeight);
-          });
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLORS.TEXT_MUTED);
+    doc.text("Subject:", col2X, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLORS.TEXT_DARK);
+    doc.text(subjectName || 'N/A', col2X + 22, yPosition);
 
-          const tableHeight = rowHeights.reduce((total, rowHeight) => total + rowHeight, 0);
-          const tableWidth = cellWidth * table.data[0]?.length;
+    yPosition += 10; // tighter end spacing
+    setBody();
+  };
 
-          if (pageMargin + tableMargin + tableWidth > pageWidth - pageMargin) {
-            console.log("Table exceeds page width.");
-            return;
-          }
+  drawStudentInfoBox();
 
-          if (yPosition + tableHeight + tableMargin > pageHeight - pageMargin) {
-            doc.addPage();
-            yPosition = pageMargin + tableMargin;
-          }
+  const questions = Array.isArray(quizquestionSet) ? quizquestionSet : [];
+  const answersMap = selectedOptions && typeof selectedOptions === 'object' ? selectedOptions : {};
 
-          table.data.forEach((row, rowIndex) => {
-            let xPosition = pageMargin + tableMargin;
-            const rowHeight = rowHeights[rowIndex];
+  for (let index = 0; index < questions.length; index++) {
+    const question = questions[index];
 
-            row.forEach(cell => {
-              const lines = doc.splitTextToSize(String(cell), cellWidth - 4);
-              doc.rect(xPosition, yPosition, cellWidth, rowHeight);
-              lines.forEach((line, index) => {
-                doc.text(line, xPosition + 2, yPosition + 7 + index * 7);
-              });
-              xPosition += cellWidth;
-            });
+    // Small minimal space check
+    const minimalSpace = 24;
+    if (yPosition + minimalSpace > USABLE_HEIGHT) newPage();
 
-            yPosition += rowHeight;
-          });
+    const cardX = PAGE_MARGIN;
+    const cardContentX = cardX + 8; // smaller left padding
+    const cardContentWidth = CONTENT_WIDTH - 16;
 
-          const safeTableHeight = isNaN(tableHeight) ? 0 : tableHeight;
-          const safeTableWidth = isNaN(tableWidth) ? 0 : tableWidth;
+    const cardTop = yPosition + 2;
+    let contentY = cardTop + CARD_PADDING_TOP;
 
-          doc.rect(pageMargin + tableMargin, yPosition - safeTableHeight, safeTableWidth, safeTableHeight);
+    // Title (compact)
+    setH2();
+    if (yPosition + FONTS.H2.size + 4 > USABLE_HEIGHT) {
+      newPage();
+      contentY = yPosition + CARD_PADDING_TOP;
+    }
+    doc.text(`Question ${index + 1}`, cardContentX, contentY);
+    contentY += 6;
+    setBody();
+    yPosition = contentY;
 
-          // Add extra space below the table before the next field
-          const tableSpace = 10; // Adjust this value to your liking
-          yPosition += tableSpace;
-        }
-      });
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("Options:", pageMargin + textPadding, yPosition);
-      doc.setFont("helvetica", "normal");
-      yPosition += 10;
-      doc.setFontSize(14);
+    // question fields
+    const allFields = (
+      Array.isArray(question?.questionFields) && question.questionFields.length
+        ? question.questionFields
+        : [
+            { text: question?.questionText1, image: question?.questionImage1, table: question?.questionTable1 },
+            { text: question?.questionText2, image: question?.questionImage2, table: question?.questionTable2 },
+            { text: question?.questionText3, image: question?.questionImage3, table: question?.questionTable3 },
+          ]
+    ).filter(Boolean);
 
-      Object.entries(question.options).forEach(([key, value]) => {
-        if (['a', 'b', 'c', 'd'].includes(key) && !value) {
-          return;
-        }
-
-        // Convert HTML to plain text
-        const div = document.createElement("div");
-        div.innerHTML = value;
-        const plainText = div.innerText || div.textContent;
-
-        const optionKey = `${key.toUpperCase()}: `;
-        const optionValue = plainText;
-
-        const textX = pageMargin + textPadding;
-        const textY = yPosition;
-
-        if (yPosition > pageHeight - 10) {
-          doc.addPage();
-          drawPageBorder();
-          addWatermark();
-          yPosition = pageMargin + 10;
-        }
-
-        // Bold for the option key (A:, B:, C:, D:)
-        doc.setFont("helvetica", "bold");
-        doc.text(optionKey, textX, textY);
-
-        // Normal font for the option value
-        const optionKeyWidth = doc.getTextWidth(optionKey);
-        doc.setFont("helvetica", "normal");
-        doc.text(optionValue, textX + optionKeyWidth, textY);
-
-        yPosition += 10; // Move to the next line
-      });
-
-      // Add Explanation
-      const getPlainText = (html) => {
-        const div = document.createElement("div");
-        div.innerHTML = html;
-        return div.innerText || div.textContent;
-      };
-      // Add Selected and Correct Answers
-      doc.setTextColor(0, 123, 0);
-      doc.setFont("helvetica", "bold");
-      // Convert selected answer to plain text
-      const selectedAnswer = getPlainText(selectedOptions[question._id] || "None");
-      doc.text(`Your Answer: ${selectedAnswer}`, pageMargin + textPadding, yPosition);
-      yPosition += 10;
-      doc.setTextColor(255, 0, 0);
-      doc.setFont("helvetica", "bold");
-
-
-      // Convert correct answer to plain text
-      const correctAnswer = getPlainText(question.correctAns);
-      doc.text(`Correct Answer: ${correctAnswer}`, pageMargin + textPadding, yPosition);
-      yPosition += 10;
-
-      doc.setTextColor(0, 0, 0);
-
-      const explanationFields = [
-        { text: question.answerDescriptionText1, image: question.answerDescriptionImage1, table: question.answerDescriptionTable1 },
-        { text: question.answerDescriptionText2, image: question.answerDescriptionImage2, table: question.answerDescriptionTable2 },
-        { text: question.answerDescriptionText3, image: question.answerDescriptionImage3, table: question.answerDescriptionTable3 },
-      ];
-
-      if (explanationFields.some(({ text }) => text)) {
-        // Only add "Explanation" if there's at least one non-empty text
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("Explanation:", pageMargin + 5, yPosition);
-        yPosition += 10;
+    for (const field of allFields) {
+      if (field?.text) {
+        contentY = drawTextBlock(field.text, cardContentX, contentY, cardContentWidth, FONTS.BODY.size, FONTS.BODY.style);
       }
-      doc.setFont("helvetica", "normal");
-      explanationFields.forEach(({ text, image, table }) => {
-        // Text Handling
-        if (text) {
-          const textPadding = 5;
+      if (field?.image) {
+        const imgStr = typeof field.image === 'string' ? field.image.trim() : null;
+        contentY = drawImageBlock(imgStr, cardContentX, contentY, cardContentWidth);
+      }
+      if (field?.table) {
+        contentY = yPosition;
+        contentY = drawTable(field.table);
+      }
+    }
 
-          // Convert explanation text to plain text
-          const plainText = getPlainText(text);
+    contentY += SECTION_GAP;
+    yPosition = contentY;
 
-          const lines = doc.splitTextToSize(plainText, pageWidth - 2 * pageMargin); // Wrap text
-          lines.forEach(line => {
-            if (yPosition > pageHeight - 10) {
-              doc.addPage();
-              drawPageBorder();
-              addWatermark();
-              yPosition = pageMargin + 10; // Reset y-position for the new page
-            }
-            doc.text(line, pageMargin + textPadding, yPosition);
-            yPosition += 10; // Increment y-position for the next line
-          });
-        }
-
-        // Image Handling
-        if (image) {
-          const imgWidth = doc.internal.pageSize.width * 0.8;
-          const imgHeight = doc.internal.pageSize.width * 0.3;
-          const imgX = (doc.internal.pageSize.width - imgWidth) / 2;
-          const imageType = image.includes('.png') ? 'PNG' : 'JPEG';
-
-          if (yPosition + imgHeight > pageHeight - 10) {
-            doc.addPage();
-            drawPageBorder();
-            addWatermark();
-            yPosition = pageMargin + 10;
-          }
-          doc.addImage(image, imageType, imgX, yPosition, imgWidth, imgHeight);
-          yPosition += imgHeight + 10;
-        }
-
-        // Table Handling
-        if (table && table.data) {
-          const cellWidth = 40;
-          const cellHeight = 10;
-          const rowHeights = table.data.map(row => {
-            return row.reduce((maxHeight, cell) => {
-              const lines = doc.splitTextToSize(String(cell), cellWidth - 4);
-              const dynamicHeight = Math.max(lines?.length * 7, cellHeight);
-              return Math.max(maxHeight, dynamicHeight);
-            }, cellHeight);
-          });
-
-          const tableHeight = rowHeights.reduce((total, rowHeight) => total + rowHeight, 0);
-          const tableWidth = cellWidth * table.data[0]?.length;
-
-          if (pageMargin + tableMargin + tableWidth > pageWidth - pageMargin) {
-            console.log("Table exceeds page width.");
-            return;
-          }
-
-          if (yPosition + tableHeight + tableMargin > pageHeight - pageMargin) {
-            doc.addPage();
-            yPosition = pageMargin + tableMargin;
-          }
-
-          table.data.forEach((row, rowIndex) => {
-            let xPosition = pageMargin + tableMargin;
-            const rowHeight = rowHeights[rowIndex];
-
-            row.forEach(cell => {
-              const lines = doc.splitTextToSize(String(cell), cellWidth - 4);
-              doc.rect(xPosition, yPosition, cellWidth, rowHeight);
-              lines.forEach((line, index) => {
-                doc.text(line, xPosition + 2, yPosition + 7 + index * 7);
-              });
-              xPosition += cellWidth;
-            });
-
-            yPosition += rowHeight;
-          });
-
-          doc.rect(pageMargin + tableMargin, yPosition - tableHeight, tableWidth, tableHeight);
-          // Add extra space below the table before the next field
-          const tableSpace = 10; // Adjust this value to your liking
-          yPosition += tableSpace;
-        }
-      });
-
-      doc.setDrawColor(0, 0, 0);
-      doc.line(pageMargin, yPosition, doc.internal.pageSize.width - pageMargin, yPosition);
-      yPosition += 10;
+    // Options (compact)
+    const optionsObj = question?.options && typeof question.options === 'object' ? question.options : {};
+    const optionValues = Object.values(optionsObj || {});
+    const hasVisibleOption = optionValues.some(v => {
+      const text = getPlainText(v);
+      return text && text.length > 0;
     });
 
-    // Save the generated PDF
-    const pdfBlob = doc.output('blob');
-    return pdfBlob;
-  }, [courseName, subjectName, quizquestionSet, selectedOptions]);
+    if (hasVisibleOption) {
+      if (yPosition + 8 > USABLE_HEIGHT) newPage();
 
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(FONTS.BODY.size);
+      doc.setTextColor(COLORS.TEXT_DARK);
+      doc.text("Options:", cardContentX, contentY);
+      contentY += 6;
+      setBody();
+
+      for (const [key, value] of Object.entries(optionsObj)) {
+        const plain = getPlainText(value);
+        if (!plain) continue;
+        const optKey = `${key.toUpperCase()}) `;
+        const optKeyWidth = doc.getTextWidth(optKey);
+        const availableWidth = Math.max(cardContentWidth - 8 - optKeyWidth, 20);
+        const lines = doc.splitTextToSize(plain, availableWidth);
+        const needed = lines.length * LINE_HEIGHT + 4;
+        if (yPosition + needed > USABLE_HEIGHT) {
+          newPage();
+          contentY = yPosition;
+        }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(FONTS.BODY.size);
+        doc.text(optKey, cardContentX + 4, contentY);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(FONTS.BODY.size);
+        doc.text(lines, cardContentX + 4 + optKeyWidth, contentY);
+        contentY += lines.length * LINE_HEIGHT + 2;
+        yPosition = contentY;
+        setBody();
+      }
+    }
+
+    contentY += SECTION_GAP;
+    yPosition = contentY;
+
+    // Divider
+    if (yPosition + 6 > USABLE_HEIGHT) newPage();
+    doc.setDrawColor(COLORS.BORDER);
+    doc.line(cardContentX, yPosition, cardX + CONTENT_WIDTH - 10, yPosition);
+    contentY += 6;
+    yPosition = contentY;
+
+    // Answer boxes (compact)
+    const rawSelected = answersMap[question?._id];
+    const rawCorrect = question?.correctAns;
+    const selectedAnswer = getPlainText(rawSelected);
+    const correctAnswer = getPlainText(rawCorrect);
+
+    const isSelectedEmpty = !selectedAnswer || selectedAnswer.trim().length === 0;
+    const isCorrectEmpty = !correctAnswer || correctAnswer.trim().length === 0;
+    const useTwoColumn = !(isSelectedEmpty && isCorrectEmpty);
+    const bothWidth = (cardContentWidth - 6) / 2;
+    const singleWidth = cardContentWidth;
+    const chosenSelectedWidth = useTwoColumn ? bothWidth : singleWidth;
+    const chosenCorrectWidth = useTwoColumn ? bothWidth : singleWidth;
+
+    const selLines = selectedAnswer ? doc.splitTextToSize(selectedAnswer, chosenSelectedWidth - 6) : [];
+    const corrLines = correctAnswer ? doc.splitTextToSize(correctAnswer, chosenCorrectWidth - 6) : [];
+    const selHeight = Math.max(14, selLines.length * LINE_HEIGHT + 6);
+    const corrHeight = Math.max(14, corrLines.length * LINE_HEIGHT + 6);
+    const answerBoxHeight = Math.max(selHeight, corrHeight);
+
+    if (yPosition + answerBoxHeight + 6 > USABLE_HEIGHT) newPage();
+
+    const boxLeftX = cardContentX;
+    const boxRightX = cardContentX + chosenSelectedWidth + 4;
+
+    const isMatch = !isSelectedEmpty && !isCorrectEmpty && selectedAnswer === correctAnswer;
+    const yourAnswerColor = isMatch ? COLORS.CORRECT : (isSelectedEmpty ? COLORS.TEXT_MUTED : COLORS.INCORRECT);
+    const yourFill = isMatch ? COLORS.CORRECT_BG : (isSelectedEmpty ? COLORS.BACKGROUND : COLORS.INCORRECT_BG);
+
+    // YOUR ANSWER
+    doc.setDrawColor(yourAnswerColor);
+    doc.setFillColor(yourFill);
+    doc.roundedRect(boxLeftX, contentY, chosenSelectedWidth, answerBoxHeight, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(FONTS.LABEL.size);
+    doc.setTextColor(yourAnswerColor);
+    doc.text("YOUR ANSWER", boxLeftX + 4, contentY + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(FONTS.BODY.size);
+    doc.setTextColor(COLORS.TEXT_DARK);
+    const yourTextToShow = isSelectedEmpty ? "Not Answered" : selectedAnswer;
+    const yourLinesFinal = selLines.length ? selLines : doc.splitTextToSize(yourTextToShow, chosenSelectedWidth - 6);
+    doc.text(yourLinesFinal, boxLeftX + 4, contentY + 10);
+
+    // CORRECT ANSWER
+    if (!isCorrectEmpty) {
+      if (useTwoColumn) {
+        doc.setDrawColor(COLORS.CORRECT);
+        doc.setFillColor(COLORS.CORRECT_BG);
+        doc.roundedRect(boxRightX, contentY, chosenCorrectWidth, answerBoxHeight, 2, 2, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(FONTS.LABEL.size);
+        doc.setTextColor(COLORS.CORRECT);
+        doc.text("CORRECT ANSWER", boxRightX + 4, contentY + 5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(FONTS.BODY.size);
+        doc.setTextColor(COLORS.TEXT_DARK);
+        const corrLinesFinal = corrLines.length ? corrLines : doc.splitTextToSize(correctAnswer, chosenCorrectWidth - 6);
+        doc.text(corrLinesFinal, boxRightX + 4, contentY + 10);
+      } else {
+        const belowY = contentY + answerBoxHeight + 4;
+        if (belowY + answerBoxHeight + 4 > USABLE_HEIGHT) newPage();
+        doc.setDrawColor(COLORS.CORRECT);
+        doc.setFillColor(COLORS.CORRECT_BG);
+        doc.roundedRect(cardContentX, belowY, chosenCorrectWidth, answerBoxHeight, 2, 2, 'FD');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(FONTS.LABEL.size);
+        doc.setTextColor(COLORS.CORRECT);
+        doc.text("CORRECT ANSWER", cardContentX + 4, belowY + 5);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(FONTS.BODY.size);
+        doc.setTextColor(COLORS.TEXT_DARK);
+        const corrLinesFinal = corrLines.length ? corrLines : doc.splitTextToSize(correctAnswer, chosenCorrectWidth - 6);
+        doc.text(corrLinesFinal, cardContentX + 4, belowY + 10);
+        contentY = belowY + answerBoxHeight + 4;
+        yPosition = contentY;
+      }
+    }
+
+    contentY += answerBoxHeight + SECTION_GAP;
+    yPosition = contentY;
+
+    // Explanation (compact)
+    const explanationFields = (
+      Array.isArray(question?.answerDescriptionFields) && question.answerDescriptionFields.length > 0
+        ? question.answerDescriptionFields
+        : [
+            { text: question?.answerDescriptionText1, image: question?.answerDescriptionImage1, table: question?.answerDescriptionTable1 },
+            { text: question?.answerDescriptionText2, image: question?.answerDescriptionImage2, table: question?.answerDescriptionTable2 },
+            { text: question?.answerDescriptionText3, image: question?.answerDescriptionImage3, table: question?.answerDescriptionTable3 },
+          ]
+    ).filter(Boolean);
+
+    if (explanationFields.some(f => f.text || f.image || f.table)) {
+      if (yPosition + 8 > USABLE_HEIGHT) newPage();
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(FONTS.BODY.size);
+      doc.setTextColor(COLORS.PRIMARY);
+      doc.text("Explanation:", cardContentX, contentY);
+      contentY += 6;
+      yPosition = contentY;
+      setBody();
+
+      for (const field of explanationFields) {
+        if (field?.text) {
+          contentY = drawTextBlock(field.text, cardContentX, contentY, cardContentWidth, FONTS.BODY.size, FONTS.BODY.style);
+        }
+        if (field?.image) {
+          const imgStr = typeof field.image === 'string' ? field.image.trim() : null;
+          contentY = drawImageBlock(imgStr, cardContentX, contentY, cardContentWidth);
+        }
+        if (field?.table) {
+          contentY = yPosition;
+          contentY = drawTable(field.table);
+        }
+      }
+    }
+
+    // subtle border for card portion
+    const cardBottom = Math.max(yPosition + CARD_PADDING_BOTTOM, cardTop + 16);
+    try {
+      doc.setDrawColor(COLORS.BORDER);
+      doc.setLineWidth(0.28);
+      doc.roundedRect(cardX, cardTop, CONTENT_WIDTH, cardBottom - cardTop, 2.5, 2.5, 'S');
+    } catch (e) { /* ignore if unsupported */ }
+
+    yPosition = cardBottom + 6;
+    if (yPosition > USABLE_HEIGHT) newPage();
+  } // end questions loop
+
+  // final footer and return
+  drawFooter();
+  return doc.output('blob');
+}, [studentName, studentEmail, courseName, subjectName, quizquestionSet, selectedOptions]);
+
+  
 
   const handleSubmitQuiz = useCallback(() => {
     setQuizSubmitted(true);

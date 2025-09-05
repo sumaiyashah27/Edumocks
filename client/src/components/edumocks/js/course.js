@@ -7,75 +7,59 @@ import { FaTimes } from "react-icons/fa";
 
 const BookYourTest = ({ onScheduleTest }) => {
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [selectedCourse, setSelectedCourse] = useState(null); // (kept—used elsewhere if needed)
+  const [subjects, setSubjects] = useState([]);               // (kept)
+  const [selectedSubjects, setSelectedSubjects] = useState([]); // (kept)
+  const [totalPrice, setTotalPrice] = useState(0);            // (kept)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [student, setStudent] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const navigate = useNavigate();
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [screenWidth, setScreenWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    setIsLoading(true);
     axios.get("/api/course")
-      .then((response) => setCourses(response.data))
-      .catch((error) => console.error("Error fetching courses:", error));
+      .then((response) => setCourses(response.data || []))
+      .catch((error) => {
+        console.error("Error fetching courses:", error);
+        setFetchError("Couldn't load courses. Please try again.");
+      })
+      .finally(() => setIsLoading(false));
 
-    // Fetch student data if logged in
     const studentId = localStorage.getItem('_id');
     if (studentId) {
       setIsLoggedIn(true);
       axios.get(`/api/student/${studentId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       })
         .then((response) => setStudent(response.data))
         .catch((error) => console.error("Error fetching student data:", error));
     }
 
-    // Handle screen resize
     const handleResize = () => setScreenWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
-  // const handleBookTest = (course) => {
-  //   axios.get(`/api/subject?courseId=${course._id}`)
-  //     .then((response) => {
-  //       const courseWithSubjects = { ...course, subjects: response.data };
-  //       const url = `/book-test-view`;
-
-  //       sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
-  //       window.open("/book-test-view", "_blank");
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching Topics:", error);
-  //     });
-  // };
-
   const handleBookTest = (course) => {
-      axios.get(`/api/subject?courseId=${course._id}`)
-        .then((response) => {
-          const courseWithSubjects = { ...course, subjects: response.data };
-          const url = `/book-test-view`;
-  
-          sessionStorage.setItem("selectedCourse", JSON.stringify(course));
-          window.open("/book-test-view", "_blank");
-        })
-        .catch((error) => {
-          console.error("Error fetching Topics:", error);
-        });
-    };
+    axios.get(`/api/subject?courseId=${course._id}`)
+      .then((response) => {
+        const courseWithSubjects = { ...course, subjects: response.data };
+        sessionStorage.setItem("selectedCourse", JSON.stringify(course));
+        window.open("/book-test-view", "_blank");
+      })
+      .catch((error) => {
+        console.error("Error fetching Topics:", error);
+      });
+  };
 
   useEffect(() => {
     if (selectedCourse && selectedCourse.subjects) {
       setSelectedSubjects(selectedCourse.subjects);
-
       if (selectedCourse.price > 0) {
         setTotalPrice(selectedCourse.price);
       } else {
@@ -89,16 +73,16 @@ const BookYourTest = ({ onScheduleTest }) => {
     const isSelected = selectedSubjects.find((s) => s._id === subject._id);
     if (isSelected) {
       setSelectedSubjects(selectedSubjects.filter((s) => s._id !== subject._id));
-      setTotalPrice((prevPrice) => parseFloat((prevPrice - subject.price).toFixed(2)));
+      setTotalPrice((prevPrice) => parseFloat((prevPrice - (subject.price || 0)).toFixed(2)));
     } else {
       setSelectedSubjects([...selectedSubjects, subject]);
-      setTotalPrice((prevPrice) => parseFloat((prevPrice + subject.price).toFixed(2)));
+      setTotalPrice((prevPrice) => parseFloat((prevPrice + (subject.price || 0)).toFixed(2)));
     }
   };
 
   const handlePayment = async () => {
     if (selectedSubjects.length === 0) {
-      setErrorMessage("Please select at least one Topics.");
+      setErrorMessage("Please select at least one topic.");
       return;
     } else {
       setErrorMessage("");
@@ -106,7 +90,7 @@ const BookYourTest = ({ onScheduleTest }) => {
 
     navigate("/payment", {
       state: {
-        studentId: student._id,
+        studentId: student?._id,
         courseId: selectedCourse._id,
         selectedSubjects: selectedSubjects,
         totalPrice: totalPrice
@@ -114,118 +98,191 @@ const BookYourTest = ({ onScheduleTest }) => {
     });
   };
 
+  const getGridStyle = () => {
+    const isDesktop = screenWidth >= 1024;
+    const cols = isDesktop ? Math.min(3, Math.max(1, courses.length)) : 1;
 
-  const getCardContainerStyle = () => {
-    if (screenWidth > 1000) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    if (screenWidth > 800) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    if (screenWidth > 600) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
+    return {
+      display: "grid",
+      gridTemplateColumns: isDesktop ? `repeat(${cols}, minmax(280px, 1fr))` : "1fr",
+      gap: "28px",
+      padding: "8px",
+      justifyContent: isDesktop ? "center" : "stretch",
+      justifyItems: isDesktop ? "center" : "stretch",
+      maxWidth: isDesktop ? "1200px" : "100%",
+      margin: "0 auto",
+    };
   };
 
-  const getCardStyle = () => {
-    if (screenWidth > 1000) return { flex: "1 1 calc(25% - 20px)", marginBottom: "20px", textAlign: "center",padding: "20px" };
-    if (screenWidth > 800) return { flex: "1 1 calc(33% - 20px)", marginBottom: "20px", textAlign: "center",padding: "20px" };
-    if (screenWidth > 600) return { flex: "1 1 calc(50% - 20px)", marginBottom: "20px", textAlign: "center", padding: "20px" };
-    return { flex: "1 1 100%", marginBottom: "20px", textAlign: "center" };
+  const cardBase = {
+    width: "100%",
+    maxWidth: "360px",
+    background: "rgba(255,255,255,0.86)",
+    backdropFilter: "blur(6px)",
+    borderRadius: "18px",
+    overflow: "hidden",
+    boxShadow: "0 20px 50px rgba(20, 22, 60, 0.12)",
+    transition: "transform 0.35s ease, box-shadow 0.35s ease",
+    cursor: "pointer",
+    border: "1px solid rgba(16,11,92,0.06)",
   };
+
+  const priceToUSD = (val) => `$ ${Number(val || 0).toLocaleString("en-IN")}`;
+  const placeholder = "https://via.placeholder.com/640x360.png?text=Course+Image";
 
   return (
-    <div className="work-section-wrapper" style={{ padding: "20px", backgroundColor: "#f4f4f9", fontFamily: "Arial, sans-serif" }}>
-      <div className="work-section-top" style={{ textAlign: "center" }}>
-        <h1 className="primary-heading mt-2 mb-4" style={{ fontSize: "2rem", fontWeight: "bold", color: "#100B5C" }}>Book Your Test</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(1200px 600px at 20% -10%, #EEF2FF 0%, rgba(255,255,255,0) 60%), radial-gradient(900px 500px at 100% 0%, #E6FFFA 0%, rgba(255,255,255,0) 55%), linear-gradient(180deg, #FAFBFF 0%, #FFFFFF 100%)",
+        fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
+        color: "#1F2430",
+      }}
+    >
+      {/* Page header */}
+      <div style={{ textAlign: "center", padding: "56px 16px 18px" }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "6px 12px",
+            borderRadius: 999,
+            background:
+              "linear-gradient(90deg, rgba(14,10,90,0.06) 0%, rgba(200,13,24,0.06) 100%)",
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#3F3F77",
+            letterSpacing: 0.6
+          }}
+        >
+          <FaBook /> QUICK PRACTICE SLOTS OPEN
+        </div>
+
+        <h1
+          style={{
+            fontSize: "clamp(30px, 3.8vw, 44px)",
+            fontWeight: 900,
+            color: "#0E0A5A",
+            marginTop: 14,
+            lineHeight: 1.15
+          }}
+        >
+          Book Your Test
+        </h1>
       </div>
 
-      <div className="courses-section-wrapper" style={getCardContainerStyle()}>
-        <div className="courses-container" style={{ width: "100%", display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
-          {courses.map((course) => (
-            <div key={course._id} className="course-card" style={getCardStyle()}>
-              <h3 className="course-name" style={{ fontSize: "1.5rem", color: "#202021", marginBottom: "10px" }}>{course.name}</h3>
-              <button className="book-test-button" onClick={() => handleBookTest(course)} style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 20px", fontSize: "1rem", border: "none", borderRadius: "5px", cursor: "pointer", transition: "background-color 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#d47b09"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#C80D18"}>
-                <FaBook /> Book Test
-              </button>
-            </div>
-          ))}
+      {/* Grid */}
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 20px 60px" }}>
+        <div style={getGridStyle()}>
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, idx) => (
+                <div key={`skeleton-${idx}`} className="pretty-card skeleton-card">
+                  <div className="skeleton-banner" />
+                  <div className="skeleton-body">
+                    <div className="skeleton-line" style={{ width: "70%" }} />
+                    <div className="skeleton-line" style={{ width: "40%" }} />
+                    <div className="skeleton-btn" />
+                  </div>
+                </div>
+              ))
+            : courses.length > 0
+            ? courses.map((course) => (
+                <div
+                  key={course._id}
+                  className="pretty-card"
+                  style={cardBase}
+                  onClick={() => handleBookTest(course)}
+                >
+                  {/* Media */}
+                  {/* Media */}
+                  <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(180deg, rgba(14,10,90,0.06) 0%, rgba(14,10,90,0) 60%, rgba(14,10,90,0.06) 100%)",
+                        pointerEvents: "none"
+                      }}
+                    />
+                    <img
+                      src={course.image || placeholder}
+                      alt={course.name}
+                      style={{
+                        width: "100%",
+                        height: "auto",      // auto height so it never cuts
+                        objectFit: "contain", // full image visible
+                        display: "block",
+                        background: "#F7F8FC"
+                      }}
+                      onError={(e) => (e.currentTarget.src = placeholder)}
+                    />
+
+                    {/* Price ribbon */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        padding: "8px 12px",
+                        borderRadius: 12,
+                        fontWeight: 800,
+                        fontSize: 20,
+                        background: "linear-gradient(135deg, #0EA5E9 0%, #22C55E 100%)",
+                        color: "#FFFFFF",
+                        boxShadow: "0 10px 20px rgba(16, 185, 129, 0.2)"
+                      }}
+                    >
+                      {Number(course.price) > 0 ? priceToUSD(course.price) : "Per-topic pricing"}
+                    </div>
+
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: 18, textAlign: "left" }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1E255E", lineHeight: 1.35 }}>
+                      {course.name}
+                    </h3>
+
+                    {/* CTA only */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBookTest(course);
+                      }}
+                      className="cta-btn"
+                      style={{
+                        marginTop: 14,
+                        width: "100%",
+                        background: "linear-gradient(135deg, #C80D18 0%, #F43F5E 100%)",
+                        color: "#fff",
+                        padding: "12px 16px",
+                        fontSize: 14,
+                        fontWeight: 800,
+                        border: "none",
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        boxShadow: "0 12px 30px rgba(200,13,24,0.25)"
+                      }}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                        <FaBook /> Book Test
+                      </span>
+                    </button>
+                  </div>
+
+                </div>
+              ))
+            : (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: 40 }}>
+                <h3 style={{ color: "#0E0A5A", fontWeight: 800, fontSize: 18 }}>No courses available right now</h3>
+                <p style={{ color: "#565B78", marginTop: 6 }}>Please check back soon.</p>
+              </div>
+            )}
         </div>
       </div>
-
-      {selectedCourse && (
-        <div className="popup" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", width: "80%", maxWidth: "600px", zIndex: "1000", overflowY: "auto", boxSizing: "border-box", maxHeight: "80vh" }}>
-          <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>
-            Select Topics for {selectedCourse.name}
-          </h2>
-
-          {/* Select All Checkbox */}
-          {selectedCourse.price === 0 && (
-            <div style={{ textAlign: "center", marginBottom: "15px" }}>
-              <label style={{ fontSize: "1rem", fontWeight: "bold", color: "#202021", cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={selectedSubjects.length === selectedCourse.subjects.length}  // Only check selected course subjects
-                  onChange={() => {
-                    if (selectedSubjects.length === selectedCourse.subjects.length) {
-                      setSelectedSubjects([]);
-                      setTotalPrice(0);
-                    } else {
-                      setSelectedSubjects(selectedCourse.subjects);
-                      const total = selectedCourse.subjects.reduce((sum, subject) => sum + (subject.price || 0), 0);
-                      setTotalPrice(parseFloat(total.toFixed(2)));
-                    }
-                  }}
-                  style={{ accentColor: "#C80D18", width: "20px", height: "20px", marginRight: "8px" }}
-                />
-                Select All Topics
-              </label>
-            </div>
-          )}
-
-          {/* Subject List */}
-          <div className="row">
-          <ul className="subject-list col-md-9" style={{ listStyleType: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", justifyContent: "center" }}>
-            {selectedCourse.subjects.map((subject) => (
-              <li key={subject._id} style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "15px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", textAlign: "center", transition: "transform 0.3s ease" }}
-                onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-                onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-                <label style={{ fontSize: "1rem", color: "#202021", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(subject)}
-                    checked={selectedSubjects.some((s) => s._id === subject._id)}
-                    disabled={selectedCourse.price > 0}  // Disable checkboxes if course has a price
-                    style={{ accentColor: "#C80D18", width: "20px", height: "20px" }}
-                  />
-                  {subject.name}
-                </label>
-              </li>
-            ))}
-          </ul>
-
-          {/* Error Message */}
-          {errorMessage && (
-            <p style={{ color: "red", fontWeight: "bold", marginTop: "20px", textAlign: "center" }}>
-              {errorMessage}
-            </p>
-          )}
-
-          {/* Footer */}
-          <div className="popup-footer col-md-3" style={{ marginTop: "30px", textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-            <p style={{ fontSize: "1.2rem", color: "#202021", fontWeight: "bold", marginBottom: "20px" }}>
-              Total Price: ${parseFloat(totalPrice).toFixed(2)}
-            </p>
-            <button className="popup-button" onClick={handlePayment} style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 25px", fontSize: "1.2rem", border: "none", borderRadius: "8px", cursor: "pointer", marginRight: "10px", transition: "background-color 0.3s ease, transform 0.3s ease" }}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "#d47b09"; e.currentTarget.style.transform = "scale(1.05)"; }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "#C80D18"; e.currentTarget.style.transform = "scale(1)"; }}>
-              Book Test
-            </button>
-
-            {/* Close Button */}
-            <div style={{ position: "absolute", top: "15px", right: "15px", cursor: "pointer" }}
-              onClick={() => { setSelectedCourse(null); setSubjects([]); setSelectedSubjects([]); setTotalPrice(0); }}>
-              <FaTimes size={20} style={{ color: "#100B5C" }} />
-            </div>
-          </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,70 +1,176 @@
-import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap'; // For responsive layout
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+
+// --- INLINE CSS STYLES ---
+const TermsStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&display=swap');
+
+  :root {
+    --tc-color-primary: #101D42;
+    --tc-color-accent: #FCA311;
+    --tc-color-bg: #F8F9FA;
+    --tc-color-card-bg: #FFFFFF;
+    --tc-color-text-dark: #141414;
+    --tc-color-text-body: #343a40;
+    --tc-color-text-muted: #6c757d;
+    --tc-color-border: #e9ecef;
+  }
+
+  .tc-section {
+    padding: 4rem 1.5rem;
+    background-color: var(--tc-color-bg);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .tc-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .tc-card {
+    background-color: var(--tc-color-card-bg);
+    border-radius: 1.5rem;
+    padding: clamp(2rem, 5vw, 4rem);
+    box-shadow: 0 25px 50px -12px rgba(16, 29, 66, 0.1);
+  }
+
+  .tc-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--tc-color-border);
+  }
+  
+  .tc-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--tc-color-primary);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .tc-subtitle {
+    font-size: 1.1rem;
+    color: var(--tc-color-text-muted);
+    margin-top: 1rem;
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .tc-content-section {
+    font-family: 'Source Serif 4', serif;
+    color: var(--tc-color-text-body);
+    margin-bottom: 2.5rem;
+  }
+  
+  .tc-content-section:last-child {
+    margin-bottom: 0;
+  }
+  
+  .tc-content-section h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--tc-color-primary);
+    margin-bottom: 1.5rem;
+  }
+  
+  .tc-content-section p {
+    line-height: 1.9;
+    margin-bottom: 1rem;
+  }
+  
+  .tc-content-section a {
+    color: var(--tc-color-accent);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .tc-content-section a:hover {
+    opacity: 0.8;
+  }
+  
+  /* --- Responsive --- */
+  @media (max-width: 768px) {
+    .tc-section {
+      padding: 4rem 1rem;
+    }
+     .tc-card {
+        padding: 2rem;
+     }
+  }
+`;
 
 const TermsConditions = () => {
-  return (
-    <div className="terms-page" style={{marginTop: '100px'}}>
-      <Container>
-        <Row className="header-row">
-          <Col>
-            <h1 className="page-title">Terms and Conditions</h1>
-            <p className="page-subtitle">
-              Please read these Terms and Conditions carefully before using our services. By using our platform, you agree to abide by the following terms.
-            </p>
-          </Col>
-        </Row>
+    useEffect(() => {
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = TermsStyles;
+        document.head.appendChild(styleElement);
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
 
-        <Row>
-          <Col md={12}>
-            <p>
-              Welcome to <strong>Edumocks</strong>. These Terms and Conditions govern your access to and use of the Edumocks website, including all its features, services, and content. By accessing or using the platform, you agree to comply with these terms. If you do not agree with these terms, you must not use our services.
-            </p>
-            <p>
-              Edumocks offers a platform for CFA Level 1 and Level 2 mock test preparations. All content, tests, and resources are designed to enhance your readiness for the actual CFA exams. Our platform is accessible online and provides various test types and study resources to support your exam preparation.
-            </p>
+    return (
+        <section className="tc-section">
+            <div className="tc-container">
+                 <motion.div 
+                    className="tc-card"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <header className="tc-header">
+                        <h1 className="tc-title">Terms and Conditions</h1>
+                        <p className="tc-subtitle">
+                            Please read these terms carefully before using our services. Your access to and use of the service is conditioned on your acceptance of these terms.
+                        </p>
+                    </header>
 
-            <p>
-              As a user, you are responsible for providing accurate and complete registration information to ensure seamless access to the platform. You are also responsible for safeguarding your account credentials, including username and password, and for all activities that occur under your account. You must engage in lawful activities and avoid fraudulent, abusive, or harmful behavior while using our services. Additionally, you must not upload, share, or distribute content that violates intellectual property rights or is unlawful. You must comply with all applicable laws while using the platform.
-            </p>
+                    <div className="tc-content-body">
+                         <section className="tc-content-section">
+                            <h2>1. Introduction</h2>
+                            <p>Welcome to <strong>Edumocks</strong>. These Terms and Conditions govern your use of the Edumocks website and its services. By accessing or using our platform, you agree to comply with and be bound by these terms. If you disagree with any part of the terms, you must not use our services.</p>
+                        </section>
+                        
+                        <section className="tc-content-section">
+                            <h2>2. User Responsibilities</h2>
+                             <p>You are responsible for providing accurate registration information and for safeguarding your account credentials. You agree to use our services for lawful purposes only and to not engage in any activity that is fraudulent, abusive, or harmful. You must not upload or distribute any content that violates intellectual property rights or is otherwise unlawful.</p>
+                        </section>
+                        
+                        <section className="tc-content-section">
+                            <h2>3. Privacy and Data</h2>
+                            <p>We are committed to protecting your personal information. Our data collection is limited to what is necessary to provide you with the best user experience. For detailed information on our data practices, please review our full <a href="/privacy-policy">Privacy Policy</a>.</p>
+                        </section>
 
-            <p>
-              We take your privacy seriously and are committed to protecting your personal information. Edumocks only collects data that is necessary to provide you with the best possible user experience. The types of data we collect include personal information for account creation and communication purposes, usage data to analyze and improve website performance, and cookies for personalizing your experience. Your data will not be shared with third parties except as stated in our <Link to="/privacy-policy">Privacy Policy</Link>. We encourage you to review our full privacy practices.
-            </p>
+                        <section className="tc-content-section">
+                            <h2>4. Payments and Subscriptions</h2>
+                             <p>Access to premium services requires payment, processed through secure third-party gateways. All payments are final and non-refundable, as detailed in our <a href="/refund-policy">Refund Policy</a>. Edumocks reserves the right to modify subscription fees at any time, with changes communicated prior to your next billing cycle.</p>
+                        </section>
 
-            <p>
-              Edumocks offers both free and premium subscription plans. For premium access, payments are processed securely through trusted third-party payment gateways. Subscription fees are billed on a monthly or annual basis, depending on your selected plan. All payments made for premium services are final and non-refundable. Edumocks reserves the right to modify subscription fees at any time, and any changes will be communicated to you before the next billing cycle. Access to premium services will only be granted upon successful payment. If you have any questions regarding payment or billing, feel free to contact our support team.
-            </p>
+                        <section className="tc-content-section">
+                            <h2>5. Termination</h2>
+                             <p>We reserve the right to suspend or terminate your account if you violate these Terms and Conditions. This includes engaging in fraudulent activities, misusing the platform, or infringing on intellectual property rights. Upon termination, access to all services will be revoked.</p>
+                        </section>
 
-            <p>
-              We reserve the right to suspend or terminate your account if we detect any violation of these Terms and Conditions. Violations may include engaging in fraudulent or harmful activities, misuse of our platform or any of its services, and infringing intellectual property rights. If your account is terminated, access to all services will be revoked, and any fees paid are non-refundable. If you wish to dispute any suspension or termination, please contact our support team.
-            </p>
-
-            <p>
-              These Terms and Conditions are governed by and construed in accordance with the laws of India. Any legal action or proceeding arising from your use of the services shall be subject to the exclusive jurisdiction of the courts located in mumbai, India.
-            </p>
-
-            <p>
-              Edumocks reserves the right to update or modify these Terms and Conditions at any time. Any changes will be reflected here, with the revised date of the update displayed. We recommend that you review these terms periodically to stay informed of any updates.
-            </p>
-
-            <p>
-              If you have any questions or concerns regarding these Terms and Conditions, please feel free to reach out to us via email at <strong>support@edumocks.com</strong>.
-            </p>
-          </Col>
-        </Row>
-
-        {/* Footer Section */}
-        <Row className="footer-row">
-          <Col className="text-center">
-            <p>
-              By using Edumocks, you acknowledge that you have read, understood, and agree to these Terms and Conditions.
-            </p>
-          </Col>
-        </Row>
-      </Container>
-    </div>
-  );
+                        <section className="tc-content-section">
+                            <h2>6. Governing Law</h2>
+                             <p>These Terms are governed by the laws of India. Any legal action or proceeding related to your use of our services shall be subject to the exclusive jurisdiction of the courts located in Mumbai, India.</p>
+                        </section>
+                        
+                        <section className="tc-content-section">
+                            <h2>7. Contact Information</h2>
+                            <p>If you have any questions about these Terms, please contact us at <a href="mailto:support@edumocks.com">support@edumocks.com</a>.</p>
+                        </section>
+                    </div>
+                </motion.div>
+            </div>
+        </section>
+    );
 };
 
 export default TermsConditions;
+

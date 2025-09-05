@@ -49,7 +49,11 @@ app.use((req, res, next) => {
 app.use(express.json()); // Parse JSON request bodies
 
 // Serve static images from the "images" folder (adjust the folder name if needed)
-app.use('/images', express.static(path.join(__dirname, './image/'))); // Replace 'images' with your actual image folder
+app.use('/images', express.static(path.join(__dirname, './image/'))); 
+
+// ✅ Serve course images
+app.use('/course-images', express.static(path.join(__dirname, './course-image')));
+
 // Use the routes 
 app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);

@@ -11,7 +11,8 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 const Course = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
+  // const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState([]);
   const [courseDetails, setCourseDetails] = useState(null);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,8 @@ const Course = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [newCourseImage, setNewCourseImage] = useState(null);
+  const [editCourseImage, setEditCourseImage] = useState(null);
  
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
@@ -134,27 +137,56 @@ const Course = () => {
       .join(", ")
     : "Select Topics";
 
-  const handleAddCourse = async () => {
-    if (!newCourseName || !newCourseDescription) {
-      toast.warn('Please enter course name and description.');
-      return;
-    }
+  // const handleAddCourse = async () => {
+  //   if (!newCourseName || !newCourseDescription) {
+  //     toast.warn('Please enter course name and description.');
+  //     return;
+  //   }
 
-    try {
-      const newCourse = {
-        name: newCourseName,
-        price: newCoursePrice,
-        description: newCourseDescription,
-      };
-      console.log('Sending course data:', newCourse);
-      await axios.post('/api/course', newCourse);
-      fetchCourses();
-      closeAddCourseModal();
-      toast.success('Course added successfully.');
-    } catch (error) {
-      toast.error('Error adding new course.');
-    }
-  };
+  //   try {
+  //     const newCourse = {
+  //       name: newCourseName,
+  //       price: newCoursePrice,
+  //       description: newCourseDescription,
+  //     };
+  //     console.log('Sending course data:', newCourse);
+  //     await axios.post('/api/course', newCourse);
+  //     fetchCourses();
+  //     closeAddCourseModal();
+  //     toast.success('Course added successfully.');
+  //   } catch (error) {
+  //     toast.error('Error adding new course.');
+  //   }
+  // };
+  const handleAddCourse = async () => {
+   if (!newCourseName || !newCourseDescription) {
+     toast.warn('Please enter course name and description.');
+     return;
+   }
+
+   try {
+     const token = localStorage.getItem('token');
+     const formData = new FormData();
+     formData.append('name', newCourseName);
+     formData.append('price', newCoursePrice);
+     formData.append('description', newCourseDescription);
+     if (newCourseImage) formData.append('image', newCourseImage); // field name must be "image"
+
+     await axios.post('/api/course', formData, {
+       headers: {
+         'Content-Type': 'multipart/form-data',
+         Authorization: `Bearer ${token}`,
+       },
+     });
+
+     fetchCourses();
+     closeAddCourseModal();
+     setNewCourseImage(null);
+     toast.success('Course added successfully.');
+   } catch (error) {
+     toast.error(error.response?.data?.message || 'Error adding new course.');
+   }
+ };
   const handleDeleteCourse = async (courseId) => {
     try {
       await axios.delete(`/api/course/${courseId}`);
@@ -209,10 +241,15 @@ const Course = () => {
     setIsAddSubjectModalOpen(true);
   };
 
+  // const closeAddSubjectModal = () => {
+  //   setIsAddSubjectModalOpen(false);
+  //   setSelectedSubject('');
+  // };
+
   const closeAddSubjectModal = () => {
     setIsAddSubjectModalOpen(false);
-    setSelectedSubject('');
-  };
+    setSelectedSubject([]);
+ };
 
   const openAddCourseModal = () => {
     setIsAddCourseModalOpen(true);
@@ -238,21 +275,51 @@ const Course = () => {
     }
   };
 
-  const handleEditCourse = async () => {
-    if (!newCourseName.trim()) {
-      toast.warn('Course name cannot be empty.');
-      return;
-    }
+  // const handleEditCourse = async () => {
+  //   if (!newCourseName.trim()) {
+  //     toast.warn('Course name cannot be empty.');
+  //     return;
+  //   }
 
-    try {
-      await axios.put(`/api/course/${editingCourse._id}`, { name: newCourseName,price: newCoursePrice, description: newCourseDescription });
-      fetchCourses();
-      setIsEditModalOpen(false);
-      toast.success('Course updated successfully.');
-    } catch (error) {
-      toast.error('Error updating course.');
-    }
-  };
+  //   try {
+  //     await axios.put(`/api/course/${editingCourse._id}`, { name: newCourseName,price: newCoursePrice, description: newCourseDescription });
+  //     fetchCourses();
+  //     setIsEditModalOpen(false);
+  //     toast.success('Course updated successfully.');
+  //   } catch (error) {
+  //     toast.error('Error updating course.');
+  //   }
+  // };
+
+  const handleEditCourse = async () => {
+   if (!newCourseName.trim()) {
+     toast.warn('Course name cannot be empty.');
+     return;
+   }
+
+   try {
+     const token = localStorage.getItem('token');
+     const formData = new FormData();
+     formData.append('name', newCourseName);
+     formData.append('price', newCoursePrice);
+     formData.append('description', newCourseDescription);
+     if (editCourseImage) formData.append('image', editCourseImage);
+
+     await axios.put(`/api/course/${editingCourse._id}`, formData, {
+       headers: {
+         'Content-Type': 'multipart/form-data',
+         Authorization: `Bearer ${token}`,
+       },
+     });
+
+     fetchCourses();
+     setIsEditModalOpen(false);
+     setEditCourseImage(null);
+     toast.success('Course updated successfully.');
+   } catch (error) {
+     toast.error(error.response?.data?.message || 'Error updating course.');
+   }
+ };
 
   const handleDeleteSubjectClick = (courseId, subjectId) => {
     setSelectedCourseId(courseId);
@@ -323,7 +390,7 @@ const Course = () => {
         {filteredCourses.map((course) => (
           <div key={course._id} className="card mb-3" style={{ padding: '15px', borderRadius: '8px', background: '#f9f9f9', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', cursor: 'pointer' }} onClick={() => toggleCourseExpand(course._id)}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center' }}>
-              {/* Left Section: Course Name & Expand Icon */}
+              {/* Left Section: Course Name & Expand Icon
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <h5 className="d-flex align-items-center gap-3" style={{ color: '#100B5C', margin: 0 }}>
                   <FontAwesomeIcon
@@ -334,6 +401,45 @@ const Course = () => {
                   {course.name} - ${course.price}
                 </h5>
                 <span style={{ color: '#555', fontSize: '14px', marginLeft: '35px' }}>{course.description || ''}</span>
+              </div> */}
+              {/* Left Section: Thumbnail + Name/Price/Desc */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {course.image ? (
+                  <img
+                    src={course.image} // e.g. /course-images/course-xxx.jpg
+                    alt={course.name}
+                    style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8 }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 8,
+                      background: '#eee',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 12,
+                      color: '#777',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    No image
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  <h5 className="d-flex align-items-center gap-3" style={{ color: '#100B5C', margin: 0 }}>
+                    <FontAwesomeIcon
+                      icon={expandedCourse === course._id ? faMinus : faPlus}
+                      style={{ color: '#100B5C', cursor: 'pointer', fontSize: '20px' }}
+                      onClick={() => toggleCourseExpand(course._id)}
+                    />
+                    {course.name} - ${course.price}
+                  </h5>
+                  <span style={{ color: '#555', fontSize: '14px', marginLeft: '35px' }}>{course.description || ''}</span>
+                </div>
               </div>
 
               {/* Right Section: Delete Icon */}
@@ -489,6 +595,12 @@ const Course = () => {
                 className="form-control mt-2"
                 placeholder="Enter course description"
               />
+              <input
+                type="file"
+                accept="image/*"
+                className="form-control mt-2"
+                onChange={(e) => setNewCourseImage(e.target.files?.[0] || null)}
+              />
             </div>
             <div className="modal-footer">
               <Button onClick={handleAddCourse} style={{ backgroundColor: '#100B5C', color: '#fff' }}>
@@ -582,6 +694,12 @@ const Course = () => {
                   className="form-control mt-2"
                   placeholder="Enter course description"
                 />
+                <input
+                type="file"
+                accept="image/*"
+                className="form-control mt-2"
+                onChange={(e) => setEditCourseImage(e.target.files?.[0] || null)}
+              />
               </div>
               <div className="modal-footer">
                 <button style={{ backgroundColor: 'rgb(16, 11, 92)', borderColor: 'rgb(16, 11, 92)' }} className="btn btn-primary" onClick={handleEditCourse}>

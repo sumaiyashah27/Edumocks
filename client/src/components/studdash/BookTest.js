@@ -1,260 +1,104 @@
-import React, { useState, useEffect } from "react";
-import "./css/booktest.css";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { FaBook } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { FaTimes } from "react-icons/fa";
+import axios from "axios";
+import "../studdash/css/booktest.css"; // <-- path adjust if needed
 
-
-const BookTest = ({ onScheduleTest }) => {
+const BookYourTest = () => {
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [subjects, setSubjects] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [student, setStudent] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    // Fetch courses with token
-    axios.get("/api/course", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then((response) => setCourses(response.data))
-      .catch((error) => console.error("Error fetching courses:", error));
-
-    // Fetch student data if logged in
-    const studentId = localStorage.getItem('_id');
-    if (studentId) {
-      setIsLoggedIn(true);
-      axios.get(`/api/student/${studentId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-        .then((response) => setStudent(response.data))
-        .catch((error) => console.error("Error fetching student data:", error));
-    }
-
-    // Handle screen resize
-    const handleResize = () => setScreenWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
+    setIsLoading(true);
+    axios
+      .get("/api/course")
+      .then((res) => setCourses(res.data || []))
+      .catch(() => setCourses([]))
+      .finally(() => setIsLoading(false));
   }, []);
 
-
-  // const handleBookTest = (course) => {
-  //   const token = localStorage.getItem("token"); // or sessionStorage.getItem("token")
-  //   if (!token) {
-  //     console.error("No token found");
-  //     return;
-  //   }
-
-  //   axios.get(`/api/subject?courseId=${course._id}`, {
-  //     headers: {
-  //       Authorization: `Bearer ${token}`
-  //     }
-  //   })
-  //     .then((response) => {
-  //       const courseWithSubjects = { ...course, subjects: response.data };
-  //       const url = `/book-test-view`;
-
-  //       const tab = window.open(url, "_blank");
-  //       if (tab) {
-  //         sessionStorage.setItem("selectedCourse", JSON.stringify(courseWithSubjects));
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching Topics:", error);
-  //     });
-  // };
+  const placeholder =
+    "https://via.placeholder.com/640x360.png?text=Course+Image";
+  const priceToUSD = (v) => `$ ${Number(v || 0).toLocaleString("en-IN")}`;
 
   const handleBookTest = (course) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-  
-    axios.get(`/api/subject?courseId=${course._id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then((response) => {
-        const courseWithSubjects = { ...course, subjects: response.data };
-        sessionStorage.setItem("selectedCourse", JSON.stringify(course));
-        navigate("/book-test-view");
-      })
-      .catch((error) => {
-        console.error("Error fetching Topics:", error);
-      });
-  };
-  
-  
-  useEffect(() => {
-    if (selectedCourse && selectedCourse.subjects) {
-      setSelectedSubjects(selectedCourse.subjects); // Select all subjects in the selected course
-
-      if (selectedCourse.price > 0) {
-        setTotalPrice(selectedCourse.price); // Use course price if it's greater than 0
-      } else {
-        const total = selectedCourse.subjects.reduce((sum, subject) => sum + (subject.price || 0), 0);
-        setTotalPrice(parseFloat(total.toFixed(2))); // Calculate total price based on selected course subjects
-      }
-    }
-  }, [selectedCourse]); // Runs when selectedCourse changes
-
-
-
-  const handleCheckboxChange = (subject) => {
-    const isSelected = selectedSubjects.find((s) => s._id === subject._id);
-    if (isSelected) {
-      setSelectedSubjects(selectedSubjects.filter((s) => s._id !== subject._id));
-      setTotalPrice((prevPrice) => parseFloat((prevPrice - subject.price).toFixed(2)));
-    } else {
-      setSelectedSubjects([...selectedSubjects, subject]);
-      setTotalPrice((prevPrice) => parseFloat((prevPrice + subject.price).toFixed(2)));
-    }
-  };
-
-  const handlePayment = async () => {
-    if (selectedSubjects.length === 0) {
-      setErrorMessage("Please select at least one Topics.");
-      return;
-    } else {
-      setErrorMessage("");
-    }
-
-    navigate("/payment", {
-      state: {
-        studentId: student._id,
-        courseId: selectedCourse._id,
-        selectedSubjects: selectedSubjects,
-        totalPrice: totalPrice
-      }
-    });
-  };
-
-
-  const getCardContainerStyle = () => {
-    if (screenWidth > 1000) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    if (screenWidth > 800) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    if (screenWidth > 600) return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-    return { display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "center" };
-  };
-
-  const getCardStyle = () => {
-    if (screenWidth > 1000) return { flex: "1 1 calc(25% - 20px)", marginBottom: "20px", textAlign: "center" };
-    if (screenWidth > 800) return { flex: "1 1 calc(33% - 20px)", marginBottom: "20px", textAlign: "center" };
-    if (screenWidth > 600) return { flex: "1 1 calc(50% - 20px)", marginBottom: "20px", textAlign: "center" };
-    return { flex: "1 1 100%", marginBottom: "20px", textAlign: "center" };
+    // Open detailed view / selection page
+    sessionStorage.setItem("selectedCourse", JSON.stringify(course));
+    window.open("/book-test-view", "_blank");
   };
 
   return (
-    <div className="work-section-wrapper" style={{ padding: "20px", backgroundColor: "#f4f4f9", fontFamily: "Arial, sans-serif", marginBottom: '30px' }}>
-      <div className="work-section-top" style={{ textAlign: "center" }}>
-        <h1 className="primary-heading" style={{ fontSize: "2rem", fontWeight: "bold", color: "#100B5C" }}>Book Your Test</h1>
-      </div>
+    <div className="booktest">
+      <header className="bt-header">
+        <h1 className="bt-title">Book Your Test</h1>
+      </header>
 
-      <div className="courses-section-wrapper" style={getCardContainerStyle()}>
-        <div className="courses-container" style={{ width: "100%", display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
-          {courses.map((course) => (
-            <div key={course._id} className="course-card" style={getCardStyle()}>
-              <h3 className="course-name" style={{ fontSize: "1.5rem", color: "#202021", marginBottom: "10px" }}>{course.name}</h3>
-              <button className="book-test-button" onClick={() => handleBookTest(course)} style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 20px", fontSize: "1rem", border: "none", borderRadius: "5px", cursor: "pointer", transition: "background-color 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#d47b09"} onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#C80D18"}>
-                <FaBook /> Book Test
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
+      <main className="bt-container">
+        <section className="bt-grid">
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <article className="bt-card bt-skeleton" key={`sk-${i}`}>
+                  <div className="bt-media">
+                    <div className="bt-media-box" />
+                  </div>
+                  <div className="bt-body">
+                    <div className="sk-line sk-1" />
+                    <div className="sk-line sk-2" />
+                    <div className="sk-btn" />
+                  </div>
+                </article>
+              ))
+            : courses.length > 0
+            ? courses.map((c) => (
+                <article
+                  className="bt-card"
+                  key={c._id}
+                  onClick={() => handleBookTest(c)}
+                >
+                  <div className="bt-media">
+                    <div className="bt-media-box">
+                      <img
+                        src={c.image || placeholder}
+                        alt={c.name}
+                        onError={(e) => (e.currentTarget.src = placeholder)}
+                      />
+                    </div>
+                    <div className="bt-ribbon">
+                      {Number(c.price) > 0
+                        ? priceToUSD(c.price)
+                        : "Per-topic pricing"}
+                    </div>
+                  </div>
 
-      {selectedCourse && (
-        <div className="popup" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "15px", boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", width: "80%", maxWidth: "600px", zIndex: "1000", overflowY: "auto", boxSizing: "border-box", maxHeight: "80vh" }}>
-          <h2 style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#100B5C", textAlign: "center", marginBottom: "20px" }}>
-            Select Topics for {selectedCourse.name}
-          </h2>
-
-          {/* Select All Checkbox */}
-          {selectedCourse.price === 0 && (
-            <div style={{ textAlign: "center", marginBottom: "15px" }}>
-              <label style={{ fontSize: "1rem", fontWeight: "bold", color: "#202021", cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={selectedSubjects.length === selectedCourse.subjects.length}  // Only check selected course subjects
-                  onChange={() => {
-                    if (selectedSubjects.length === selectedCourse.subjects.length) {
-                      setSelectedSubjects([]);
-                      setTotalPrice(0);
-                    } else {
-                      setSelectedSubjects(selectedCourse.subjects);
-                      const total = selectedCourse.subjects.reduce((sum, subject) => sum + (subject.price || 0), 0);
-                      setTotalPrice(parseFloat(total.toFixed(2)));
-                    }
-                  }}
-                  style={{ accentColor: "#C80D18", width: "20px", height: "20px", marginRight: "8px" }}
-                />
-                Select All Topics
-              </label>
-            </div>
-          )}
-
-          {/* Subject List */}
-          <ul className="subject-list" style={{ listStyleType: "none", padding: 0, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "10px", justifyContent: "center" }}>
-            {selectedCourse.subjects.map((subject) => (
-              <li key={subject._id} style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "15px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", textAlign: "center", transition: "transform 0.3s ease" }}
-                onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-5px)"}
-                onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-                <label style={{ fontSize: "1rem", color: "#202021", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                  <input
-                    type="checkbox"
-                    onChange={() => handleCheckboxChange(subject)}
-                    checked={selectedSubjects.some((s) => s._id === subject._id)}
-                    disabled={selectedCourse.price > 0}  // Disable checkboxes if course has a price
-                    style={{ accentColor: "#C80D18", width: "20px", height: "20px" }}
-                  />
-                  {subject.name}
-                </label>
-              </li>
-            ))}
-          </ul>
-
-          {/* Error Message */}
-          {errorMessage && (
-            <p style={{ color: "red", fontWeight: "bold", marginTop: "20px", textAlign: "center" }}>
-              {errorMessage}
-            </p>
-          )}
-
-          {/* Footer */}
-          <div className="popup-footer" style={{ marginTop: "30px", textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-            <p style={{ fontSize: "1.2rem", color: "#202021", fontWeight: "bold", marginBottom: "20px" }}>
-              Total Price: ${parseFloat(totalPrice).toFixed(2)}
-            </p>
-            <button className="popup-button" onClick={handlePayment} style={{ backgroundColor: "#C80D18", color: "#fff", padding: "12px 25px", fontSize: "1.2rem", border: "none", borderRadius: "8px", cursor: "pointer", marginRight: "10px", transition: "background-color 0.3s ease, transform 0.3s ease" }}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "#d47b09"; e.currentTarget.style.transform = "scale(1.05)"; }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "#C80D18"; e.currentTarget.style.transform = "scale(1)"; }}>
-              Book Test
-            </button>
-
-            {/* Close Button */}
-            <div style={{ position: "absolute", top: "15px", right: "15px", cursor: "pointer" }}
-              onClick={() => { setSelectedCourse(null); setSubjects([]); setSelectedSubjects([]); setTotalPrice(0); }}>
-              <FaTimes size={20} style={{ color: "#100B5C" }} />
-            </div>
-          </div>
-        </div>
-      )}
+                  <div className="bt-body">
+                    <h3 className="bt-name">{c.name}</h3>
+                    <button
+                      className="bt-cta"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBookTest(c);
+                      }}
+                      aria-label={`Book test for ${c.name}`}
+                    >
+                      <span className="bt-cta-inner">
+                        <FaBook />
+                        Book Test
+                      </span>
+                    </button>
+                  </div>
+                </article>
+              ))
+            : (
+              <div className="bt-empty">
+                <h3>No courses available right now</h3>
+                <p>Please check back soon.</p>
+              </div>
+            )}
+        </section>
+      </main>
     </div>
   );
 };
 
-export default BookTest;
+export default BookYourTest;

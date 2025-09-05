@@ -1,56 +1,90 @@
-
 .hero-section {
-    height: 100vh; /* Full height of viewport */
-    background-image: url('../assets/hero-img.png'); /* Adjust the path to the image */
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    color: white;
-  }
+  height: 100vh;
+  background-image: url('../assets/hero-img.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  color: white;
+}
 
-  
-  .hero-overlay {
-    background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for readability */
-    height: 100%;
-    width: 100%;
-    padding-top: 50px;
-    padding-bottom: 50px;
-  }
-  
-  .hero-heading {
-    font-size: 3rem; /* Adjust for responsiveness */
-    color: #ffffff; /* Yellow color for heading */
-    font-weight: bold;
-  }
-  
-  .hero-description {
-    font-size: 1.2rem;
-    color: #fff; /* White color for description */
-  }
-  
-  
-  /* Mobile and Small Screen Adjustments */
+.hero-overlay {
+  /* Modern gradient overlay */
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 100%);
+  height: 100%;
+  width: 100%;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.hero-heading {
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7); /* Adds depth */
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: #e0e0e0; /* Slightly off-white for contrast */
+  max-width: 500px; /* Improves readability on wider screens */
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* --- Modern Button Style --- */
+.hero-button {
+  background-color: #c80d18;
+  color: #fff;
+  border: none;
+  border-radius: 50px; /* Fully rounded */
+  padding: 12px 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* Space between text and icon */
+  transition: all 0.3s ease-in-out; /* Smooth transition for all properties */
+}
+
+.hero-button:hover {
+  background-color: #e01a26; /* Slightly lighter on hover */
+  transform: translateY(-3px); /* Subtle lift effect */
+  box-shadow: 0 4px 15px rgba(200, 13, 24, 0.4);
+}
+
+.hero-button .button-icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.hero-button:hover .button-icon {
+  transform: translateX(5px); /* Move icon to the right on hover */
+}
+
+/* --- Mobile and Small Screen Adjustments --- */
 @media (max-width: 767px) {
-    .hero-section {
-        height: auto; /* Adjust height for smaller screens */
-        margin-top: 50px;
-    }
-    .text-col{
-        text-align: center;
-    }
-
-    .hero-description{
-      display: none;
-    }
-
-    .hero-heading {
-      font-size: 2rem; /* Smaller heading size for small screens */
-      text-align: center; /* Center align text on small screens */
-    }
-  
-    .cta-button {
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+  .hero-section {
+    height: auto;
+    min-height: 90vh; /* Ensure it still takes up most of the screen */
+    margin-top: 50px;
   }
+
+  .hero-overlay {
+    background: rgba(0, 0, 0, 0.7); /* Stronger, uniform overlay for mobile readability */
+  }
+  
+  .text-col {
+    text-align: center;
+  }
+
+  .hero-heading {
+    font-size: 2.2rem;
+  }
+
+  .hero-description {
+    font-size: 1rem; /* Kept visible but smaller */
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
