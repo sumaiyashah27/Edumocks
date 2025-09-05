@@ -45,7 +45,7 @@ const Payment = () => {
                 toast.error("Coupon already used or invalid.");
                 return;
             }
-            if (couponCode === "CFA2MOCK31") {
+            if (couponCode === "CFA10FREE") {
                 setFinalPrice(0);
                 toast.success("Coupon applied! Payment amount is now $0.");
             } else if (couponCode === "99%OFF") {

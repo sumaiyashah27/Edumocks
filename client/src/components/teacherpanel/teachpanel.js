@@ -238,7 +238,7 @@ const TeachPanel = () => {
     const email = localStorage.getItem("email") || "";
 
     // simple auth guard — adjust as needed
-    if (!email || email !== "support@eduinvest.in") {
+    if (!email || email !== "support@edumocks.com") {
       console.error("Unauthorized access. Redirecting to login");
       localStorage.clear();
       navigate("/teachLogin", { replace: true });
