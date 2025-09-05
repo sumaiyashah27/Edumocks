@@ -1,196 +1,166 @@
-/* Default Navbar Styles */
+/* --- Root Variables for Easy Theme Customization --- */
+:root {
+  --primary-color: #3498db; /* A slightly brighter blue for contrast */
+  --text-color-light: #ffffff;
+  --text-color-dark: #212529;
+  --navbar-height: 70px;
+  --transition-speed: 0.4s;
+}
+
+/* --- Base Navbar Styles --- */
 .navbar {
-  transition: background-color 0.3s ease, height 0.3s ease;
-  background-color: #FFFFFF;
-  z-index: 1000; /* Ensure navbar is always on top */
+  padding: 0 2rem;
+  height: var(--navbar-height);
+  /* MODIFICATION: Added a subtle dark gradient for initial visibility */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+  transition: all var(--transition-speed) ease-in-out;
+  font-family: 'Poppins', sans-serif;
 }
 
-.brand img {
-  border-radius: 3px;
-  margin: 5px 12px;
+.navbar-brand img {
+  border-radius: 4px;
 }
 
-.navbar-nav{
-  margin-right: 30px; /* Adjust this as needed to space the nav links */
-}
-
-/* Default Navbar Links */
-.navbar-nav .nav-link {
-  color: #100B5C; /* Default color for non-scrolled state */
-  transition: color 0.3s ease, border-bottom 0.3s ease;
-  cursor: pointer;
-  margin-right: 20px; /* Adjust this for spacing between links */
-}
-
-
-/* Adjust space between nav links and login button */
-.navbar-nav .nav-link:last-child {
-  margin-right: 15px; /* Optional, just to space out from the button */
-}
-
-/* Active State for Navbar Menu */
-.navbar-nav .nav-link.active {
-  font-weight: bold;
-  color: #FFDC5C !important; /* Ensure the color stays even when scrolled */
-  border-bottom: 2px solid #FFDC5C;
-}
-
-/* Navbar When Scrolled - Active Link Styling */
-.navbar-scrolled .navbar-nav .nav-link.active {
-  color: #FFDC5C !important; /* Ensure active link is the correct color when scrolled */
-}
-
-
-/* Spacing between the login button and nav links */
-.navbar-nav .nav-item:last-child {
-  margin-left: 20px; /* Add space between nav items and login button */
-}
-
-
-/* Navbar When Scrolled */
+/* --- Scrolled State with Frosted Glass Effect --- */
 .navbar-scrolled {
-  background-color: #100B5C;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* MODIFICATION: Remove the gradient when scrolled */
+  background-image: none;
 }
 
-/* Navbar When Scrolled */
-.navbar-scrolled .nav-link {
-  color: #FFFFFF !important; /* Change link color to white when scrolled */
-}
-
-/* Navbar When Scrolled */
-.navbar-scrolled .button {
-  background-color: #FFFFFF; /* Change link color to white when scrolled */
-  color: #100B5C;
-}
-/* Hover Effect */
-.navbar-nav .nav-link:hover {
-  color: #FFDC5C;
-}
-
-/* Add margin to move the Login button a little away from the right edge */
-.navbar-item .button {
-  margin-left: 20px; /* Adjust this to move it left or right */
-}
-
-.button{
-  background-color: #100B5C;
-  color: #FFFFFF;
-  padding: 10px 20px;
-  border-radius: 5px;
-  border: none;
-}
-
-/* Responsive Navbar Adjustments */
-@media (max-width: 992px) {
-  .navbar .navbar-nav {
-    text-align: center;
-  }
-
-  .navbar {
-    background-color: #FFFFFF;
-    color: #100B5C;
-  }
-
-  .navbar-scrolled {
-    background-color: #100B5C; /* Ensure the background is dark when scrolled */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .button{
-    background-color: #100b5c;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: 1px solid #100B5C;
-  }
-
-  /* Navbar When Scrolled */
-  .navbar-scrolled .button {
-    background-color: #fff; /* Change background when scrolled */
-    color: #100b5c;
-  }
-
-  .navbar-scrolled .nav-link {
-    color: #FFFFFF; /* Change link color to white when scrolled */
-  }
-
-  .navbar-brand img {
-    width: auto;
-    height: 50px;
-  }
-
-  .navbar-nav .nav-link {
-    font-size: 16px;
-    padding: 10px 15px;
-  }
-
-  .navbar-toggler-icon {
-    width: 40px;
-    height: 40px;
-    border: none;
-  }
-
-  /* Adjust the navbar brand size for mobile */
-  .navbar-brand {
-    display: flex;
-    align-items: center;
-  }
-
-  .navbar-brand img {
-    width: auto;
-    height: 50px;
-  }
-
-  .navbar-brand .brand-name {
-    font-size: 18px;
-    margin-left: 10px;
-  }
-}
-
-/* Lottie Animation Color Change */
-.lottie-container {
-  transition: filter 0.3s ease;
-}
-
-.lottie-black {
-  filter: invert(0) brightness(1); /* Black color (default) */
-}
-
-.lottie-white {
-  filter: invert(1) brightness(2); /* White color when scrolled */
-}
-
-/* Close Icon */
-.close-icon {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #000;
+/* --- Navigation Links --- */
+.nav-link {
+  /* MODIFICATION: Initial text color is now light */
+  color: var(--text-color-light) !important;
+  font-weight: 500;
+  margin: 0 1rem;
   cursor: pointer;
-  transition: color 0.3s ease;
+  position: relative;
+  transition: color var(--transition-speed) ease;
+  padding-bottom: 8px !important;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4); /* MODIFICATION: Added text shadow for readability */
 }
 
-.close-icon:hover {
-  color: #FFDC5C;
+/* Change link color on scrolled navbar */
+.navbar-scrolled .nav-link {
+  color: var(--text-color-dark) !important;
+  text-shadow: none; /* MODIFICATION: Remove text shadow when scrolled */
+}
+
+/* --- Animated Underline for Hover & Active States --- */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  /* MODIFICATION: Underline is light initially */
+  background-color: var(--text-color-light);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+/* MODIFICATION: Underline becomes primary color when scrolled */
+.navbar-scrolled .nav-link::after {
+    background-color: var(--primary-color);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+.nav-link.active {
+  /* MODIFICATION: Active color is light initially */
+  color: var(--text-color-light) !important;
+}
+
+/* MODIFICATION: Active color is primary when scrolled */
+.navbar-scrolled .nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* --- Modern Login Button --- */
+.button {
+  background-color: var(--primary-color);
+  color: var(--text-color-light);
+  border: 2px solid transparent; /* Added for hover transition */
+  border-radius: 50px;
+  padding: 10px 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+  background-color: transparent;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* MODIFICATION: Button style before scrolling */
+.navbar:not(.navbar-scrolled) .button:hover {
+    background-color: var(--text-color-light);
+    border-color: var(--text-color-light);
+    color: var(--text-color-dark);
+}
+
+/* --- Mobile Toggle & Menu --- */
+.navbar-toggler {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+/* MODIFICATION: Ensure Lottie animation is always visible */
+.lottie-container {
+    filter: brightness(0) invert(1); /* Makes the animation white */
+}
+.navbar-scrolled .lottie-container {
+    filter: none; /* Reverts to original color (black) on scroll */
+}
+
+.close-icon {
+  font-size: 2.5rem;
+  font-weight: 300;
+  /* MODIFICATION: Light color initially */
+  color: var(--text-color-light);
 }
 
 .navbar-scrolled .close-icon {
-  color: #FFFFFF; /* Ensure close icon matches white theme when scrolled */
+  color: var(--text-color-dark);
 }
 
-/* Active State for Navbar Menu */
-.navbar-nav .nav-link.active {
-  font-weight: bold;
-  color: #FFDC5C;
-  border-bottom: 2px solid #FFDC5C;
-}
+/* --- Responsive Styles for Mobile View --- */
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    position: absolute;
+    top: var(--navbar-height);
+    left: 0;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 2rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+  }
 
-/* Content Shifting when Menu is Open */
-.content-wrapper {
-  transition: margin-top 0.3s ease;
+  .nav-link {
+    text-align: center;
+    padding: 1rem 0 !important;
+    margin: 0;
+    color: var(--text-color-dark) !important;
+    text-shadow: none; /* Ensure no text shadow in opened mobile menu */
+  }
 }
-
-.content-wrapper.menu-open {
-  margin-top: 250px; /* Adjust based on the expanded navbar height */
-}
-

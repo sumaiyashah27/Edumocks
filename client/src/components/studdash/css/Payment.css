@@ -1,0 +1,235 @@
+/* --- General Page Styling --- */
+.payment-page {
+  background-color: #f4f7fa;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* --- Main Two-Column Container --- */
+.payment-container {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  max-width: 1100px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* --- Left & Right Columns --- */
+.order-summary,
+.payment-details {
+  padding: 40px;
+  flex: 1;
+}
+
+/* --- Left Column: Order Summary --- */
+.order-summary {
+  background-color: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.order-summary h3, .payment-details h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.summary-card {
+  margin-bottom: 25px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.course-details h4 {
+  font-size: 18px;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.course-details p {
+  color: #6b7280;
+}
+
+.topics-list h5 {
+  font-size: 16px;
+  color: #374151;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 10px;
+}
+
+.topics-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.topics-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  color: #4b5563;
+}
+
+.price-details .price-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: #4b5563;
+  font-size: 16px;
+}
+.price-details .price-line.discount {
+  color: #16a34a; /* Green for discount */
+}
+.price-details .price-line.total {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* --- Right Column: Payment Details --- */
+.coupon-section {
+  margin-bottom: 30px;
+}
+.coupon-section label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+.coupon-input-group {
+  display: flex;
+}
+.coupon-input-group input {
+  flex-grow: 1;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px 0 0 6px;
+  font-size: 16px;
+}
+.coupon-input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+.coupon-input-group button {
+  padding: 0 20px;
+  border: 1px solid #3b82f6;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.coupon-input-group button:hover {
+  background-color: #2563eb;
+}
+.coupon-input-group button:disabled {
+  background-color: #a5b4fc;
+  border-color: #a5b4fc;
+  cursor: not-allowed;
+}
+
+.payment-methods h5 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.separator {
+  text-align: center;
+  margin: 25px 0;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.card-element {
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  margin-bottom: 20px;
+}
+
+.btn-pay {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.btn-pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-pay:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-stripe {
+  background-color: #5469d4;
+  color: white;
+}
+.btn-razorpay {
+  background-color: #fff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+.btn-razorpay:hover:not(:disabled) {
+  background-color: #eff6ff;
+}
+
+.payment-status {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+}
+.payment-status.success {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+.payment-status.failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* --- Responsive Design for Mobile --- */
+@media (max-width: 900px) {
+  .payment-container {
+    flex-direction: column;
+    box-shadow: none;
+  }
+  .payment-page {
+    padding: 0;
+    background-color: #fff;
+  }
+  .order-summary {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}

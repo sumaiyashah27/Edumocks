@@ -4,36 +4,113 @@ const Subject = require('../models/subject-model');
 // const QuizEnroll = require('../models/quizenroll-model');
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
-// Create a course
-router.post('/', async (req, res) => {
+
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
+// ✅ Auto-create course-image folder if not exists
+const courseImagesDir = path.join(__dirname, '..', 'course-image');
+if (!fs.existsSync(courseImagesDir)) {
+  fs.mkdirSync(courseImagesDir, { recursive: true });
+}
+
+// ✅ Multer setup for course images
+const courseStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, courseImagesDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname || '');
+    cb(null, `course-${Date.now()}${ext}`);
+  },
+});
+const courseFileFilter = (req, file, cb) => {
+  const ok = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype);
+  cb(ok ? null : new Error('Only image files allowed'), ok);
+};
+const uploadCourseImage = multer({ storage: courseStorage, fileFilter: courseFileFilter });
+
+// ✅ Create Course with optional image
+router.post('/', uploadCourseImage.single('image'), async (req, res) => {
   try {
     const { name, price, description } = req.body;
-    const course = new Course({ name, price, description });
+
+    const image = req.file
+      ? `/course-images/${req.file.filename}`
+      : '';
+
+    const course = new Course({ name, price, description, image });
     await course.save();
+
     res.status(201).json(course);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error creating course', error });
   }
 });
 
-router.put('/:id', async (req, res) => {
+// ✅ Update Course with optional new image
+router.put('/:id', uploadCourseImage.single('image'), async (req, res) => {
   try {
-    const { name ,price, description} = req.body;
+    const { name, price, description } = req.body;
+    const updates = { name, price, description };
+
+    if (req.file) {
+      // delete old image if exists
+      const existing = await Course.findById(req.params.id).select('image');
+      if (existing?.image?.startsWith('/course-images/')) {
+        const oldPath = path.join(courseImagesDir, path.basename(existing.image));
+        fs.unlink(oldPath, () => {});
+      }
+      updates.image = `/course-images/${req.file.filename}`;
+    }
+
     const updatedCourse = await Course.findByIdAndUpdate(
       req.params.id,
-      { name, description, price}, // Update only the course name
-      { new: true, runValidators: true } // Return updated document & validate
+      updates,
+      { new: true, runValidators: true }
     );
 
-    if (!updatedCourse) {
-      return res.status(404).json({ message: 'Course not found' });
-    }
+    if (!updatedCourse) return res.status(404).json({ message: 'Course not found' });
 
     res.status(200).json(updatedCourse);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error updating course', error });
   }
 });
+
+
+
+// // Create a course
+// router.post('/', async (req, res) => {
+//   try {
+//     const { name, price, description } = req.body;
+//     const course = new Course({ name, price, description });
+//     await course.save();
+//     res.status(201).json(course);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error creating course', error });
+//   }
+// });
+
+// router.put('/:id', async (req, res) => {
+//   try {
+//     const { name ,price, description} = req.body;
+//     const updatedCourse = await Course.findByIdAndUpdate(
+//       req.params.id,
+//       { name, description, price}, // Update only the course name
+//       { new: true, runValidators: true } // Return updated document & validate
+//     );
+
+//     if (!updatedCourse) {
+//       return res.status(404).json({ message: 'Course not found' });
+//     }
+
+//     res.status(200).json(updatedCourse);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error updating course', error });
+//   }
+// });
 
 // GET request to fetch all courses with populated subjects and chapters
 router.get('/', async (req, res) => {

@@ -1,0 +1,235 @@
+/* --- General Page Styling --- */
+.payment-page {
+  background-color: #f4f7fa;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* --- Loading Spinner --- */
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* --- Main Two-Column Container --- */
+.payment-container {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  max-width: 1100px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* --- Left & Right Columns --- */
+.order-summary,
+.payment-details {
+  padding: 40px;
+  flex: 1;
+}
+
+/* --- Left Column: Reschedule Details --- */
+.order-summary {
+  background-color: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.order-summary h3, .payment-details h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.summary-card {
+  margin-bottom: 25px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.details-list .detail-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.details-list .detail-item:last-child {
+  border-bottom: none;
+}
+.detail-item .detail-icon {
+  font-size: 20px;
+  color: #3b82f6;
+}
+.detail-item div {
+  display: flex;
+  flex-direction: column;
+}
+.detail-item span {
+  color: #6b7280;
+  font-size: 14px;
+}
+.detail-item strong {
+  color: #111827;
+  font-weight: 500;
+}
+
+.price-details .price-line.total {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* --- Right Column: Payment Details --- */
+.form-section {
+  margin-bottom: 30px;
+}
+.form-section label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12px;
+}
+.date-time-group {
+  display: flex;
+  gap: 15px;
+}
+.input-with-icon {
+  position: relative;
+  flex: 1;
+}
+.input-with-icon svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+.input-with-icon input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+}
+.input-with-icon input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.payment-methods h5 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.separator {
+  text-align: center;
+  margin: 25px 0;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.card-element {
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  margin-bottom: 20px;
+}
+
+.btn-pay {
+  width: 100%;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.btn-pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn-pay:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-stripe {
+  background-color: #5469d4;
+  color: white;
+}
+.btn-razorpay {
+  background-color: #fff;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+.btn-razorpay:hover:not(:disabled) {
+  background-color: #eff6ff;
+}
+
+.payment-status {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+}
+.payment-status.success {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+.payment-status.failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* --- Responsive Design for Mobile --- */
+@media (max-width: 900px) {
+  .payment-container {
+    flex-direction: column;
+    box-shadow: none;
+  }
+  .payment-page {
+    padding: 0;
+    background-color: #fff;
+  }
+  .order-summary {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .date-time-group {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,138 @@
+/* Define theme colors as CSS variables for easy changes */
+:root {
+  --primary-blue: #100b5c;
+  --accent-red: #c80d18;
+  --text-dark: #333;
+  --text-light: #555;
+  --bg-light: #f8f9fa;
+  --card-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
+}
+
+.about-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: var(--bg-light);
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 4rem 2rem;
+  font-family: 'Poppins', sans-serif; /* A modern, clean font */
+}
+
+.about-container {
+  width: 100%;
+  max-width: 1200px;
+  text-align: center;
+}
+
+.about-title {
+  margin-bottom: 3rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+  font-size: 2.5rem;
+}
+
+.about-title-accent {
+  color: var(--accent-red);
+}
+
+.about-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  gap: 3rem;
+  flex-wrap: wrap; /* Ensures layout is responsive */
+}
+
+/* --- Image Styling --- */
+.about-image-wrapper {
+  flex: 1 1 400px; /* Flexbox properties for responsive sizing */
+  max-width: 450px;
+}
+
+.about-image {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.about-image-wrapper:hover .about-image {
+  transform: scale(1.03); /* Subtle zoom effect */
+  box-shadow: 0 15px 40px -15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Text Styling --- */
+.about-text-wrapper {
+  flex: 1 1 500px;
+  max-width: 600px;
+  padding: 1rem;
+}
+
+.about-subtitle {
+  font-weight: 700;
+  color: var(--primary-blue);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block; /* Required for pseudo-element positioning */
+}
+
+/* Decorative accent line below the subtitle */
+.about-subtitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -10px;
+  width: 60px;
+  height: 4px;
+  background-color: var(--accent-red);
+  border-radius: 2px;
+}
+
+.about-description {
+  line-height: 1.8;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  text-align: left; /* Better for readability */
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 992px) {
+  .about-content {
+    flex-direction: column;
+  }
+
+  .about-text-wrapper, .about-image-wrapper {
+    text-align: center;
+    max-width: 600px;
+  }
+  
+  .about-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .about-subtitle::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 576px) {
+  .about-section {
+    padding: 3rem 1rem;
+  }
+  .about-title {
+    font-size: 2rem;
+  }
+  .about-subtitle {
+    font-size: 1.75rem;
+  }
+  .about-description {
+    font-size: 1rem;
+  }
+}
