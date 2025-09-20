@@ -189,98 +189,106 @@ const BookYourTest = ({ onScheduleTest }) => {
               ))
             : courses.length > 0
             ? courses.map((course) => (
-                <div
-                  key={course._id}
-                  className="pretty-card"
-                  style={cardBase}
-                  onClick={() => handleBookTest(course)}
-                >
-                  {/* Media */}
-                  {/* Media */}
-                  <div style={{ position: "relative", width: "100%", overflow: "hidden" }}>
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        background:
-                          "linear-gradient(180deg, rgba(14,10,90,0.06) 0%, rgba(14,10,90,0) 60%, rgba(14,10,90,0.06) 100%)",
-                        pointerEvents: "none"
-                      }}
-                    />
-                    <img
-                      src={course.image || placeholder}
-                      alt={course.name}
-                      style={{
-                        width: "100%",
-                        height: "auto",      // auto height so it never cuts
-                        objectFit: "contain", // full image visible
-                        display: "block",
-                        background: "#F7F8FC"
-                      }}
-                      onError={(e) => (e.currentTarget.src = placeholder)}
-                    />
+                // ========= START: Main Change - Added a wrapper =========
+                <div key={course._id} style={{ position: "relative", paddingTop: "20px" }}>
+                  
+                  {/* Price ribbon - Moved here and repositioned */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      zIndex: 10,
+                      padding: "8px 16px", // Adjusted padding
+                      borderRadius: 999,   // Pill shape
+                      fontWeight: 800,
+                      fontSize: 16,        // Slightly smaller font for balance
+                      background: "linear-gradient(135deg, #0EA5E9 0%, #22C55E 100%)",
+                      color: "#FFFFFF",
+                      boxShadow: "0 10px 20px rgba(16, 185, 129, 0.2)",
+                      whiteSpace: "nowrap" // Prevent text wrapping
+                    }}
+                  >
+                    {Number(course.price) > 0 ? priceToUSD(course.price) : "Per-topic pricing"}
+                  </div>
 
-                    {/* Price ribbon */}
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 12,
-                        right: 12,
-                        padding: "8px 12px",
-                        borderRadius: 12,
-                        fontWeight: 800,
-                        fontSize: 20,
-                        background: "linear-gradient(135deg, #0EA5E9 0%, #22C55E 100%)",
-                        color: "#FFFFFF",
-                        boxShadow: "0 10px 20px rgba(16, 185, 129, 0.2)"
-                      }}
-                    >
-                      {Number(course.price) > 0 ? priceToUSD(course.price) : "Per-topic pricing"}
+                  <div
+                    className="pretty-card"
+                    style={cardBase}
+                    onClick={() => handleBookTest(course)}
+                  >
+                    {/* Media */}
+                    <div style={{ width: "100%", overflow: "hidden" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background:
+                            "linear-gradient(180deg, rgba(14,10,90,0.06) 0%, rgba(14,10,90,0) 60%, rgba(14,10,90,0.06) 100%)",
+                          pointerEvents: "none"
+                        }}
+                      />
+                      <img
+                        src={course.image || placeholder}
+                        alt={course.name}
+                        style={{
+                          width: "100%",
+                          height: "auto",
+                          objectFit: "contain",
+                          display: "block",
+                          background: "#F7F8FC"
+                        }}
+                        onError={(e) => (e.currentTarget.src = placeholder)}
+                      />
+                      
+                      {/* Ribbon removed from here */}
+                      
+                    </div>
+
+                    {/* Body */}
+                    <div style={{ padding: 18, textAlign: "left" }}>
+                      <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1E255E", lineHeight: 1.35, minHeight: '48px' /* Added to align titles */ }}>
+                        {course.name}
+                      </h3>
+
+                      {/* CTA only */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookTest(course);
+                        }}
+                        className="cta-btn"
+                        style={{
+                          marginTop: 14,
+                          width: "100%",
+                          background: "linear-gradient(135deg, #C80D18 0%, #F43F5E 100%)",
+                          color: "#fff",
+                          padding: "12px 16px",
+                          fontSize: 14,
+                          fontWeight: 800,
+                          border: "none",
+                          borderRadius: 12,
+                          cursor: "pointer",
+                          boxShadow: "0 12px 30px rgba(200,13,24,0.25)"
+                        }}
+                      >
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                          <FaBook /> Book Test
+                        </span>
+                      </button>
                     </div>
 
                   </div>
-
-                  {/* Body */}
-                  <div style={{ padding: 18, textAlign: "left" }}>
-                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#1E255E", lineHeight: 1.35 }}>
-                      {course.name}
-                    </h3>
-
-                    {/* CTA only */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleBookTest(course);
-                      }}
-                      className="cta-btn"
-                      style={{
-                        marginTop: 14,
-                        width: "100%",
-                        background: "linear-gradient(135deg, #C80D18 0%, #F43F5E 100%)",
-                        color: "#fff",
-                        padding: "12px 16px",
-                        fontSize: 14,
-                        fontWeight: 800,
-                        border: "none",
-                        borderRadius: 12,
-                        cursor: "pointer",
-                        boxShadow: "0 12px 30px rgba(200,13,24,0.25)"
-                      }}
-                    >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                        <FaBook /> Book Test
-                      </span>
-                    </button>
-                  </div>
-
                 </div>
+                // ========= END: Main Change =========
               ))
             : (
-              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: 40 }}>
-                <h3 style={{ color: "#0E0A5A", fontWeight: 800, fontSize: 18 }}>No courses available right now</h3>
-                <p style={{ color: "#565B78", marginTop: 6 }}>Please check back soon.</p>
-              </div>
-            )}
+                <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: 40 }}>
+                  <h3 style={{ color: "#0E0A5A", fontWeight: 800, fontSize: 18 }}>No courses available right now</h3>
+                  <p style={{ color: "#565B78", marginTop: 6 }}>Please check back soon.</p>
+                </div>
+              )}
         </div>
       </div>
     </div>

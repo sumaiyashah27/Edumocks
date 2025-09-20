@@ -236,7 +236,7 @@ const TeachPanel = () => {
     const firstname = localStorage.getItem("firstname") || "";
     const lastname = localStorage.getItem("lastname") || "";
     const email = localStorage.getItem("email") || "";
-
+    //support@edumocks.com
     // simple auth guard — adjust as needed
     if (!email || email !== "support@edumocks.com") {
       console.error("Unauthorized access. Redirecting to login");
