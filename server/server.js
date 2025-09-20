@@ -52,7 +52,7 @@ app.use(express.json()); // Parse JSON request bodies
 app.use('/images', express.static(path.join(__dirname, './image/'))); 
 
 // ✅ Serve course images
-app.use('/course-images', express.static(path.join(__dirname, './course-image')));
+app.use('/course-images', express.static(path.join(__dirname, './course-images')));
 
 // Use the routes 
 app.use('/api/student', studentRoutes);

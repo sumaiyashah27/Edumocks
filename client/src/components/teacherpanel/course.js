@@ -1,10 +1,11 @@
+// src/components/Course.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus, faTrash, faSearch, faEdit, faFolder, faImage, faDollarSign,
-  faAlignLeft, faBook, faGripVertical, faArrowLeft, faSort, faCheck, faListOl
+  faBook, faGripVertical, faArrowLeft, faSort, faCheck, faListOl
 } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,7 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Dropdown, Form, Modal, InputGroup, Badge, Breadcrumb } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-// --- STYLES ---
+// ----------------------------- styles (kept the same) -----------------------------
 const ComponentStyles = () => (
   <style>{`
     :root {
@@ -28,8 +29,6 @@ const ComponentStyles = () => (
       --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     .course-panel-container { background-color: var(--bg-main); padding: 2rem; min-height: 100vh; font-family: var(--font-family); }
-    
-    /* Grid View */
     .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
     .folder-card { background: var(--bg-content); border-radius: 0.75rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); transition: all 0.2s ease-in-out; overflow: hidden; display: flex; flex-direction: column; }
     .folder-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
@@ -37,16 +36,12 @@ const ComponentStyles = () => (
     .folder-thumbnail { width: 100%; height: 120px; border-radius: 0.5rem; background-color: #F3F4F6; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .folder-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
     .folder-footer { border-top: 1px solid var(--border-color); background-color: #F9FAFB; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; }
-    
-    /* Reorder Mode */
     .reorder-list { max-width: 800px; margin: 0 auto; }
     .reorder-item { display: flex; align-items: center; background: var(--bg-content); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem; box-shadow: var(--shadow-sm); user-select: none; }
     .reorder-item.dragging { box-shadow: var(--shadow-md); }
     .reorder-handle { font-size: 1.2rem; color: var(--text-light); cursor: grab; margin-right: 1rem; }
     .reorder-thumbnail { width: 40px; height: 40px; border-radius: 0.375rem; background-color: #F3F4F6; margin-right: 1rem; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .reorder-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* Detail View */
     .detail-view-layout { display: flex; flex-direction: column; gap: 2rem; }
     @media (min-width: 992px) { .detail-view-layout { flex-direction: row; } }
     .detail-view-sidebar { flex: 0 0 100%; }
@@ -62,8 +57,55 @@ const ComponentStyles = () => (
   `}</style>
 );
 
+// ----------------------------- image helper -----------------------------
+/**
+ * Resolve the image source returned by backend.
+ * Accepts:
+ *  - full URL (http(s) or data:)
+ *  - relative path ("/course-images/xyz.jpg" or "course-images/xyz.jpg" or "xyz.jpg")
+ *  - object { url } or { path }
+ *  - object { data, contentType } (base64)
+ *
+ * Uses REACT_APP_API_BASE_URL env if provided to build absolute URL for relative paths.
+ */
+const resolveImageSrc = (image) => {
+  if (!image) return null;
+  const API_BASE = (process.env.REACT_APP_API_BASE_URL || '').replace(/\/$/, '');
 
-// --- MAIN COMPONENT ---
+  // if string
+  if (typeof image === 'string') {
+    const trimmed = image.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('http') || trimmed.startsWith('data:') || trimmed.startsWith('//')) return trimmed;
+    // relative path or filename -> ensure no leading slash, then prepend API_BASE if available
+    const cleaned = trimmed.replace(/^\//, '');
+    return API_BASE ? `${API_BASE}/${cleaned}` : `/${cleaned}`;
+  }
+
+  // if object
+  if (typeof image === 'object') {
+    if (image.url && typeof image.url === 'string') {
+      const u = image.url.trim();
+      if (u.startsWith('http') || u.startsWith('//') || u.startsWith('data:')) return u;
+      const cleaned = u.replace(/^\//, '');
+      return API_BASE ? `${API_BASE}/${cleaned}` : `/${cleaned}`;
+    }
+    if (image.path && typeof image.path === 'string') {
+      const p = image.path.trim();
+      const cleaned = p.replace(/^\//, '');
+      return API_BASE ? `${API_BASE}/${cleaned}` : `/${cleaned}`;
+    }
+    // handle base64 chunk
+    if (image.data && image.contentType) {
+      const base = typeof image.data === 'string' ? image.data : '';
+      return base.startsWith('data:') ? base : `data:${image.contentType};base64,${base}`;
+    }
+  }
+
+  return null;
+};
+
+// ----------------------------- main component -----------------------------
 const Course = () => {
   const [courses, setCourses] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
@@ -74,14 +116,107 @@ const Course = () => {
   const [reorderMode, setReorderMode] = useState(false);
   const isDraggingRef = useRef(false);
 
-  useEffect(() => { fetchCourses(); fetchSubjects(); }, []);
-  const fetchCourses = async () => { if (isDraggingRef.current) return; try { const token = localStorage.getItem('token'); const { data } = await axios.get('/api/course', { headers: { Authorization: `Bearer ${token}` } }); setCourses(data || []); return data || []; } catch (err) { toast.error('Error fetching courses.'); return []; } };
-  const fetchSubjects = async () => { try { const token = localStorage.getItem('token'); const { data } = await axios.get('/api/subject', { headers: { Authorization: `Bearer ${token}` } }); setSubjectOptions(data || []); } catch (err) { toast.error('Error fetching topics.'); } };
-  const refreshActiveCourse = async (courseId) => { const allCourses = await fetchCourses(); if (allCourses) { const updatedCourse = allCourses.find(c => c._id === courseId); setActiveCourse(updatedCourse); } };
-  const handleAddOrEditCourse = async (formData, courseId) => { try { const token = localStorage.getItem('token'); const config = { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } }; const data = new FormData(); Object.keys(formData).forEach(key => data.append(key, formData[key])); if (courseId) { await axios.put(`/api/course/${courseId}`, data, config); toast.success('Course updated successfully.'); } else { await axios.post('/api/course', data, config); toast.success('Course added successfully.'); } fetchCourses(); setModals(prev => ({ ...prev, addEdit: null })); } catch (err) { toast.error(err.response?.data?.message || 'An error occurred.'); } };
-  const handleDeleteCourse = async () => { try { await axios.post('/api/course/delete-with-password', { courseId: modals.deleteCourse, password: password.value }); toast.success('Course deleted successfully'); setCourses(prev => prev.filter(c => c._id !== modals.deleteCourse)); setModals(prev => ({ ...prev, deleteCourse: null })); setPassword({ value: '', show: false }); } catch (err) { toast.error(err.response?.data?.message || 'Failed to delete course'); } };
-  const handleAddSubjects = async (subjectIds) => { if (!activeCourse || subjectIds.length === 0) return; try { const token = localStorage.getItem('token'); await axios.put(`/api/course/${activeCourse._id}/add-subject`, { subjectIds }, { headers: { Authorization: `Bearer ${token}` } }); toast.success('Topics added successfully.'); refreshActiveCourse(activeCourse._id); setModals(prev => ({...prev, addSubject: false})); } catch (err) { toast.error(err.response?.data?.message || 'Error adding topics.'); } };
-  const handleDeleteSubject = async () => { try { const { courseId, subjectId } = modals.deleteSubject; await axios.put(`/api/course/${courseId}/remove-subject`, { subjectId, password: password.value }); toast.success('Subject deleted successfully.'); refreshActiveCourse(courseId); setModals(prev => ({...prev, deleteSubject: null})); setPassword({ value: '', show: false }); } catch (err) { toast.error('Error deleting subject.'); } };
+  useEffect(() => {
+    fetchCourses();
+    fetchSubjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchCourses = async () => {
+    if (isDraggingRef.current) return;
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get('/api/course', { headers: { Authorization: `Bearer ${token}` } });
+      setCourses(data || []);
+      // small debug log to inspect `image` values when troubleshooting
+      if (Array.isArray(data) && data.length > 0) {
+        // log first few for quick debugging (remove in production)
+        // eslint-disable-next-line no-console
+        console.log('courses[0].image ->', data[0].image);
+      }
+      return data || [];
+    } catch (err) {
+      toast.error('Error fetching courses.');
+      return [];
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get('/api/subject', { headers: { Authorization: `Bearer ${token}` } });
+      setSubjectOptions(data || []);
+    } catch (err) {
+      toast.error('Error fetching topics.');
+    }
+  };
+
+  const refreshActiveCourse = async (courseId) => {
+    const allCourses = await fetchCourses();
+    if (allCourses) {
+      const updatedCourse = allCourses.find(c => c._id === courseId);
+      setActiveCourse(updatedCourse);
+    }
+  };
+
+  const handleAddOrEditCourse = async (formData, courseId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } };
+      const data = new FormData();
+      Object.keys(formData).forEach(key => data.append(key, formData[key]));
+      if (courseId) {
+        await axios.put(`/api/course/${courseId}`, data, config);
+        toast.success('Course updated successfully.');
+      } else {
+        await axios.post('/api/course', data, config);
+        toast.success('Course added successfully.');
+      }
+      fetchCourses();
+      setModals(prev => ({ ...prev, addEdit: null }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'An error occurred.');
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    try {
+      await axios.post('/api/course/delete-with-password', { courseId: modals.deleteCourse, password: password.value });
+      toast.success('Course deleted successfully');
+      setCourses(prev => prev.filter(c => c._id !== modals.deleteCourse));
+      setModals(prev => ({ ...prev, deleteCourse: null }));
+      setPassword({ value: '', show: false });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete course');
+    }
+  };
+
+  const handleAddSubjects = async (subjectIds) => {
+    if (!activeCourse || subjectIds.length === 0) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`/api/course/${activeCourse._id}/add-subject`, { subjectIds }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Topics added successfully.');
+      refreshActiveCourse(activeCourse._id);
+      setModals(prev => ({...prev, addSubject: false}));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error adding topics.');
+    }
+  };
+
+  const handleDeleteSubject = async () => {
+    try {
+      const { courseId, subjectId } = modals.deleteSubject;
+      await axios.put(`/api/course/${courseId}/remove-subject`, { subjectId, password: password.value });
+      toast.success('Subject deleted successfully.');
+      refreshActiveCourse(courseId);
+      setModals(prev => ({...prev, deleteSubject: null}));
+      setPassword({ value: '', show: false });
+    } catch (err) {
+      toast.error('Error deleting subject.');
+    }
+  };
+
   const onDragStart = () => { isDraggingRef.current = true; };
   const onDragEnd = (result) => {
     isDraggingRef.current = false;
@@ -104,7 +239,8 @@ const Course = () => {
       }
     })();
   };
-  const filteredCourses = courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const filteredCourses = courses.filter(c => (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <>
@@ -119,13 +255,12 @@ const Course = () => {
       </div>
 
       {modals.addEdit && <AddEditCourseModal show={!!modals.addEdit} course={modals.addEdit === 'new' ? null : modals.addEdit} onHide={() => setModals(prev => ({...prev, addEdit: null}))} onSubmit={handleAddOrEditCourse} />}
-      
-      {/* UPDATED: Pass existingSubjectIds to the modal */}
+
       {modals.addSubject && activeCourse && (
           <AddSubjectModal
               show={modals.addSubject}
               subjectOptions={subjectOptions}
-              existingSubjectIds={activeCourse.subjects.map(s => s._id)}
+              existingSubjectIds={activeCourse.subjects?.map(s => s._id) || []}
               onHide={() => setModals(prev => ({ ...prev, addSubject: false }))}
               onSubmit={handleAddSubjects}
           />
@@ -136,8 +271,7 @@ const Course = () => {
   );
 };
 
-// --- SUB-COMPONENTS ---
-
+// ----------------------------- subcomponents -----------------------------
 const CourseGridView = ({ courses, searchQuery, onSearchChange, onCourseClick, onDragStart, onDragEnd, onNewCourse, onEditCourse, onDeleteCourse, reorderMode, setReorderMode }) => (
   <>
     <header className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
@@ -163,7 +297,9 @@ const CourseGridView = ({ courses, searchQuery, onSearchChange, onCourseClick, o
               {courses.map((course) => (
                 <div key={course._id} className="folder-card">
                   <div className="folder-body" onClick={() => onCourseClick(course)}>
-                    <div className="folder-thumbnail">{course.image ? <img src={course.image} alt={course.name}/> : <span className="text-secondary opacity-50"><FontAwesomeIcon icon={faFolder} size="2x"/></span>}</div>
+                    <div className="folder-thumbnail">
+                      {course.image ? <img src={resolveImageSrc(course.image)} alt={course.name} /> : <span className="text-secondary opacity-50"><FontAwesomeIcon icon={faFolder} size="2x"/></span>}
+                    </div>
                     <h5 className="fw-bold text-dark fs-6">{course.name}</h5>
                   </div>
                   <div className="folder-footer">
@@ -193,7 +329,7 @@ const ReorderListView = ({ courses }) => (
             {(providedDraggable, snapshot) => (
               <div ref={providedDraggable.innerRef} {...providedDraggable.draggableProps} className={`reorder-item ${snapshot.isDragging ? 'dragging' : ''}`}>
                 <span {...providedDraggable.dragHandleProps} className="reorder-handle"><FontAwesomeIcon icon={faGripVertical} /></span>
-                <div className="reorder-thumbnail">{course.image ? <img src={course.image} alt=""/> : <FontAwesomeIcon icon={faFolder} className="text-secondary opacity-50"/>}</div>
+                <div className="reorder-thumbnail">{course.image ? <img src={resolveImageSrc(course.image)} alt="" /> : <FontAwesomeIcon icon={faFolder} className="text-secondary opacity-50"/>}</div>
                 <span className="fw-bold">{course.name}</span>
               </div>
             )}
@@ -218,7 +354,7 @@ const CourseDetailView = ({ course, onBack, onAddSubject, onDeleteSubject }) => 
     <div className="detail-view-layout">
       <aside className="detail-view-sidebar">
         <div className="p-4 bg-white rounded shadow-sm">
-          {course.image ? <img src={course.image} alt={course.name} className="img-fluid rounded mb-3"/> : <div className="rounded bg-light d-flex align-items-center justify-content-center mb-3" style={{height: '200px'}}><FontAwesomeIcon icon={faImage} size="3x" className="text-light"/></div>}
+          {course.image ? <img src={resolveImageSrc(course.image)} alt={course.name} className="img-fluid rounded mb-3" /> : <div className="rounded bg-light d-flex align-items-center justify-content-center mb-3" style={{height: '200px'}}><FontAwesomeIcon icon={faImage} size="3x" className="text-light"/></div>}
           <h5 className="fw-bold">About this course</h5>
           <p className="text-muted small mb-0">{course.description || 'No description available.'}</p>
           <div className="metadata-grid">
@@ -252,20 +388,55 @@ const CourseDetailView = ({ course, onBack, onAddSubject, onDeleteSubject }) => 
   </div>
 );
 
-// --- MODAL SUB-COMPONENTS ---
-const AddEditCourseModal = ({ show, course, onHide, onSubmit }) => { const [name, setName] = useState(''); const [price, setPrice] = useState(''); const [description, setDescription] = useState(''); const [image, setImage] = useState(null); useEffect(() => { if (course) { setName(course.name || ''); setPrice(course.price || ''); setDescription(course.description || ''); setImage(null); } else { setName(''); setPrice(''); setDescription(''); setImage(null); } }, [course]); const handleSubmit = () => { onSubmit({ name, price, description, image }, course?._id); }; return ( <Modal show={show} onHide={onHide} centered><Modal.Header closeButton><Modal.Title>{course ? 'Edit Course' : 'Add New Course'}</Modal.Title></Modal.Header><Modal.Body><Form.Group className="mb-3"><Form.Label>Course Name</Form.Label><Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} /></Form.Group><Form.Group className="mb-3"><Form.Label>Price ($)</Form.Label><Form.Control type="number" value={price} onChange={(e) => setPrice(e.target.value)} /></Form.Group><Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></Form.Group><Form.Group><Form.Label>Course Image</Form.Label><Form.Control type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} /></Form.Group></Modal.Body><Modal.Footer><Button variant="secondary" onClick={onHide}>Cancel</Button><Button style={{backgroundColor: 'var(--primary-color)'}} onClick={handleSubmit}>{course ? 'Save Changes' : 'Add Course'}</Button></Modal.Footer></Modal> );};
+// ----------------------------- modal components -----------------------------
+const AddEditCourseModal = ({ show, course, onHide, onSubmit }) => {
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
 
-// UPDATED: The AddSubjectModal now prevents adding duplicate topics
+  useEffect(() => {
+    if (course) {
+      setName(course.name || '');
+      setPrice(course.price ?? '');
+      setDescription(course.description || '');
+      setImage(null);
+    } else {
+      setName('');
+      setPrice('');
+      setDescription('');
+      setImage(null);
+    }
+  }, [course]);
+
+  const handleSubmit = () => {
+    onSubmit({ name, price, description, image }, course?._id);
+  };
+
+  return (
+    <Modal show={show} onHide={onHide} centered>
+      <Modal.Header closeButton><Modal.Title>{course ? 'Edit Course' : 'Add New Course'}</Modal.Title></Modal.Header>
+      <Modal.Body>
+        <Form.Group className="mb-3"><Form.Label>Course Name</Form.Label><Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} /></Form.Group>
+        <Form.Group className="mb-3"><Form.Label>Price ($)</Form.Label><Form.Control type="number" value={price} onChange={(e) => setPrice(e.target.value)} /></Form.Group>
+        <Form.Group className="mb-3"><Form.Label>Description</Form.Label><Form.Control as="textarea" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} /></Form.Group>
+        <Form.Group><Form.Label>Course Image</Form.Label><Form.Control type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} /></Form.Group>
+      </Modal.Body>
+      <Modal.Footer><Button variant="secondary" onClick={onHide}>Cancel</Button><Button style={{backgroundColor: 'var(--primary-color)'}} onClick={handleSubmit}>{course ? 'Save Changes' : 'Add Course'}</Button></Modal.Footer>
+    </Modal>
+  );
+};
+
 const AddSubjectModal = ({ show, onHide, onSubmit, subjectOptions, existingSubjectIds = [] }) => {
   const [selected, setSelected] = useState([]);
 
-  const availableSubjects = React.useMemo(() => 
+  const availableSubjects = React.useMemo(() =>
     subjectOptions.filter(s => !existingSubjectIds.includes(s._id)),
     [subjectOptions, existingSubjectIds]
   );
-  
+
   const isAllSelected = availableSubjects.length > 0 && selected.length === availableSubjects.length;
-  
+
   const handleSelectAll = () => {
     if (isAllSelected) {
       setSelected([]);
@@ -273,11 +444,11 @@ const AddSubjectModal = ({ show, onHide, onSubmit, subjectOptions, existingSubje
       setSelected(availableSubjects.map(s => s._id));
     }
   };
-  
+
   const handleSubmit = () => {
-      onSubmit(selected);
-      setSelected([]);
-  }
+    onSubmit(selected);
+    setSelected([]);
+  };
 
   return (
     <Modal show={show} onHide={onHide} centered>
@@ -291,29 +462,21 @@ const AddSubjectModal = ({ show, onHide, onSubmit, subjectOptions, existingSubje
           </Dropdown.Toggle>
           <Dropdown.Menu className="w-100 p-2" style={{ maxHeight: '250px', overflowY: 'auto' }}>
             {availableSubjects.length > 0 && (
-                <>
-                    <Form.Check 
-                        type="checkbox" 
-                        label="Select All Available" 
-                        checked={isAllSelected} 
-                        onChange={handleSelectAll} 
-                        className="fw-bold mb-2" 
-                    />
-                    <Dropdown.Divider />
-                </>
+              <>
+                <Form.Check type="checkbox" label="Select All Available" checked={isAllSelected} onChange={handleSelectAll} className="fw-bold mb-2" />
+                <Dropdown.Divider />
+              </>
             )}
             {subjectOptions.map(s => {
               const isAdded = existingSubjectIds.includes(s._id);
               return (
-                <Form.Check 
-                  key={s._id} 
-                  type="checkbox" 
-                  label={isAdded ? `${s.name} (Already in course)` : s.name} 
-                  checked={selected.includes(s._id)} 
+                <Form.Check
+                  key={s._id}
+                  type="checkbox"
+                  label={isAdded ? `${s.name} (Already in course)` : s.name}
+                  checked={selected.includes(s._id)}
                   disabled={isAdded}
-                  onChange={() => 
-                    setSelected(p => p.includes(s._id) ? p.filter(id => id !== s._id) : [...p, s._id])
-                  } 
+                  onChange={() => setSelected(p => p.includes(s._id) ? p.filter(id => id !== s._id) : [...p, s._id])}
                 />
               );
             })}
@@ -322,18 +485,27 @@ const AddSubjectModal = ({ show, onHide, onSubmit, subjectOptions, existingSubje
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>Cancel</Button>
-        <Button 
-          style={{backgroundColor: 'var(--primary-color)'}} 
-          onClick={handleSubmit}
-          disabled={selected.length === 0}
-        >
-          Add Selected
-        </Button>
+        <Button style={{backgroundColor: 'var(--primary-color)'}} onClick={handleSubmit} disabled={selected.length === 0}>Add Selected</Button>
       </Modal.Footer>
     </Modal>
   );
 };
 
-const DeleteConfirmationModal = ({ show, onHide, onConfirm, passwordState }) => { const [password, setPassword] = passwordState; return ( <Modal show={show} onHide={onHide} centered size="sm"><Modal.Header closeButton><Modal.Title>Confirm Deletion</Modal.Title></Modal.Header><Modal.Body><p>This is irreversible. Enter password to confirm.</p><InputGroup><Form.Control type={password.show ? 'text' : 'password'} value={password.value} onChange={(e) => setPassword(p => ({...p, value: e.target.value}))} autoFocus /><Button variant="outline-secondary" onClick={() => setPassword(p => ({...p, show: !p.show}))}>{password.show ? <FaEyeSlash /> : <FaEye />}</Button></InputGroup></Modal.Body><Modal.Footer><Button variant="secondary" onClick={onHide}>Cancel</Button><Button variant="danger" onClick={onConfirm}>Delete Permanently</Button></Modal.Footer></Modal> );};
+const DeleteConfirmationModal = ({ show, onHide, onConfirm, passwordState }) => {
+  const [password, setPassword] = passwordState;
+  return (
+    <Modal show={show} onHide={onHide} centered size="sm">
+      <Modal.Header closeButton><Modal.Title>Confirm Deletion</Modal.Title></Modal.Header>
+      <Modal.Body>
+        <p>This is irreversible. Enter password to confirm.</p>
+        <InputGroup>
+          <Form.Control type={password.show ? 'text' : 'password'} value={password.value} onChange={(e) => setPassword(p => ({...p, value: e.target.value}))} autoFocus />
+          <Button variant="outline-secondary" onClick={() => setPassword(p => ({...p, show: !p.show}))}>{password.show ? <FaEyeSlash /> : <FaEye />}</Button>
+        </InputGroup>
+      </Modal.Body>
+      <Modal.Footer><Button variant="secondary" onClick={onHide}>Cancel</Button><Button variant="danger" onClick={onConfirm}>Delete Permanently</Button></Modal.Footer>
+    </Modal>
+  );
+};
 
 export default Course;
