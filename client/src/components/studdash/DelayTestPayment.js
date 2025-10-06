@@ -172,7 +172,7 @@ const DelayTestPaymentComponent = () => {
       }
 
       const options = {
-        key: "rzp_live_JJkQjWOq28xTOp",
+        key: "rzp_live_RKbSpQQ1FsT9uC",
         amount: order.amount,
         currency: "INR",
         order_id: order.id,

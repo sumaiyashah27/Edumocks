@@ -149,7 +149,7 @@ const Payment = () => {
         try {
             const paymentAmount = currency === "USD" ? convertCurrency(finalPrice, "USD", "INR") : finalPrice;
             const options = {
-                key: "rzp_live_JJkQjWOq28xTOp",
+                key: "rzp_live_RKbSpQQ1FsT9uC",
                 amount: paymentAmount * 100,
                 currency: "INR",
                 name: "EduMocks",
